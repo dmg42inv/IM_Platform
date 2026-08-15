@@ -7,3 +7,6 @@ dist/
 coverage/
 .vscode/
 WS-13Aug.code-workspace
+
+__pycache__/
+*.egg-info/
