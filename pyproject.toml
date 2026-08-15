@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "im-platform"
+version = "0.1.0"
+description = "IM Platform v1 ingestion and reporting pipeline"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pandas>=2.2.0",
+  "openpyxl>=3.1.0",
+  "python-dateutil>=2.9.0",
+]
+
+[project.optional-dependencies]
+docs = [
+  "python-docx>=1.1.0",
+  "pdfplumber>=0.11.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src/backend"}
+
+[tool.setuptools.packages.find]
+where = ["src/backend"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
