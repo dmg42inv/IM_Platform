@@ -320,9 +320,9 @@ _DEAL_NOTES: list[str] = [
     "HeyGears' vintage year is 2020: while the Equity Subscription Agreement is dated 30 Sep "
     "2019, the transaction's Closing Date is 9 Jan 2020 per the closing binder, and the $60M "
     "funding was wired on 1 Dec 2020.",
-    "Beyond Limits carries a ~$10M Remaining Commitment: the Note Purchase and Investment "
-    "Agreement schedules four Series C closings ($30M/$30M/$10M/$10M) alongside the initial $20M "
-    "note, and the final $10M tranche remains undrawn.",
+    "Beyond Limits' Committed figure is shown equal to Invested ($90M), with no Remaining "
+    "Commitment: the Note Purchase and Investment Agreement scheduled a final ~$10M Series C "
+    "tranche, which has been cancelled - no further capital is intended for this position.",
     "Flyr's vintage year is 2019: a $5M convertible note was funded in April 2019, ahead of the "
     "Series B round it converted into in 2020 - the two closings together total the full $10M "
     "position.",

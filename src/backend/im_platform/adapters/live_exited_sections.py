@@ -44,6 +44,13 @@ _COMMITTED_EQUALS_INVESTED_DEALS: dict[str, str] = {
         "than the register's raw commitment-amount sum (which understates Committed further by "
         "excluding a GBP-denominated tranche not converted to USD - see the Committed tooltip)."
     ),
+    "Beyond Limits": (
+        "User-confirmed (2026-08-16): the undrawn ~$10M final Series C tranche (of the 4 "
+        "scheduled in the executed Note Purchase and Investment Agreement) has been cancelled - "
+        "substantial time has passed and there is no intention to invest further, so Committed "
+        "is pinned to Invested here (no separate cancellation document on file yet; user is "
+        "trying to obtain one)."
+    ),
 }
 
 
