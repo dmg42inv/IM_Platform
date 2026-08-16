@@ -24,6 +24,24 @@ _SUBVEHICLE_TO_INVESTMENT_ID = {
     "Acies Investments Fund I L.P.": "Acies-LP-2021",
 }
 
+# Tracker DEAL NAME (not entity_id) -> the register investment_id(s) that
+# specifically cover that one deal row, for entities the tracker itself
+# splits across more than one Live/Exited row (e.g. 'Cerebras Systems Inc
+# (1)'/'(2)', 'Tools for Humanity Corporation'/'WLD Tokens' - all confirmed
+# via exact cashflow amount/date matches, see architecture memory notes).
+# Without this, Committed/Remaining Commitment and the citation tooltip
+# would pool every register row for the whole entity onto EVERY deal row
+# that shares it. An empty list means this deal has no capital commitment
+# of its own (e.g. a warrant/token exercised under an already-committed
+# instrument) - Committed is explicitly 0, not a fallback to the pooled
+# entity total.
+_DEAL_NAME_TO_INVESTMENT_IDS: dict[str, list[str]] = {
+    "Cerebras Systems Inc (1)": ["Cerebras-SeriesF-2021"],
+    "Cerebras Systems Inc (2)": ["Cerebras-Warrant1-2026", "Cerebras-Warrant2-2026"],
+    "Tools for Humanity Corporation": ["TFH-SeriesC-2023"],
+    "WLD Tokens": [],
+}
+
 # Ordered so the most specific/authoritative document type wins when several
 # are mentioned in one citation (e.g. an IAF referencing a signed SPA should
 # report "signed SPA", not the IAF).
@@ -37,6 +55,7 @@ _DOCUMENT_TYPE_PHRASES = [
     ("Subscription Agreement", "signed Subscription Agreement"),
     ("Purchase Agreement", "signed SPA"),
     ("SAFE", "signed SAFE"),
+    ("Promissory Note", "signed Promissory Note"),
     ("Convertible Note", "signed Convertible Note"),
     ("Side Letter", "signed Side Letter"),
     ("Debenture", "signed Debenture Agreement"),
@@ -61,13 +80,22 @@ def short_citation(confirmed_texts: list[str]) -> str:
         "CONFIRMED" in combined or "FULLY CONFIRMED" in combined
         or "signed" in combined.lower() or "executed" in combined.lower()
     )
-    if "term sheet" in combined.lower() and "signed" not in combined.lower():
+    # Only treat this as a non-binding term sheet when the citation is NOT
+    # otherwise verified - a verified citation may still mention "term sheet"
+    # in passing (e.g. "no longer based on a non-binding draft term sheet",
+    # describing how confidence was upgraded), which must not override an
+    # already-confirmed signed/executed document.
+    if "term sheet" in combined.lower() and not verified:
         return "Non-binding term sheet only - signed agreement not yet located"
 
     for needle, phrase in _DOCUMENT_TYPE_PHRASES:
         if needle.lower() in combined.lower():
             return f"Confirmed from {phrase}" if verified else f"Referenced in an internal summary citing a {phrase.replace('signed ', '')} - not yet independently verified as executed"
-    if combined.startswith("AI-extracted"):
+    # Only fall back to the shallow "AI-extracted summary" phrasing when NOT
+    # otherwise verified - a citation can start with "AI-extracted" as a label
+    # for how it was originally captured, then be upgraded later (e.g. a
+    # "USER-CONFIRMED" note appended afterward) without changing that prefix.
+    if combined.startswith("AI-extracted") and not verified:
         return "Sourced from an internal Investment Summary - not yet cross-checked against the signed transaction document"
     return "Confirmed from primary transaction document" if verified else "Not yet independently verified as a primary/executed document"
 
@@ -112,17 +140,28 @@ def build_entity_citation_lookup(draft: pd.DataFrame) -> dict[str, dict]:
         investing_entities = sorted({v for v in rows["fund_vehicle_id"] if v})
         commitments = []
         commitment_amounts_usd = []
+        # Commitment amounts booked in a currency other than USD are NOT
+        # converted/included in commitment_amounts_usd (no reliable historical
+        # FX rate is captured on the register itself) - tracked separately so
+        # the Committed total can flag itself as understated instead of
+        # silently dropping that tranche.
+        excluded_non_usd = []
         for _, r in rows.iterrows():
             if r["initial_commitment_amount"]:
                 commitments.append(f"{r['investment_currency']} {float(r['initial_commitment_amount']):,.2f} ({r['investment_id']})")
                 if str(r["investment_currency"]).upper() == "USD":
                     commitment_amounts_usd.append(float(r["initial_commitment_amount"]))
+                else:
+                    excluded_non_usd.append(
+                        f"{r['investment_currency']} {float(r['initial_commitment_amount']):,.2f} ({r['investment_id']})"
+                    )
         confirmed_texts = [r["confirmed_by"] for _, r in rows.iterrows() if r["confirmed_by"]]
         close_dates = sorted({str(r["close_date"]) for _, r in rows.iterrows() if r["close_date"]})
         lookup[key] = {
             "investing_entities": investing_entities,
             "commitments": commitments,
             "commitment_amounts_usd": commitment_amounts_usd,
+            "excluded_non_usd_commitments": excluded_non_usd,
             "confirmed_by": confirmed_texts,
             # A confirmed investing entity IS the primary-source signal - if we
             # don't know which vehicle invested, nothing else here can be trusted.
@@ -138,5 +177,24 @@ def build_entity_citation_lookup(draft: pd.DataFrame) -> dict[str, dict]:
     for subvehicle_key, investment_id in _SUBVEHICLE_TO_INVESTMENT_ID.items():
         rows = draft[draft["investment_id"] == investment_id]
         _add(subvehicle_key, rows)
+
+    for deal_name, investment_ids in _DEAL_NAME_TO_INVESTMENT_IDS.items():
+        if investment_ids:
+            _add(deal_name, draft[draft["investment_id"].isin(investment_ids)])
+        elif deal_name not in lookup:
+            # Explicit zero - this deal row has no capital commitment of its
+            # own, so it must NOT fall back to the whole entity's pooled
+            # commitment (which belongs to a different deal row).
+            lookup[deal_name] = {
+                "investing_entities": [],
+                "commitments": [],
+                "commitment_amounts_usd": [0.0],
+                "excluded_non_usd_commitments": [],
+                "confirmed_by": [],
+                "has_primary_source": False,
+                "short_citation": "No separate capital commitment for this line - see the related deal row for the underlying investment.",
+                "instrument": None,
+                "close_dates": [],
+            }
 
     return lookup

@@ -19,6 +19,7 @@ from datetime import date
 import pandas as pd
 
 from .entity_glossary import display_name, investing_entity_full_name
+from .live_exited_sections import _COMMITTED_EQUALS_INVESTED_DEALS
 
 
 def _fnum(v, digits: int = 2) -> str:
@@ -85,12 +86,27 @@ def _render_deal_table(
                 if d["irr_note"] else "Computed via XIRR from dated cash flows + latest NAV fair value (see All Cashflows tab)."
             )
             citation = citation_lookup.get(deal_entity_map.get(d["deal_name"], ""), {})
+            # Committed uses the deal-specific citation first (see
+            # _DEAL_NAME_TO_INVESTMENT_IDS) so it isn't pooled across every
+            # deal row sharing one entity - investing entity/vintage/
+            # instrument stay entity-level, since those are genuinely facts
+            # about the whole company, not split per tranche/deal row.
+            committed_citation = citation_lookup.get(d["deal_name"]) or citation
             full_code_name = investing_entity_full_name(d["investing_entity"])
             investing_entity_tt = f"{citation.get('short_citation', 'Not yet confirmed against a primary document')}: {full_code_name}."
-            if citation.get("commitments"):
-                committed_tt = f"{citation.get('short_citation', '')}: {'; '.join(citation['commitments'])}."
+            if committed_citation.get("commitments"):
+                committed_tt = f"{committed_citation.get('short_citation', '')}: {'; '.join(committed_citation['commitments'])}."
+            elif "commitment_amounts_usd" in committed_citation:
+                committed_tt = committed_citation.get("short_citation", "")
             else:
                 committed_tt = f"No confirmed primary-source commitment amount in the register yet - showing {tracker_src}."
+            if d["deal_name"] in _COMMITTED_EQUALS_INVESTED_DEALS:
+                committed_tt = _COMMITTED_EQUALS_INVESTED_DEALS[d["deal_name"]]
+            elif committed_citation.get("excluded_non_usd_commitments"):
+                committed_tt += (
+                    " WARNING: Committed is UNDERSTATED - excludes a non-USD commitment not converted here: "
+                    + "; ".join(committed_citation["excluded_non_usd_commitments"]) + "."
+                )
             invested_tt = f"Computed from dated cash flows (sum of deployments), see All Cashflows tab. Not sourced from the {tracker_src}."
             distributions_tt = f"Computed from dated cash flows (sum of distributions), see All Cashflows tab. Not sourced from the {tracker_src}."
             carrying_tt = "Latest carrying value from the tracker's own NAV tab (not the Live/Exited tab)."
@@ -161,8 +177,20 @@ def _render_deal_table(
         "<th>Carrying Value ($m)</th><th>Gain ($m)</th><th>TVPI</th><th>IRR</th>"
         "</tr></thead>"
     )
+    # Fixed column widths (via colgroup + table-layout: fixed on .deal-table)
+    # so columns line up and stay a consistent width - both between the Live
+    # and Exited tables, and across dashboard regenerations - instead of each
+    # table auto-sizing its own columns from whatever content happens to be
+    # in it that run.
+    colgroup = (
+        "<colgroup>"
+        "<col style='width:16%'><col style='width:6%'><col style='width:8%'><col style='width:5%'>"
+        "<col style='width:9%'><col style='width:7%'><col style='width:7%'><col style='width:7%'>"
+        "<col style='width:8%'><col style='width:8%'><col style='width:7%'><col style='width:6%'><col style='width:6%'>"
+        "</colgroup>"
+    )
     table_id = f"table-{tab_label.lower()}"
-    return f"<table id='{table_id}'>{header}<tbody>{''.join(rows_html)}</tbody></table>"
+    return f"<table id='{table_id}' class='deal-table'>{colgroup}{header}<tbody>{''.join(rows_html)}</tbody></table>"
 
 
 def _render_cashflow_table(cashflow: pd.DataFrame) -> str:
@@ -272,6 +300,50 @@ def _render_notes_list(notes: list[str]) -> str:
     return "<ul>" + "".join(f"<li>{_esc(n)}</li>" for n in notes) + "</ul>"
 
 
+# Curated, hand-written explanations for specific data points on the Live/
+# Exited tables that aren't otherwise self-explanatory from a hover tooltip -
+# e.g. why one company appears as two deal rows, or context behind a figure
+# that might otherwise look surprising. Written for a senior leadership /
+# board audience: state the facts plainly to illuminate the position, without
+# framing anything as a correction or error. Add to this list whenever a
+# reviewer would reasonably ask "why does this number/row look like that?"
+# Kept separate from the auto-generated triangulation notes (register vs.
+# tracker mismatches), which are data-quality flags rather than context.
+_DEAL_NOTES: list[str] = [
+    "Tools for Humanity Corporation (Live) and WLD Tokens (Exited) reflect the same underlying "
+    "relationship (TFH - Worldcoin) shown as two separate lines: the Series C equity position "
+    "remains Live, while the WLD token holding's $100M exchange into Inveniam's SAR is reported "
+    "as a fully realized, Exited outcome - each carries its own Invested/Distributions figures.",
+    "Cerebras Systems Inc appears as two lines by instrument: the original Series F Preferred "
+    "position ($40M, 2021) and two subsequent Warrant exercises (~$0.035M combined, 2026) - each "
+    "shown with its own Committed/Invested rather than a single combined figure.",
+    "HeyGears' vintage year is 2020: while the Equity Subscription Agreement is dated 30 Sep "
+    "2019, the transaction's Closing Date is 9 Jan 2020 per the closing binder, and the $60M "
+    "funding was wired on 1 Dec 2020.",
+    "Beyond Limits carries a ~$10M Remaining Commitment: the Note Purchase and Investment "
+    "Agreement schedules four Series C closings ($30M/$30M/$10M/$10M) alongside the initial $20M "
+    "note, and the final $10M tranche remains undrawn.",
+    "Flyr's vintage year is 2019: a $5M convertible note was funded in April 2019, ahead of the "
+    "Series B round it converted into in 2020 - the two closings together total the full $10M "
+    "position.",
+    "ONT plc's Committed figure is shown equal to Invested ($141.5M), with no Remaining "
+    "Commitment: the co-investment JV structure originally contemplated alongside this position "
+    "did not proceed, and the full committed capital has been deployed. One tranche (a "
+    "GBP 61,632,106 Pre-Emptive Rights purchase) is carried in GBP and not separately converted "
+    "to USD in this total.",
+    "Liquid AI's Committed figure ($60.8M) is net of a $5.78M credit due back from Core42 (a G42 "
+    "affiliate) under the compute Service Order tied to this transaction - the gross round size "
+    "before that credit is $66.6M.",
+    "School Hack's Committed figure ($2.75M) includes a $250,000 cloud-compute services credit "
+    "the company is entitled to under the Subscription Agreement, in addition to the $2.5M cash "
+    "equity subscription.",
+]
+
+
+def _render_deal_notes() -> str:
+    return "<ul>" + "".join(f"<li>{_esc(n)}</li>" for n in _DEAL_NOTES) + "</ul>"
+
+
 def _render_scan_report(scan_report: dict | None) -> str:
     if not scan_report:
         return (
@@ -355,6 +427,7 @@ def build_tracker_style_dashboard_html(
     issues_table = _render_issues_table(issues)
     glossary_table = _render_glossary_table(glossary)
     notes_html = _render_notes_list(triangulation_notes)
+    deal_notes_html = _render_deal_notes()
     scan_html = _render_scan_report(scan_report)
 
     nav_chart_data = {
@@ -388,6 +461,7 @@ def build_tracker_style_dashboard_html(
         issues_table=issues_table,
         glossary_table=glossary_table,
         notes_html=notes_html,
+        deal_notes_html=deal_notes_html,
         scan_html=scan_html,
         nav_chart_json=json.dumps(nav_chart_data),
         quarterly_chart_json=json.dumps(quarterly_chart_data),
@@ -426,7 +500,9 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   .dl-btn {{ background: var(--sub-bg); border: 1px solid var(--border); color: var(--accent); border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; }}
   .dl-btn:hover {{ background: var(--border); }}
   table {{ width: 100%; min-width: 1100px; border-collapse: collapse; font-size: 12.5px; }}
+  table.deal-table {{ table-layout: fixed; }}
   th, td {{ padding: 6px 9px; text-align: right; vertical-align: middle; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  table.deal-table th, table.deal-table td {{ overflow: hidden; text-overflow: ellipsis; }}
   th.left, td.left {{ text-align: left; white-space: nowrap; min-width: 220px; }}
   td.wrap {{ white-space: normal; max-width: 420px; min-width: 260px; vertical-align: middle; }}
   th {{ color: var(--muted); font-weight: 500; vertical-align: middle; }}
@@ -495,6 +571,10 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
     <div class="panel">
       <div class="panel-head"><h2>Live Investments, by Investing Entity</h2><button class="dl-btn" onclick="downloadCSV('table-live','live_investments.csv')">Download CSV</button></div>
       {live_table}
+    </div>
+    <div class="panel">
+      <h2>Notes</h2>
+      {deal_notes_html}
     </div>
   </section>
 

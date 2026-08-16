@@ -1,5 +1,55 @@
 # PRD Change Log
 
+## 2026-08-16 - v1.7.0
+
+- **Added a Vintage and Commitment Verification Discipline section**
+  (PRD_v1.md section 19.5), codifying lessons from a full re-verification
+  pass across the portfolio: always check all candidate dates (contract
+  signing, stated closing date, actual cash movement, tracker's existing
+  value) since they can genuinely diverge by months or years; a
+  correct-looking figure is not evidence it was verified; exact cash-flow
+  amount matches are the strongest confirmation; split positions (e.g. a
+  financing round plus a related token/warrant leg) must be computed
+  independently, not pooled; commitment figures can legitimately differ
+  from a simple cash total in either direction (undrawn tranches,
+  in-kind/cashback credits) but must be document-traceable either way; a
+  negative Remaining Commitment is a signal to investigate, never to
+  publish; every currency actually used must be accounted for, not
+  silently dropped from a USD total.
+- **Re-verified vintage/commitment figures against primary documents** for
+  HeyGears, Beyond Limits, EsyaSoft, Flyr, Jysan Technologies, Liquid AI,
+  School Hack, and ONT, applying the discipline above - each change is
+  fully cited in the register (`confirmed_by`) rather than applied
+  silently. Notably: Liquid AI's commitment is net of a $5.78M cashback
+  credit due back from a G42-affiliated compute provider under a linked
+  service order; School Hack's commitment includes a $250,000 compute
+  credit alongside the cash equity subscription; ONT's Committed is set
+  equal to Invested (zero Remaining Commitment) since a previously
+  contemplated JV co-investment did not proceed.
+- **Fixed two real bugs in citation-confidence scoring**
+  (`register_citations.py` `short_citation()`): a citation already marked
+  CONFIRMED/executed was being downgraded back to "unverified" purely
+  because its text also mentioned "term sheet" or started with
+  "AI-extracted" as historical context - both checks now respect the
+  `verified` flag instead of overriding it unconditionally.
+- **Fixed a double-counting bug** where one underlying position reported
+  as more than one tracker line (e.g. a equity/token split, or a
+  financing-round/warrant split) showed the same pooled Invested/
+  Distributions/Committed on every line sharing that position - each line
+  now computes from its own evidence, falling back to the pooled figure
+  only when a line truly has no separately-tagged data.
+- **Added a standing collaboration principle** (PRD_v1.md section 26): the
+  platform (and any agent operating it) is expected to challenge an
+  unverified claim rather than silently accept or silently override it -
+  surface the evidence and let the accountable person decide, unless
+  judgment has been explicitly delegated.
+- **Dashboard usability**: Live Investments table columns are now a fixed,
+  consistent width (via colgroup + table-layout: fixed) instead of
+  reflowing per regeneration; added a curated "Notes" panel beneath the
+  Live Investments table giving leadership-level context on figures that
+  would otherwise look surprising (deal splits, vintage basis, commitment
+  treatment) - written to illuminate status, not to flag corrections.
+
 ## 2026-08-16 - v1.6.0
 
 - **Made change detection a mandatory, standing operating step** (PRD_v1.md

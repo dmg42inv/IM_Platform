@@ -1,9 +1,9 @@
-# IM Platform Product Requirements Document (PRD) v1.6
+# IM Platform Product Requirements Document (PRD) v1.7
 
 ## 1. Document Control
 
 - Product: IM Platform
-- Version: 1.6
+- Version: 1.7
 - Date: 2026-08-16
 - Status: Draft
 - Owners: Product, Engineering, Operations
@@ -381,6 +381,56 @@ any future rebuild (platform, agent, or manual process) must preserve it.
   silently overwritten versus what is safe to delete and regenerate at
   any time.
 
+### 19.5 Vintage and Commitment Verification Discipline (added 2026-08-16)
+
+Learned through a full working pass re-verifying vintage years and
+commitment amounts across the portfolio against primary documents. These
+are durable verification rules, not one-off fixes:
+
+- **A date or amount that "looks right" is not evidence it was verified**:
+  always independently confirm close date, investing entity, instrument,
+  and commitment amount together from the same primary document - a
+  citation can coincidentally show the correct year while still being
+  wrong on amount or entity.
+- **Vintage/closing has three or four candidate dates that can genuinely
+  diverge by months or years - check all of them**: (1) the contract/SPA
+  signing date, (2) a separately-stated Closing Date if a closing binder
+  exists, (3) the actual cash movement date in the cash flow ledger (the
+  most concrete evidence of when capital was actually deployed), and (4)
+  the tracker's own existing value as a cheap sanity signal. When a deal
+  spans two calendar years (e.g. an early convertible note that converts
+  a year later), vintage uses the earliest first-capital-deployment date.
+- **Exact-amount cross-checks against realized cash flow are the strongest
+  confirmation available** (e.g. a register figure matching an actual
+  cash movement to the cent) - prioritize this over any narrative summary,
+  however confident-sounding.
+- **When one underlying position is split across more than one
+  reporting line** (e.g. a financing round and a related token/warrant
+  leg, or an original round and a later add-on tranche), each line's
+  Committed/Invested/Distributions must be computed from that line's own
+  evidence, not pooled from the whole position - otherwise the same
+  capital or return gets counted twice across rows.
+- **A commitment figure can legitimately differ from a simple cash total**
+  in either direction, and both must be traceable to a document, not
+  assumed: (a) undrawn/unfunded tranches remain part of Committed even
+  though not yet paid; (b) in-kind credits or cashback arrangements tied
+  to a transaction (e.g. a compute/cloud-services credit, or a portion of
+  proceeds contractually returned to an affiliated service provider) can
+  net against or add to the headline commitment - go to the actual
+  transaction documents to find these, don't infer them from the total
+  alone.
+- **A cross-check that produces a negative "Remaining Commitment" is a
+  signal to investigate, not a number to publish as-is** - by definition,
+  Remaining cannot be negative; either the commitment figure is
+  incomplete/miscounted, or (as confirmed case-by-case with the business)
+  a previously-contemplated additional commitment never materialized and
+  should no longer be counted.
+- **Every currency actually used must be accounted for** - silently
+  excluding a non-USD-denominated commitment from a USD total (for lack of
+  a captured FX rate) understates the figure; if a reliable conversion
+  isn't available, flag the exclusion explicitly rather than presenting an
+  incomplete total as if it were whole.
+
 ## 20. Delivery Readiness Gaps and Additions
 
 The following workstreams should be established early to reduce delivery risk:
@@ -510,6 +560,10 @@ The following workstreams should be established early to reduce delivery risk:
   memos are useful fallbacks, never the source of record (see section 19.4).
 - Every reported data point carries a citation with an honest confidence
   level - unverified is stated as unverified, not implied as confirmed.
+- The platform (and any agent operating it) challenges an unverified claim
+  rather than quietly accepting or quietly overriding it - surface the
+  supporting or conflicting evidence and let the accountable person decide,
+  unless they have explicitly delegated that judgment call.
 
 ## 27. Canonical Data and Ontology Baseline (Expanded)
 

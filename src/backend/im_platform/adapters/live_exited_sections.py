@@ -29,6 +29,48 @@ def _strip_footnote_marker(investing_entity: str) -> str:
     return re.sub(r"\s+\d+$", "", investing_entity).strip()
 
 
+# Deal names where Committed is deliberately pinned to Invested (Remaining =
+# 0), overriding the register's own commitment-amount sum - used when a
+# register tranche never materialized (e.g. a JV/co-investment that was
+# discussed but never closed) and there is no genuine further commitment
+# outstanding. User-confirmed case-by-case; do not add to this without an
+# explicit confirmation, since it deliberately overrides the primary-source
+# commitment figure.
+_COMMITTED_EQUALS_INVESTED_DEALS: dict[str, str] = {
+    "ONT plc": (
+        "User-confirmed (2026-08-16): the JVCo co-investment tranche referenced in the register "
+        "never materialized (talks fell through) and all committed capital has been deployed - "
+        "Remaining Commitment cannot be negative, so Committed is pinned to Invested here rather "
+        "than the register's raw commitment-amount sum (which understates Committed further by "
+        "excluding a GBP-denominated tranche not converted to USD - see the Committed tooltip)."
+    ),
+}
+
+
+def _deal_cashflow(deal_name: str, entity: str, cf: pd.DataFrame) -> pd.DataFrame:
+    """Cash flow rows for one tracker deal row. Some entities have more than
+    one tracker deal line mapped to the same confirmed_entity_id (e.g. 'Tools
+    for Humanity Corporation' and 'WLD Tokens' both resolve to 'TFH -
+    Worldcoin'; 'Cerebras Systems Inc (1)'/'(2)' both resolve to 'Cerebras') -
+    if the tracker's own cashflow rows are tagged with that exact deal name in
+    their (pre-reconciliation) investment_id, use only that subset so each
+    deal shows its own Invested/Distributions rather than the whole pooled
+    entity's total on every one of its deal rows. Falls back to pooling all
+    cash flow for the entity when the deal name isn't separately tagged."""
+    exact = cf[cf["investment_id"] == deal_name]
+    if len(exact):
+        return exact
+    return cf[cf["resolved_entity_id"] == entity]
+
+
+def _deal_valuation(deal_name: str, entity: str, val: pd.DataFrame) -> pd.DataFrame:
+    """Same granularity rule as _deal_cashflow, for the NAV/valuation extract."""
+    exact = val[val["investment_id"] == deal_name]
+    if len(exact):
+        return exact
+    return val[val["resolved_entity_id"] == entity]
+
+
 def _parse_tab(raw: pd.DataFrame, tab_label: str) -> list[dict]:
     header_row = None
     for idx in range(len(raw)):
@@ -144,16 +186,21 @@ def recompute_deal_financials(
 
     for _, d in deals.iterrows():
         entity = deal_entity_map.get(d["deal_name"], "")
-        entity_cf = cf[cf["resolved_entity_id"] == entity]
+        entity_cf = _deal_cashflow(d["deal_name"], entity, cf)
         invested_usd = -entity_cf.loc[entity_cf["amount"] < 0, "amount"].sum() / 1_000_000
         distributed_usd = entity_cf.loc[entity_cf["amount"] > 0, "amount"].sum() / 1_000_000
 
-        entity_val = val[val["resolved_entity_id"] == entity].sort_values("valuation_date")
+        entity_val = _deal_valuation(d["deal_name"], entity, val).sort_values("valuation_date")
         carrying_usd = float(entity_val.iloc[-1]["fair_value_local"]) / 1_000_000 if len(entity_val) else 0.0
 
-        citation = citation_lookup.get(entity, {})
+        # Deal-name-specific citation first (see _DEAL_NAME_TO_INVESTMENT_IDS
+        # in register_citations.py) so Committed isn't pooled across every
+        # deal row sharing one entity; falls back to the entity-level one.
+        citation = citation_lookup.get(d["deal_name"]) or citation_lookup.get(entity, {})
         commitment_amounts = citation.get("commitment_amounts_usd", [])
         committed_usd = sum(commitment_amounts) / 1_000_000 if commitment_amounts else d["committed"]
+        if d["deal_name"] in _COMMITTED_EQUALS_INVESTED_DEALS:
+            committed_usd = invested_usd
 
         remaining_usd = committed_usd - invested_usd if committed_usd is not None else None
         gain_usd = carrying_usd + distributed_usd - invested_usd
@@ -180,8 +227,14 @@ def recompute_deal_financials(
 def build_deal_entity_map(reconciliation_path: Path) -> dict[str, str]:
     """Tracker deal name -> confirmed_entity_id (cashflow join key), taken
     directly from Entity_Reconciliation.xlsx. This is a many-to-one map: e.g.
-    both 'Cerebras Systems Inc (1)' and '(2)' map to 'Cerebras', so IRR for
-    that pair is necessarily blended across both tracker lines."""
+    both 'Cerebras Systems Inc (1)' and '(2)' map to 'Cerebras', and 'Tools
+    for Humanity Corporation'/'WLD Tokens' both map to 'TFH - Worldcoin'.
+    When the tracker's own cash flow/valuation rows separately tag each deal
+    name (see _deal_cashflow/_deal_valuation), each deal still gets its own
+    figures; IRR is only truly blended across tracker lines when the
+    underlying cash flow for that specific deal name isn't separately
+    tagged and both lines have to share the whole entity's pooled cash
+    flow."""
     rec = pd.read_excel(reconciliation_path, sheet_name="Entity_Reconciliation").fillna("")
     return {
         row["tracker_investment_id"]: row["confirmed_entity_id"]
@@ -217,20 +270,24 @@ def enrich_with_irr(
             irr_notes.append("No cashflow mapping found")
             continue
 
-        entity_cf = cf[cf["resolved_entity_id"] == entity]
+        entity_cf = _deal_cashflow(row["deal_name"], entity, cf)
+        tagged_separately = len(cf[cf["investment_id"] == row["deal_name"]]) > 0
         points = [
             (d.to_pydatetime(), float(a))
             for d, a in zip(entity_cf["flow_date"], entity_cf["amount"])
             if pd.notna(d)
         ]
-        entity_val = val[val["resolved_entity_id"] == entity].sort_values("valuation_date")
+        entity_val = _deal_valuation(row["deal_name"], entity, val).sort_values("valuation_date")
         if len(entity_val):
             last = entity_val.iloc[-1]
             if pd.notna(last["valuation_date"]) and last["fair_value_local"]:
                 points.append((last["valuation_date"].to_pydatetime(), float(last["fair_value_local"])))
 
         irr_values.append(_xirr(sorted(points, key=lambda x: x[0])))
-        note = f"Blended across {int(entity_counts.get(entity, 1))} tracker line(s)" if entity_counts.get(entity, 1) > 1 else ""
+        # Only genuinely "blended" when this deal's cash flow ISN'T separately
+        # tagged in the tracker and had to fall back to the whole entity's pool.
+        blended = (not tagged_separately) and entity_counts.get(entity, 1) > 1
+        note = f"Blended across {int(entity_counts.get(entity, 1))} tracker line(s)" if blended else ""
         irr_notes.append(note)
 
     deals["irr"] = irr_values
@@ -244,9 +301,15 @@ def compute_section_irr(
     valuation: pd.DataFrame,
     deal_entity_map: dict[str, str],
 ) -> pd.DataFrame:
-    """One row per (tab, section): pools all underlying cash flows (and
-    latest fair values as terminal cashflows) across every deal mapped to
-    that section, for a genuine blended section-level IRR."""
+    """One row per (tab, section): pools each deal's own cash flows (and
+    latest fair value as a terminal cash flow) across every deal in that
+    section, for a genuine blended section-level IRR. Each deal's cash flow
+    is taken at the same granularity as recompute_deal_financials (exact
+    tracker deal-name tag when the tracker's own cashflow separately tags it,
+    else pooled by entity) - otherwise a section with more than one deal row
+    mapped to the same entity (e.g. a Live equity deal and a separately
+    exited token/warrant leg for the same company) would double-count that
+    entity's cash flow once per deal row."""
     cf = cashflow.copy()
     cf["flow_date"] = pd.to_datetime(cf["flow_date"], errors="coerce")
     val = valuation.copy()
@@ -254,20 +317,24 @@ def compute_section_irr(
 
     rows = []
     for (tab, section), group in deals.groupby(["tab", "section"]):
-        entities = {deal_entity_map[d] for d in group["deal_name"] if d in deal_entity_map}
-        section_cf = cf[cf["resolved_entity_id"].isin(entities)]
-        points = [
-            (d.to_pydatetime(), float(a))
-            for d, a in zip(section_cf["flow_date"], section_cf["amount"])
-            if pd.notna(d)
-        ]
-        section_val = val[val["resolved_entity_id"].isin(entities)].sort_values("valuation_date")
-        latest_per_entity = section_val.groupby("resolved_entity_id", as_index=False).tail(1)
-        as_of = latest_per_entity["valuation_date"].max() if len(latest_per_entity) else None
-        for _, v in latest_per_entity.iterrows():
-            if pd.notna(v["valuation_date"]) and v["fair_value_local"]:
-                points.append((v["valuation_date"].to_pydatetime(), float(v["fair_value_local"])))
+        points = []
+        valuation_dates = []
+        for _, d in group.iterrows():
+            entity = deal_entity_map.get(d["deal_name"], "")
+            deal_cf = _deal_cashflow(d["deal_name"], entity, cf)
+            points.extend(
+                (dt.to_pydatetime(), float(a))
+                for dt, a in zip(deal_cf["flow_date"], deal_cf["amount"])
+                if pd.notna(dt)
+            )
+            deal_val = _deal_valuation(d["deal_name"], entity, val).sort_values("valuation_date")
+            if len(deal_val):
+                last = deal_val.iloc[-1]
+                if pd.notna(last["valuation_date"]) and last["fair_value_local"]:
+                    points.append((last["valuation_date"].to_pydatetime(), float(last["fair_value_local"])))
+                    valuation_dates.append(last["valuation_date"])
 
+        as_of = max(valuation_dates) if valuation_dates else None
         rows.append(
             {
                 "tab": tab,
