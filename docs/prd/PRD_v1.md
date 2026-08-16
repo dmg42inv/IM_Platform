@@ -1,9 +1,9 @@
-# IM Platform Product Requirements Document (PRD) v1.7
+# IM Platform Product Requirements Document (PRD) v1.8
 
 ## 1. Document Control
 
 - Product: IM Platform
-- Version: 1.7
+- Version: 1.8
 - Date: 2026-08-16
 - Status: Draft
 - Owners: Product, Engineering, Operations
@@ -430,6 +430,28 @@ are durable verification rules, not one-off fixes:
   a captured FX rate) understates the figure; if a reliable conversion
   isn't available, flag the exclusion explicitly rather than presenting an
   incomplete total as if it were whole.
+- **A business decision can legitimately override a document-derived
+  figure ahead of paperwork catching up** - e.g. a commitment the business
+  confirms it no longer intends to fund, even before a formal
+  cancellation/amendment letter exists. Apply the business's confirmed
+  position immediately, but record it explicitly as pending its own
+  supporting document, and revisit once that document is obtained -
+  never let a verbal/business confirmation quietly become "as good as
+  a document" without being labelled as such.
+- **For publicly listed portfolio companies, investor-relations pages,
+  press releases, and exchange/SEC filings are strong independent
+  evidence** - equal to or better than an internal transaction document,
+  since public companies are legally required to disclose accurately.
+  Check these proactively, not only when prompted, and keep a running log
+  of what was checked and found (which entity, which source, what it
+  showed) so the same lookup isn't silently repeated or lost.
+- **The challenge discipline is not just about verifying documents - it
+  applies to accepting user recollection too**: when the user's own
+  stated memory of a fact (an amount, a currency, a figure) is checked
+  against a signed document and the document says something else, say so
+  plainly and keep the document's figure, rather than adopting the
+  recollection because it was more recently stated. Do not fix what
+  isn't broken by matching a claim that lacks evidence.
 
 ## 20. Delivery Readiness Gaps and Additions
 

@@ -1,5 +1,37 @@
 # PRD Change Log
 
+## 2026-08-16 - v1.8.0
+
+- **Extended the Vintage and Commitment Verification Discipline** (PRD_v1.md
+  section 19.5) with three more rules from today's closing round: a
+  business decision (e.g. a confirmed commitment cancellation) can
+  override a document-derived figure ahead of paperwork catching up, but
+  must be labelled as pending its own document, not treated as equivalent
+  to one; investor-relations pages and exchange/SEC filings are strong
+  independent evidence for listed portfolio companies and should be
+  checked proactively with a running log kept (see
+  `data/source_of_truth/Listed_Entity_IR_Check_Log.md`); the challenge
+  discipline applies to the user's own recollection just as much as to
+  documents - a signed document beats an unconfirmed memory of a figure.
+- **Applied user-confirmed business decisions**: Beyond Limits' undrawn
+  ~$10M Series C tranche is cancelled (Committed pinned to Invested,
+  pending a formal cancellation document); ONT's JV co-investment never
+  materialized (same treatment).
+- **Verified vTv Therapeutics via a public IR press release** (Nasdaq:
+  VTVT) rather than only internal drafts - confirmed $25M/G42 Investments
+  AI Holding RSC Ltd/close date, and corrected the FDA milestone figure
+  to $30M (a draft 8-K redline had shown a superseded $20M).
+- **Challenged two user recollections against signed documents**: Mena
+  Mobile's Series B Purchase Agreement Schedule II explicitly states
+  USD 8,000,000 (not AED, as recalled); vTv Therapeutics' signed
+  documents/public filing show $25M with no support found for a
+  recalled $15M/fee-refund figure - both kept at the document-verified
+  amount, with the user's recollection logged as an open item rather
+  than silently applied.
+- **Flagged EsyaSoft's likely exit** (a $5,000,000 cash flow already on
+  record, exactly 2x the $2.5M invested) as an open item pending further
+  detail - lifecycle_state left unchanged until confirmed.
+
 ## 2026-08-16 - v1.7.0
 
 - **Added a Vintage and Commitment Verification Discipline section**
