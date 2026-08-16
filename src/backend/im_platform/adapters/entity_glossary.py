@@ -17,7 +17,8 @@ GLOSSARY: dict[str, tuple[str, str, str]] = {
     "Cerebras": ("Cerebras", "Cerebras Systems, Inc.", "Tracker splits this into '(1)' (original Series F, held via Mozn) and '(2)' (2026 warrant exercises, held via G42 Capital) - same underlying company."),
     "DriveNets": ("DriveNets", "DriveNets Ltd", ""),
     "e-space": ("e-space", "e-Space, Inc.", ""),
-    "Endless (Matt Dalio) and E-line": ("Endless Studios / E-line Ventures", "Endless Studios LLC and E-line Ventures LLC", "Register currently holds these as ONE entity, but the tracker treats them as 2 distinct deals (Endless Studios LLC, 2021, $8M; E-line Ventures LLC, 2023, $6M) - register split not yet done, IRR shown is blended across both."),
+    "Endless Studios": ("Endless Studios", "Endless Studios LLC", "Two rounds via MOZN Holding RSC Ltd: $3M (Oct 2021, signed Issuance Letter) + $5M (Jul 2023, signed SPA) = $8M total."),
+    "E-Line Ventures": ("E-Line Ventures", "E-Line Ventures LLC", "A New Jersey LLC, legally distinct from Endless Studios LLC (though E-Line is itself a shareholder in Endless Studios). $6M via MOZN Holding RSC Ltd (2023, signed SPA)."),
     "EsyaSoft": ("Esyasoft", "Esyasoft Holding", ""),
     "Flyr": ("Flyr", "Flyr Inc", ""),
     "Glass Earth": ("Glass Earth", "Glass Earth Holdings LLC", "Defaulted promissory note, fully written off."),
@@ -55,3 +56,21 @@ def build_glossary_table() -> pd.DataFrame:
         for eid, (d, full, note) in GLOSSARY.items()
     ]
     return pd.DataFrame(rows).sort_values("display_name").reset_index(drop=True)
+
+
+# Tracker's own short "Investing Entity" grouping codes (a different namespace
+# from the investee-company GLOSSARY above) -> full holding company name.
+# The tracker sometimes appends a trailing footnote-reference digit to these
+# (e.g. "Mozn 4") - that is NOT a different entity, just a footnote pointer
+# into the tracker's own "9. All deals (a)" tab (not yet individually read).
+INVESTING_ENTITY_GLOSSARY: dict[str, str] = {
+    "Mozn": "MOZN Holding RSC Ltd",
+    "G42 Investments": "G42 Investments AI Holding RSC Ltd",
+    "G42 Capital": "G42 Capital SPV RSC Ltd",
+    "Core42": "Core42 Holding RSC Ltd",
+    "G42 Holding": "GX Investments Ltd / GX Investments US LLC (MGX vehicles)",
+}
+
+
+def investing_entity_full_name(short_code: str) -> str:
+    return INVESTING_ENTITY_GLOSSARY.get(short_code, short_code)

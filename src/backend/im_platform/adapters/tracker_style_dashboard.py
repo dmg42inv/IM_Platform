@@ -18,7 +18,7 @@ from datetime import date
 
 import pandas as pd
 
-from .entity_glossary import display_name
+from .entity_glossary import display_name, investing_entity_full_name
 
 
 def _fnum(v, digits: int = 2) -> str:
@@ -75,42 +75,50 @@ def _render_deal_table(
 ) -> str:
     rows_html = []
     section_irr_map = {row["section"]: row["irr"] for _, row in section_irr[section_irr["tab"] == tab_label].iterrows()}
-    tracker_src = f"Source: tracker's own '{'1. Live' if tab_label == 'Live' else '2. Exited'}' report tab, as of {as_of_date}"
+    tracker_src = f"tracker's own '{'1. Live' if tab_label == 'Live' else '2. Exited'}' report tab, as of {as_of_date}"
 
     for section, group in deals[deals["tab"] == tab_label].groupby("section", sort=False):
         rows_html.append(f'<tr class="section-header"><td colspan="13">{_esc(section)}</td></tr>')
         for _, d in group.iterrows():
             irr_tt = (
-                f"Computed via XIRR from dated cash flows + latest fair value (see All Cashflows tab). {d['irr_note']}"
-                if d["irr_note"] else "Computed via XIRR from dated cash flows + latest fair value (see All Cashflows tab)."
+                f"Computed via XIRR from dated cash flows + latest NAV fair value (see All Cashflows tab). {d['irr_note']}"
+                if d["irr_note"] else "Computed via XIRR from dated cash flows + latest NAV fair value (see All Cashflows tab)."
             )
             citation = citation_lookup.get(deal_entity_map.get(d["deal_name"], ""), {})
-            if citation.get("has_primary_source"):
-                investing_entity_tt = (
-                    "SPA/CAS-confirmed investing entit"
-                    + ("y" if len(citation["investing_entities"]) == 1 else "ies")
-                    + f": {', '.join(citation['investing_entities'])}. Tracker's own label may be a simplified grouping of this."
-                )
-            else:
-                investing_entity_tt = "NOT YET CONFIRMED against a primary transaction document - this is the tracker's own classification only."
+            full_code_name = investing_entity_full_name(d["investing_entity"])
+            investing_entity_tt = f"{citation.get('short_citation', 'Not yet confirmed against a primary document')}: {full_code_name}."
             if citation.get("commitments"):
-                committed_tt = f"{tracker_src}. Primary-source commitment per register: {'; '.join(citation['commitments'])}."
+                committed_tt = f"{citation.get('short_citation', '')}: {'; '.join(citation['commitments'])}."
             else:
-                committed_tt = f"{tracker_src}. No confirmed primary-source commitment amount in the register yet - tracker figure only."
+                committed_tt = f"No confirmed primary-source commitment amount in the register yet - showing {tracker_src}."
+            invested_tt = f"Computed from dated cash flows (sum of deployments), see All Cashflows tab. Not sourced from the {tracker_src}."
+            distributions_tt = f"Computed from dated cash flows (sum of distributions), see All Cashflows tab. Not sourced from the {tracker_src}."
+            carrying_tt = "Latest carrying value from the tracker's own NAV tab (not the Live/Exited tab)."
+            remaining_tt = "Formula: Committed - Invested."
+            gain_tt = "Formula: Carrying Value + Distributions - Invested."
+            tvpi_tt = "Formula: (Distributions + Carrying Value) / Invested."
+            if citation.get("close_dates"):
+                vintage_tt = f"{citation.get('short_citation', '')}: close date {', '.join(citation['close_dates'])}."
+            else:
+                vintage_tt = f"No confirmed primary-source close date in the register yet - showing {tracker_src}."
+            if citation.get("instrument"):
+                instrument_tt = f"{citation.get('short_citation', '')}: '{citation['instrument']}' as stated in the citation."
+            else:
+                instrument_tt = f"Not yet cross-checked against a primary document - showing {tracker_src}."
             rows_html.append(
                 "<tr>"
-                + _td(f'<span class="tt" data-tt="{_esc(tracker_src)}">{_esc(d["deal_name"])}</span>', cls="left")
+                + _td(_esc(d["deal_name"]), cls="left")
                 + _td(_esc(d["status"]))
                 + _td(_esc(d["investing_entity"]), investing_entity_tt)
-                + _td(_esc(d["vintage"]))
-                + _td(_esc(d["instrument"]))
+                + _td(_esc(d["vintage"]), vintage_tt)
+                + _td(_esc(d["instrument"]), instrument_tt)
                 + _td(_fnum(d["committed"]), committed_tt)
-                + _td(_fnum(d["invested"]), tracker_src)
-                + _td(_fnum(d["remaining_commitment"]), tracker_src)
-                + _td(_fnum(d["distributions"]), tracker_src)
-                + _td(_fnum(d["carrying_value"]), tracker_src)
-                + _td(_fnum(d["gain"]), tracker_src)
-                + _td(_fx(d["tvpi"]), tracker_src)
+                + _td(_fnum(d["invested"]), invested_tt)
+                + _td(_fnum(d["remaining_commitment"]), remaining_tt)
+                + _td(_fnum(d["distributions"]), distributions_tt)
+                + _td(_fnum(d["carrying_value"]), carrying_tt)
+                + _td(_fnum(d["gain"]), gain_tt)
+                + _td(_fx(d["tvpi"]), tvpi_tt)
                 + _td(_fpct(d["irr"]), irr_tt)
                 + "</tr>"
             )
@@ -135,13 +143,13 @@ def _render_deal_table(
     rows_html.append(
         '<tr class="grand-total">'
         + _td("Grand Total", cls="left") + "<td></td><td></td><td></td><td></td>"
-        + _td(_fnum(grand["committed"]), tracker_src)
-        + _td(_fnum(grand["invested"]), tracker_src)
-        + _td(_fnum(grand["remaining_commitment"]), tracker_src)
-        + _td(_fnum(grand["distributions"]), tracker_src)
-        + _td(_fnum(grand["carrying_value"]), tracker_src)
-        + _td(_fnum(grand["gain"]), tracker_src)
-        + _td(_fx(grand["tvpi"]), tracker_src)
+        + _td(_fnum(grand["committed"]))
+        + _td(_fnum(grand["invested"]))
+        + _td(_fnum(grand["remaining_commitment"]))
+        + _td(_fnum(grand["distributions"]))
+        + _td(_fnum(grand["carrying_value"]))
+        + _td(_fnum(grand["gain"]))
+        + _td(_fx(grand["tvpi"]))
         + "<td></td>"
         + "</tr>"
     )
@@ -290,6 +298,16 @@ def _render_scan_report(scan_report: dict | None) -> str:
         for r in scan_report["recently_modified_folders"]:
             parts.append(f"<li>{_esc(r['folder'])} - {_esc(r['last_modified'])}</li>")
         parts.append("</ul>")
+    if scan_report.get("added_files"):
+        parts.append("<h3>New files since last scan (may need capturing in the register)</h3><ul>")
+        for f in scan_report["added_files"]:
+            parts.append(f"<li>{_esc(f['file'])} - <i>{_esc(f['impact'])}</i></li>")
+        parts.append("</ul>")
+    if scan_report.get("modified_files"):
+        parts.append("<h3>Modified files since last scan (may need re-review)</h3><ul>")
+        for f in scan_report["modified_files"]:
+            parts.append(f"<li>{_esc(f['file'])} - <i>{_esc(f['impact'])}</i></li>")
+        parts.append("</ul>")
     return "".join(parts)
 
 
@@ -397,7 +415,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   th.left, td.left {{ text-align: left; white-space: nowrap; min-width: 220px; }}
   td.wrap {{ white-space: normal; max-width: 420px; min-width: 260px; vertical-align: middle; }}
   th {{ color: var(--muted); font-weight: 500; vertical-align: middle; }}
-  tr.section-header td {{ background: var(--sub-bg); font-weight: 600; color: var(--accent); vertical-align: middle; }}
+  tr.section-header td {{ background: var(--sub-bg); font-weight: 600; color: var(--accent); vertical-align: middle; text-align: left; }}
   tr.subtotal td {{ background: #182234; font-weight: 600; border-top: 1px solid var(--border); vertical-align: middle; }}
   tr.grand-total td {{ background: #0b1220; font-weight: 700; border-top: 2px solid var(--accent); vertical-align: middle; }}
   .pos {{ color: var(--green); }} .neg {{ color: var(--red); }}
@@ -511,6 +529,20 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   </section>
 
   <section id="quality" class="tab">
+    <div class="panel">
+      <h2>Methodology</h2>
+      <ul>
+        <li><b>Committed</b>: primary-source commitment amount from the register (signed SPA/Subscription Agreement/Capital Account Statement etc.), NOT the tracker's Live/Exited tab - falls back to the tracker's own figure only when no primary-source amount has been confirmed yet.</li>
+        <li><b>Invested</b>: sum of cash deployments from dated cash flows (CF (Equity, Debt) / CF (Funds) tabs), not the tracker's Live/Exited tab.</li>
+        <li><b>Distributions</b>: sum of cash distributions from dated cash flows. Shows 0 where there are no distribution records.</li>
+        <li><b>Carrying Value</b>: latest mark from the tracker's own NAV tab, not the Live/Exited tab.</li>
+        <li><b>Remaining</b> = Committed - Invested.</li>
+        <li><b>Gain</b> = Carrying Value + Distributions - Invested.</li>
+        <li><b>TVPI</b> = (Distributions + Carrying Value) / Invested.</li>
+        <li><b>IRR</b> (deal and section level): XIRR over the same dated cash flows, with the latest NAV mark as a terminal cash flow.</li>
+      </ul>
+      <p class="muted">These match how the tracker's own underlying formulas work (verified directly against its 'A. All deals (a)' tab) - the difference is we compute them from primary sources (register + cash flows + NAV) rather than reading the tracker's own derived output.</p>
+    </div>
     <div class="panel"><h2>Triangulation Notes (register vs. tracker's own Live/Exited report)</h2>{notes_html}</div>
     <div class="panel"><h2>Data Quality Exceptions</h2>{issues_table}</div>
     <div class="panel"><h2>Update Scan (new/changed document folders)</h2>{scan_html}</div>

@@ -33,6 +33,7 @@ from .adapters.live_exited_sections import (
     compute_section_irr,
     enrich_with_irr,
     extract_live_exited_sections,
+    recompute_deal_financials,
 )
 from .adapters.tracker_style_dashboard import build_tracker_style_dashboard_html
 from .adapters.tracker_supplementary_tabs import (
@@ -319,6 +320,28 @@ def _build_triangulation_notes(deals: pd.DataFrame, deal_entity_map: dict[str, s
     return notes
 
 
+def _build_financials_triangulation_notes(deals: pd.DataFrame, tolerance_pct: float = 0.02) -> list[str]:
+    """Flags deals where the recomputed (cashflow/NAV-sourced) financials
+    differ materially from the tracker's own Live/Exited figures - a real
+    discrepancy worth investigating, not necessarily a bug in either side."""
+    notes: list[str] = []
+    for _, d in deals.iterrows():
+        for label, computed_col, tracker_col in [
+            ("Invested", "invested", "tracker_invested"),
+            ("Distributions", "distributions", "tracker_distributions"),
+            ("Carrying Value", "carrying_value", "tracker_carrying_value"),
+        ]:
+            computed = d[computed_col] or 0.0
+            tracker_val = d[tracker_col] or 0.0
+            if tracker_val and abs(computed - tracker_val) / abs(tracker_val) > tolerance_pct:
+                notes.append(
+                    f"'{d['deal_name']}' {label}: computed from cash flows/NAV = {computed:,.2f}, "
+                    f"tracker's own Live/Exited figure = {tracker_val:,.2f} - differs by more than "
+                    f"{tolerance_pct:.0%}, worth investigating."
+                )
+    return notes
+
+
 def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     output_path = args.output_file or Path("data/outputs/Tracker_Style_Dashboard.html")
     intake_path = args.intake_file or Path("data/outputs/Investment_Register_Intake.xlsx")
@@ -339,9 +362,11 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     valuation = valuation[valuation["entity_resolved"] == True].copy()  # noqa: E712
 
     deals = enrich_with_irr(deals, cashflow, valuation, deal_entity_map)
+    deals = recompute_deal_financials(deals, cashflow, valuation, deal_entity_map, citation_lookup)
     section_irr = compute_section_irr(deals, cashflow, valuation, deal_entity_map)
     quarterly = build_quarterly_cashflows(cashflow)
     triangulation_notes = _build_triangulation_notes(deals, deal_entity_map, intake_path)
+    triangulation_notes += _build_financials_triangulation_notes(deals)
 
     monthly_root = args.tracker_file.parent.parent
     monthly_files = discover_monthly_tracker_files(monthly_root)
@@ -373,13 +398,16 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
 def _scan_for_updates_command(args: argparse.Namespace) -> None:
     intake_path = args.intake_file or Path("data/outputs/Investment_Register_Intake.xlsx")
     output_path = args.output_file or Path("data/outputs/Update_Scan_Report.json")
+    manifest_path = Path("data/outputs/Document_Manifest.json")
 
-    result = scan_for_new_investments(args.investments_root, intake_path)
+    result = scan_for_new_investments(args.investments_root, intake_path, manifest_path=manifest_path)
     write_scan_report(result, output_path)
 
     print(f"New company folders: {result['new_company_folders'] or 'none'}")
     print(f"New fund folders: {result['new_fund_folders'] or 'none'}")
     print(f"Recently modified folders (last 30 days): {len(result['recently_modified_folders'])}")
+    print(f"New files since last scan: {len(result['added_files'])}")
+    print(f"Modified files since last scan: {len(result['modified_files'])}")
     print(f"Scan report written to: {output_path}")
 
 

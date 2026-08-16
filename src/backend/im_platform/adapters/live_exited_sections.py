@@ -21,6 +21,14 @@ def _norm(v: object) -> str:
     return str(v).strip() if pd.notna(v) else ""
 
 
+def _strip_footnote_marker(investing_entity: str) -> str:
+    """The tracker sometimes appends a trailing digit as a footnote reference
+    (e.g. 'Mozn 4', 'G42 3') pointing to a note in its '9. All deals (a)' tab -
+    it is NOT a different investing entity. Strip it for display consistency."""
+    import re
+    return re.sub(r"\s+\d+$", "", investing_entity).strip()
+
+
 def _parse_tab(raw: pd.DataFrame, tab_label: str) -> list[dict]:
     header_row = None
     for idx in range(len(raw)):
@@ -73,7 +81,8 @@ def _parse_tab(raw: pd.DataFrame, tab_label: str) -> list[dict]:
                 "section": current_section,
                 "deal_name": deal_name,
                 "status": _norm(row[c_status]) if c_status is not None else "",
-                "investing_entity": investing_entity,
+                "investing_entity": _strip_footnote_marker(investing_entity),
+                "investing_entity_raw": investing_entity,
                 "vintage": _norm(row[c_vintage]) if c_vintage is not None else "",
                 "instrument": _norm(row[c_instrument]) if c_instrument is not None else "",
                 "committed": pd.to_numeric(row[c_committed], errors="coerce") if c_committed is not None else None,
@@ -100,6 +109,72 @@ def extract_live_exited_sections(path: Path) -> pd.DataFrame:
     all_rows.extend(_parse_tab(xl.parse("1. Live", header=None), "Live"))
     all_rows.extend(_parse_tab(xl.parse("2. Exited", header=None), "Exited"))
     return pd.DataFrame(all_rows)
+
+
+def recompute_deal_financials(
+    deals: pd.DataFrame,
+    cashflow: pd.DataFrame,
+    valuation: pd.DataFrame,
+    deal_entity_map: dict[str, str],
+    citation_lookup: dict[str, dict],
+) -> pd.DataFrame:
+    """Replaces the tracker's own Committed/Invested/Remaining/Distributions/
+    Carrying Value/Gain/TVPI with values computed the same way the tracker's
+    OWN underlying formulas do (verified directly against its 'A. All deals
+    (a)' tab): Invested = -SUMIF(cashflow, deal, contributions), Distributions
+    = SUMIF(cashflow, deal, distributions), Carrying Value = latest NAV mark,
+    Remaining = Committed - Invested, Gain = Carrying + Distributions -
+    Invested, TVPI = (Distributions + Carrying) / Invested. Committed comes
+    from the register's primary-source commitment where confirmed, falling
+    back to the tracker's own Committed figure only when the register has
+    none yet (flagged separately via citation_lookup). The tracker's original
+    values are preserved as tracker_* columns for a triangulation check.
+    """
+    deals = deals.copy()
+    cf = cashflow.copy()
+    cf["flow_date"] = pd.to_datetime(cf["flow_date"], errors="coerce")
+    val = valuation.copy()
+    val["valuation_date"] = pd.to_datetime(val["valuation_date"], errors="coerce")
+
+    for col in ["committed", "invested", "remaining_commitment", "distributions", "carrying_value", "gain", "tvpi"]:
+        deals[f"tracker_{col}"] = deals[col]
+
+    new_committed, new_invested, new_remaining = [], [], []
+    new_distributions, new_carrying, new_gain, new_tvpi = [], [], [], []
+
+    for _, d in deals.iterrows():
+        entity = deal_entity_map.get(d["deal_name"], "")
+        entity_cf = cf[cf["resolved_entity_id"] == entity]
+        invested_usd = -entity_cf.loc[entity_cf["amount"] < 0, "amount"].sum() / 1_000_000
+        distributed_usd = entity_cf.loc[entity_cf["amount"] > 0, "amount"].sum() / 1_000_000
+
+        entity_val = val[val["resolved_entity_id"] == entity].sort_values("valuation_date")
+        carrying_usd = float(entity_val.iloc[-1]["fair_value_local"]) / 1_000_000 if len(entity_val) else 0.0
+
+        citation = citation_lookup.get(entity, {})
+        commitment_amounts = citation.get("commitment_amounts_usd", [])
+        committed_usd = sum(commitment_amounts) / 1_000_000 if commitment_amounts else d["committed"]
+
+        remaining_usd = committed_usd - invested_usd if committed_usd is not None else None
+        gain_usd = carrying_usd + distributed_usd - invested_usd
+        tvpi_val = (distributed_usd + carrying_usd) / invested_usd if invested_usd else None
+
+        new_committed.append(committed_usd)
+        new_invested.append(invested_usd)
+        new_remaining.append(remaining_usd)
+        new_distributions.append(distributed_usd)
+        new_carrying.append(carrying_usd)
+        new_gain.append(gain_usd)
+        new_tvpi.append(tvpi_val)
+
+    deals["committed"] = new_committed
+    deals["invested"] = new_invested
+    deals["remaining_commitment"] = new_remaining
+    deals["distributions"] = new_distributions
+    deals["carrying_value"] = new_carrying
+    deals["gain"] = new_gain
+    deals["tvpi"] = new_tvpi
+    return deals
 
 
 def build_deal_entity_map(reconciliation_path: Path) -> dict[str, str]:
