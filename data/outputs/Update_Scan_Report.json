@@ -1,0 +1,33 @@
+{
+  "scan_date": "2026-08-15T22:11:54",
+  "new_company_folders": [],
+  "new_fund_folders": [],
+  "recently_modified_folders": [
+    {
+      "folder": "Life Biosciences",
+      "last_modified": "2036-02-07T07:28:16"
+    },
+    {
+      "folder": "Flyr",
+      "last_modified": "2036-02-07T06:28:16"
+    },
+    {
+      "folder": "Liquid AI",
+      "last_modified": "2036-02-07T06:28:16"
+    },
+    {
+      "folder": "Cerebras",
+      "last_modified": "2026-08-11T21:18:48"
+    },
+    {
+      "folder": "AAICO (desktop)",
+      "last_modified": "2026-07-27T09:41:52"
+    },
+    {
+      "folder": "Heygears",
+      "last_modified": "2026-07-22T14:35:54"
+    }
+  ],
+  "total_company_folders_scanned": 22,
+  "total_fund_folders_scanned": 5
+}

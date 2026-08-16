@@ -98,6 +98,9 @@ def build_portfolio_snapshot(
         if col not in snapshot:
             snapshot[col] = ""
 
+    if "ownership_pct_fully_diluted" not in snapshot:
+        snapshot["ownership_pct_fully_diluted"] = pd.NA
+
     out = snapshot[
         [
             "investment_id",
@@ -113,11 +116,55 @@ def build_portfolio_snapshot(
             "latest_fair_value_currency",
             "latest_fair_value_base",
             "unrealized_gain_loss_base",
+            "ownership_pct_fully_diluted",
             "watchlist_flag",
         ]
-    ].rename(columns={"entity_id": "company_name", "fund_vehicle_id": "fund_vehicle"})
+    ].rename(
+        columns={
+            "entity_id": "company_name",
+            "fund_vehicle_id": "fund_vehicle",
+            "ownership_pct_fully_diluted": "ownership_pct_fully_diluted_latest",
+        }
+    )
 
     return out
+
+
+def build_pipeline_and_lifecycle(investments: pd.DataFrame) -> pd.DataFrame:
+    """One-row summary of the register's lifecycle_state distribution, per
+    V1 Output Pack Spec section 2.3. Stage conversion rates use Sourced as
+    the funnel denominator when present; otherwise the metric is left null
+    since sourced/dropped counts require pipeline-stage data not yet tracked."""
+    counts = investments["lifecycle_state"].value_counts() if len(investments) else pd.Series(dtype=int)
+
+    def _count(state: str) -> int:
+        return int(counts.get(state, 0))
+
+    sourced = _count("Sourced")
+    approved = _count("Approved")
+    live = _count("Live")
+    dropped = _count("Dropped")
+    partially_exited = _count("PartiallyExited")
+    exited = _count("Exited")
+
+    approval_rate = (approved / sourced) if sourced else None
+    live_conversion_rate = (live / sourced) if sourced else None
+
+    return pd.DataFrame(
+        [
+            {
+                "sourced_count": sourced,
+                "dropped_count": dropped,
+                "approved_count": approved,
+                "live_count": live,
+                "partially_exited_count": partially_exited,
+                "exited_count": exited,
+                "stage_conversion_rate_approved": round(approval_rate, 4) if approval_rate is not None else None,
+                "stage_conversion_rate_live": round(live_conversion_rate, 4) if live_conversion_rate is not None else None,
+                "median_time_to_decision_days": None,
+            }
+        ]
+    )
 
 
 def build_returns_summary(cashflow: pd.DataFrame, valuations: pd.DataFrame) -> pd.DataFrame:
