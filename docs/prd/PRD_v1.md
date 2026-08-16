@@ -1,10 +1,10 @@
-# IM Platform Product Requirements Document (PRD) v1.4
+# IM Platform Product Requirements Document (PRD) v1.6
 
 ## 1. Document Control
 
 - Product: IM Platform
-- Version: 1.4
-- Date: 2026-08-13
+- Version: 1.6
+- Date: 2026-08-16
 - Status: Draft
 - Owners: Product, Engineering, Operations
 
@@ -319,6 +319,68 @@ Current investment processes are fragmented across spreadsheets, email, and disc
 - Policy-based retention and legal hold controls where required.
 - Periodic taxonomy and ontology review as product scope expands.
 
+### 19.4 Source-of-Truth Hierarchy (V1, as implemented)
+
+Established through direct experience building the V1 real-data pipeline
+(2026-08-15/16). This is a durable policy, not an implementation detail -
+any future rebuild (platform, agent, or manual process) must preserve it.
+
+- **Original transaction/legal documents are primary** for structural facts:
+  legal entity name, investing entity/vehicle, instrument/series, initial
+  commitment amount, close date, lifecycle state. Internal summaries
+  (Investment Approval Forms, Investment Summaries, non-binding term
+  sheets) are NOT primary sources - they may point to the right document,
+  but the signed/executed document itself must be read and cited.
+- **The monthly Treasury tracker is primary only for cash flow timing/
+  amounts (what was actually transferred) and NAV/valuation marks** - not
+  for structural facts, and not for derived metrics. The tracker itself is
+  a manual Excel-based process the platform is meant to reduce dependency
+  on over time, not encode as ground truth.
+- **Derived metrics (Remaining, Gain, TVPI, IRR) must be computed from
+  primary sources by explicit formula**, not copied from the tracker's own
+  report views - even when a tracker report (e.g. a monthly Live/Exited
+  pack) is used as a *formatting/structure* reference. Verify formula
+  parity against the tracker's own underlying calculation only as a
+  cross-check, never as the source.
+- **Every citation must state its confidence honestly**: a clear line
+  between "confirmed from a signed/executed document" and "referenced in
+  an internal summary, not yet independently verified" - never presented
+  as equivalent. A citation that says a signed document is needed but
+  hasn't been read yet is a flag to go read it, not a permanent caveat.
+- **The structural register (investment register + entity reconciliation)
+  is the durable middle-layer database**: built once from primary
+  documents, reused by every downstream report. It is not re-derived by
+  re-reading raw files on each run. Cash flow/valuation extracts pulled
+  from the tracker should be frozen as dated, point-in-time snapshots
+  (decoupled from whatever the "current" tracker file happens to be) so
+  reporting doesn't silently drift as the tracker is updated at the source.
+- **Display names are governed separately from internal identifiers**:
+  internal keys may be derived from document-folder names for stability,
+  but anything shown to a reader must be the real/clean name, with a
+  glossary mapping and legal-name reference where the two differ.
+- **Change detection is a required, standing operating step, not an
+  afterthought or an occasional check**: at the start of every working
+  session, and always before finalizing a month-end report, the platform
+  must diff the current source document folders against a stored baseline
+  manifest and positively confirm all four outcomes for every file -
+  **added, modified (content changed), deleted, and renamed/moved** - each
+  flagged with a plain-English note on what part of the report it likely
+  affects. A scan that only checks for additions is not sufficient: a
+  deleted or renamed primary document (e.g. a superseded SPA, a corrected
+  capital account statement) is exactly the kind of change that must not
+  be missed silently. Renamed/moved detection is a same-size heuristic
+  pairing a disappearance with an appearance - not proof, and must be
+  confirmed by opening the file, but is far better than no signal at all.
+  This check governs whether "all is saved and captured well" before a
+  report is treated as final.
+- **Durable artifacts are physically separated from regenerable output**:
+  the register, entity-reconciliation mapping, change-detection baseline,
+  and any frozen point-in-time extract live in a distinct location from
+  disposable, fully-rebuildable reports (dashboards, output packs,
+  preview extracts) - so it is structurally obvious what must never be
+  silently overwritten versus what is safe to delete and regenerate at
+  any time.
+
 ## 20. Delivery Readiness Gaps and Additions
 
 The following workstreams should be established early to reduce delivery risk:
@@ -444,6 +506,10 @@ The following workstreams should be established early to reduce delivery risk:
 - Role-based and least-privilege access by default.
 - Every material action is auditable.
 - Configurable for new funds and instruments without rebuilding core logic.
+- Primary documents over summaries, always - manual trackers and internal
+  memos are useful fallbacks, never the source of record (see section 19.4).
+- Every reported data point carries a citation with an honest confidence
+  level - unverified is stated as unverified, not implied as confirmed.
 
 ## 27. Canonical Data and Ontology Baseline (Expanded)
 

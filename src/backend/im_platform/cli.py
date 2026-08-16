@@ -84,13 +84,13 @@ def _extract_tracker_command(args: argparse.Namespace) -> None:
 
 
 def _build_intake_command(args: argparse.Namespace) -> None:
-    output_path = args.output_file or Path("data/outputs/Investment_Register_Intake.xlsx")
+    output_path = args.output_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
     result = build_intake_workbook(args.investments_root, output_path)
     print(f"Intake workbook written to: {result}")
 
 
 def _reconcile_entities_command(args: argparse.Namespace) -> None:
-    output_path = args.output_file or Path("data/outputs/Entity_Reconciliation.xlsx")
+    output_path = args.output_file or Path("data/source_of_truth/Entity_Reconciliation.xlsx")
     result = build_reconciliation_worksheet(args.tracker_file, args.investments_root, output_path)
     print(f"Reconciliation worksheet written to: {result}")
 
@@ -130,7 +130,7 @@ def _seed_tracker_only_command(args: argparse.Namespace) -> None:
         return
 
     new_rows = build_tracker_only_register_rows(args.tracker_file, names)
-    intake_path = args.intake_file or Path("data/outputs/Investment_Register_Intake.xlsx")
+    intake_path = args.intake_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
     append_draft_rows(intake_path, new_rows)
 
     print(f"Seeded {len(new_rows)} tracker-only draft rows: {', '.join(names)}")
@@ -138,7 +138,7 @@ def _seed_tracker_only_command(args: argparse.Namespace) -> None:
 
 
 def _list_source_gaps_command(args: argparse.Namespace) -> None:
-    intake_path = args.intake_file or Path("data/outputs/Investment_Register_Intake.xlsx")
+    intake_path = args.intake_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
     refresh_needs_source_documents(intake_path)
     gaps = pd.read_excel(intake_path, sheet_name="Needs_Source_Documents")
     print(f"{len(gaps)} rows still need an original source document. See 'Needs_Source_Documents' tab in {intake_path}")
@@ -149,9 +149,9 @@ def _load_real_pipeline_inputs(args: argparse.Namespace) -> tuple[pd.DataFrame, 
     `generate-output-pack`: register view + cashflow/valuation joined onto it,
     with fund sub-vehicle remapping applied, plus the resulting data-quality
     issues list."""
-    intake_path = args.intake_file or Path("data/outputs/Investment_Register_Intake.xlsx")
+    intake_path = args.intake_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
     tracker_path = args.tracker_extract_file or Path("data/outputs/Tracker_Extract_Reconciled.xlsx")
-    reconciliation_path = args.reconciliation_file or Path("data/outputs/Entity_Reconciliation.xlsx")
+    reconciliation_path = args.reconciliation_file or Path("data/source_of_truth/Entity_Reconciliation.xlsx")
 
     draft = pd.read_excel(intake_path, sheet_name="Investment_Register_Draft").fillna("")
     investments = build_rollup_view(draft, group_by=args.group_by)
@@ -344,9 +344,9 @@ def _build_financials_triangulation_notes(deals: pd.DataFrame, tolerance_pct: fl
 
 def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     output_path = args.output_file or Path("data/outputs/Tracker_Style_Dashboard.html")
-    intake_path = args.intake_file or Path("data/outputs/Investment_Register_Intake.xlsx")
+    intake_path = args.intake_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
     tracker_extract_path = args.tracker_extract_file or Path("data/outputs/Tracker_Extract_Reconciled.xlsx")
-    reconciliation_path = args.reconciliation_file or Path("data/outputs/Entity_Reconciliation.xlsx")
+    reconciliation_path = args.reconciliation_file or Path("data/source_of_truth/Entity_Reconciliation.xlsx")
     scan_report_path = Path("data/outputs/Update_Scan_Report.json")
 
     deals = extract_live_exited_sections(args.tracker_file)
@@ -396,9 +396,9 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
 
 
 def _scan_for_updates_command(args: argparse.Namespace) -> None:
-    intake_path = args.intake_file or Path("data/outputs/Investment_Register_Intake.xlsx")
+    intake_path = args.intake_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
     output_path = args.output_file or Path("data/outputs/Update_Scan_Report.json")
-    manifest_path = Path("data/outputs/Document_Manifest.json")
+    manifest_path = Path("data/source_of_truth/Document_Manifest.json")
 
     result = scan_for_new_investments(args.investments_root, intake_path, manifest_path=manifest_path)
     write_scan_report(result, output_path)
@@ -408,6 +408,8 @@ def _scan_for_updates_command(args: argparse.Namespace) -> None:
     print(f"Recently modified folders (last 30 days): {len(result['recently_modified_folders'])}")
     print(f"New files since last scan: {len(result['added_files'])}")
     print(f"Modified files since last scan: {len(result['modified_files'])}")
+    print(f"Deleted files since last scan: {len(result['deleted_files'])}")
+    print(f"Renamed/moved files since last scan: {len(result['renamed_files'])}")
     print(f"Scan report written to: {output_path}")
 
 

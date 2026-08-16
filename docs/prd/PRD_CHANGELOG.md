@@ -1,5 +1,76 @@
 # PRD Change Log
 
+## 2026-08-16 - v1.6.0
+
+- **Made change detection a mandatory, standing operating step** (PRD_v1.md
+  section 19.4), not an occasional check: at the start of every session,
+  and always before finalizing a month-end report, all four file-level
+  outcomes must be positively confirmed - added, modified, deleted, and
+  renamed/moved - not just "anything new". Closed a real gap in
+  `scan_for_updates.py`: the manifest diff previously only detected
+  added/modified files; deletions were silently absorbed into the new
+  manifest with no flag, and a rename looked indistinguishable from a
+  brand-new unrelated file. Added `deleted_files` (path present in the old
+  manifest, missing from the new one) and `renamed_files` (a same-size
+  heuristic pairing a deleted path with an added path - a heuristic, not
+  proof, always confirm by opening the file) to `_diff_manifests()` /
+  `_match_renames()` / `scan_for_new_investments()`, surfaced in both the
+  CLI output and the dashboard's Data Quality scan section.
+- **Physically separated durable source-of-truth artifacts from
+  regenerable output** (PRD_v1.md section 19.4, `System_Architecture.md`
+  section 4): `data/source_of_truth/` now holds the investment register,
+  entity reconciliation mapping, change-detection manifest baseline, and
+  frozen dated cash flow snapshots - files that must never be silently
+  regenerated wholesale. `data/outputs/` holds only fully rebuildable
+  reports (dashboards, output packs, preview/reconciled extracts, scan
+  reports), safe to delete at any time. All default paths live in
+  `cli.py`.
+
+## 2026-08-16 - v1.5.0
+
+- **Crystallized the source-of-truth architecture as durable policy**, not
+  just implementation detail, after a full working session applying it in
+  practice. Added PRD_v1.md section 19.4 ("Source-of-Truth Hierarchy") and
+  two new Product Principles (section 26): primary documents over
+  summaries always; every reported data point carries an honest confidence
+  citation. Populated the previously-empty
+  `docs/architecture/System_Architecture.md` with the actual as-built
+  pipeline (Mermaid diagram, adapter responsibilities, key artifacts,
+  derived-metric formulas, known limitations) - this is now the canonical
+  technical reference, to be updated alongside code changes.
+- **Corrected a real architectural inversion**: the tracker's own monthly
+  report tabs ("1. Live" / "2. Exited") had been used as a data source for
+  Committed/Invested/Remaining/Distributions/Carrying Value/Gain/TVPI. Per
+  explicit user correction, those tabs are a *format* reference only - all
+  derived metrics are now computed independently from the register
+  (commitment) + cash flow extract (invested/distributions) + NAV extract
+  (carrying value), matching the tracker's own underlying formula logic
+  (verified directly against its `A. All deals (a)` tab) without depending
+  on its derived output. See `V1_Input_Data_Spec.md` section 7.5.
+- **Added a citation confidence taxonomy** (`V1_Input_Data_Spec.md` section
+  7.4): every `confirmed_by` citation is now mechanically classified as
+  either "verified" (signed/executed document, or explicitly tagged
+  CONFIRMED) or "shallow" (an internal summary referencing a document that
+  was never independently opened) - never blurred together. Caught and
+  fixed two real gaps this way: "Endless (Matt Dalio) and E-line" had been
+  merged from a non-binding term sheet read alone (the folder had 15+
+  signed documents never opened) - split into 2 real entities (Endless
+  Studios $8M, E-Line Ventures $6M) after reading the actual signed SPAs;
+  TFH-Worldcoin's investing entity was unconfirmed - resolved to MOZN
+  Holding RSC Ltd from the actual signed Side Letter/signature page.
+- Added `entity_glossary.py` (clean display names for folder-derived
+  entity_ids), `register_citations.py` (SPA/CAS-confirmed investing
+  entity, commitment, instrument/series, and close-date citations, with
+  the confidence taxonomy above), file-level change detection
+  (`scan_for_updates.py` manifest diff with plain-English impact notes),
+  and a frozen, dated `Cashflow_SourceOfTruth` snapshot mechanism so
+  reporting doesn't silently drift as the live tracker file changes.
+- Assessed feasibility of clicking a data point to open the exact cited
+  document location: page-level deep-linking (`file:///doc.pdf#page=N`) is
+  reliable and planned; exact-clause/sentence highlighting is feasible only
+  for clean digital PDFs with an embedded text layer (not scanned/OCR'd
+  PDFs or DOCX sources) - not to be oversold as a universal capability.
+
 ## 2026-08-15 - v1.4.5
 
 - Added `generate-html-dashboard` CLI command: produces a single

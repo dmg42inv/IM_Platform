@@ -308,6 +308,21 @@ def _render_scan_report(scan_report: dict | None) -> str:
         for f in scan_report["modified_files"]:
             parts.append(f"<li>{_esc(f['file'])} - <i>{_esc(f['impact'])}</i></li>")
         parts.append("</ul>")
+    if scan_report.get("renamed_files"):
+        parts.append(
+            "<h3>Likely renamed/moved files since last scan (same size, different path/name - "
+            "heuristic, confirm before relying on it)</h3><ul>"
+        )
+        for f in scan_report["renamed_files"]:
+            parts.append(
+                f"<li>{_esc(f['old_file'])} &rarr; {_esc(f['new_file'])} - <i>{_esc(f['impact'])}</i></li>"
+            )
+        parts.append("</ul>")
+    if scan_report.get("deleted_files"):
+        parts.append("<h3>Files no longer found since last scan (removed, moved out, or renamed)</h3><ul>")
+        for f in scan_report["deleted_files"]:
+            parts.append(f"<li>{_esc(f['file'])} - <i>{_esc(f['impact'])}</i></li>")
+        parts.append("</ul>")
     return "".join(parts)
 
 

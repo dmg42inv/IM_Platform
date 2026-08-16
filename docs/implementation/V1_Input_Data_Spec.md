@@ -206,3 +206,44 @@ interest, true-ups) carry a sign that does not match their text label (e.g.
 a "Capital Call" row can be positive) - the signed net amount, not the
 label, is authoritative.
 
+### 7.4 Citation confidence taxonomy (added 2026-08-16)
+
+A `confirmed_by` citation is only as good as what was actually read. Two
+tiers, always stated explicitly (never blurred together):
+
+- **Verified**: the citation names a signed/executed document (or is
+  tagged `CONFIRMED`/`FULLY CONFIRMED`, or explicitly says "signed"/
+  "executed") - e.g. "CONFIRMED from executed Convertible Note...".
+- **Shallow ("AI-extracted")**: sourced from an internal summary
+  (Investment Approval Form, Investment Summary, non-binding term sheet)
+  that *references* a transaction document without that document having
+  been independently opened and read. This is a normal, honest starting
+  point - not a failure state - but must never be presented as equivalent
+  to a verified citation, and is a flag to go read the actual document
+  before treating the field as settled (see PRD_v1.md section 19.4 and
+  `docs/architecture/System_Architecture.md`).
+
+`register_citations.py`'s `short_citation()` implements this distinction
+mechanically: it only returns phrasing like "Confirmed from signed SPA" for
+verified citations, and returns "Referenced in an internal summary... not
+yet independently verified as executed" otherwise. Lesson learned from
+this session: when a citation says a signed document is needed but wasn't
+read (e.g. "needs the signed Purchase Agreement to confirm"), that phrase
+is a standing flag to open the folder and find it - not a caveat to carry
+forward indefinitely. Always list the full folder contents first (not just
+the top keyword-ranked match) and prioritize files with "Executed",
+"Signed", or "Final" in the name.
+
+### 7.5 Derived metrics are computed, not copied from the tracker's reports
+
+Early in this build, the tracker's own monthly report tabs ("1. Live" /
+"2. Exited") were used as a shortcut data source for Committed/Invested/
+Remaining/Distributions/Carrying Value/Gain/TVPI. This was corrected: those
+tabs are now used only for deal listing/section structure/status (a format
+reference), and every derived metric is computed independently from the
+register (commitment) + cash flow extract (invested/distributions) + NAV
+extract (carrying value), using the formulas in
+`docs/architecture/System_Architecture.md` section 5. This mirrors the
+tracker's own underlying formula logic (verified directly against its
+`A. All deals (a)` tab) without depending on the tracker's derived output.
+

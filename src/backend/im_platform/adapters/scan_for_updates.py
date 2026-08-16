@@ -72,13 +72,39 @@ def _build_file_manifest(folders: list[Path]) -> dict[str, dict]:
     return manifest
 
 
-def _diff_manifests(old: dict[str, dict], new: dict[str, dict]) -> tuple[list[str], list[str]]:
+def _diff_manifests(old: dict[str, dict], new: dict[str, dict]) -> tuple[list[str], list[str], list[str]]:
     added = [p for p in new if p not in old]
+    deleted = [p for p in old if p not in new]
     modified = [
         p for p in new
         if p in old and (new[p]["size"] != old[p]["size"] or new[p]["mtime"] != old[p]["mtime"])
     ]
-    return added, modified
+    return added, modified, deleted
+
+
+def _match_renames(
+    added: list[str], deleted: list[str], old: dict[str, dict], new: dict[str, dict]
+) -> tuple[list[dict], list[str], list[str]]:
+    """Pairs a deleted path with an added path of identical file size - a
+    same-size disappearance+appearance is very likely the same file renamed
+    or moved, not two unrelated changes. This is a heuristic (two different
+    files could coincidentally share a size), not proof - always open the
+    file to confirm before relying on it for anything material."""
+    deleted_by_size: dict[int, list[str]] = {}
+    for p in deleted:
+        deleted_by_size.setdefault(old[p]["size"], []).append(p)
+
+    renamed: list[dict] = []
+    remaining_added: list[str] = []
+    for p in sorted(added):
+        candidates = deleted_by_size.get(new[p]["size"])
+        if candidates:
+            renamed.append({"old_path": candidates.pop(0), "new_path": p})
+        else:
+            remaining_added.append(p)
+
+    remaining_deleted = [p for paths in deleted_by_size.values() for p in paths]
+    return renamed, remaining_added, remaining_deleted
 
 
 def load_manifest(manifest_path: Path) -> dict[str, dict]:
@@ -116,12 +142,20 @@ def scan_for_new_investments(investments_root: Path, intake_path: Path, manifest
     new_manifest = _build_file_manifest(all_folders)
     added_files: list[dict] = []
     modified_files: list[dict] = []
+    deleted_files: list[dict] = []
+    renamed_files: list[dict] = []
     if manifest_path is not None:
         old_manifest = load_manifest(manifest_path)
         if old_manifest:
-            added, modified = _diff_manifests(old_manifest, new_manifest)
+            added, modified, deleted = _diff_manifests(old_manifest, new_manifest)
+            renamed, added, deleted = _match_renames(added, deleted, old_manifest, new_manifest)
             added_files = [{"file": p, "impact": _impact_note(Path(p).name)} for p in sorted(added)]
             modified_files = [{"file": p, "impact": _impact_note(Path(p).name)} for p in sorted(modified)]
+            deleted_files = [{"file": p, "impact": _impact_note(Path(p).name)} for p in sorted(deleted)]
+            renamed_files = [
+                {"old_file": r["old_path"], "new_file": r["new_path"], "impact": _impact_note(Path(r["new_path"]).name)}
+                for r in sorted(renamed, key=lambda r: r["new_path"])
+            ]
         save_manifest(new_manifest, manifest_path)
 
     return {
@@ -131,6 +165,8 @@ def scan_for_new_investments(investments_root: Path, intake_path: Path, manifest
         "recently_modified_folders": sorted(recently_modified, key=lambda r: r["last_modified"], reverse=True),
         "added_files": added_files,
         "modified_files": modified_files,
+        "deleted_files": deleted_files,
+        "renamed_files": renamed_files,
         "total_company_folders_scanned": len(company_folders),
         "total_fund_folders_scanned": len(fund_folders),
     }

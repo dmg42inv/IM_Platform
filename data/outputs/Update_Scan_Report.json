@@ -1,5 +1,5 @@
 {
-  "scan_date": "2026-08-16T12:49:24",
+  "scan_date": "2026-08-16T18:45:21",
   "new_company_folders": [],
   "new_fund_folders": [],
   "recently_modified_folders": [
@@ -30,6 +30,8 @@
   ],
   "added_files": [],
   "modified_files": [],
+  "deleted_files": [],
+  "renamed_files": [],
   "total_company_folders_scanned": 22,
   "total_fund_folders_scanned": 5
 }
