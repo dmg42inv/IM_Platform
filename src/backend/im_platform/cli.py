@@ -25,6 +25,8 @@ from .adapters.output_pack import (
     build_summary_note,
 )
 from .adapters.html_dashboard import build_dashboard_html
+from .adapters.entity_glossary import build_glossary_table
+from .adapters.register_citations import build_entity_citation_lookup
 from .adapters.live_exited_sections import (
     build_deal_entity_map,
     build_quarterly_cashflows,
@@ -327,6 +329,10 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     deals = extract_live_exited_sections(args.tracker_file)
     deal_entity_map = build_deal_entity_map(reconciliation_path)
 
+    draft = pd.read_excel(intake_path, sheet_name="Investment_Register_Draft").fillna("")
+    citation_lookup = build_entity_citation_lookup(draft)
+    glossary = build_glossary_table()
+
     cashflow = pd.read_excel(tracker_extract_path, sheet_name="Cashflow_Extract").fillna("")
     valuation = pd.read_excel(tracker_extract_path, sheet_name="Valuation_Extract").fillna("")
     cashflow = cashflow[cashflow["entity_resolved"] == True].copy()  # noqa: E712
@@ -351,7 +357,8 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     as_of_date = valuation["valuation_date"].max() if len(valuation) else None
     html = build_tracker_style_dashboard_html(
         deals, section_irr, quarterly, historical_nav, cashflow, ownership, change_log,
-        pd.DataFrame(), triangulation_notes, scan_report=scan_report, as_of_date=as_of_date,
+        pd.DataFrame(), triangulation_notes, deal_entity_map, citation_lookup, glossary,
+        scan_report=scan_report, as_of_date=as_of_date,
     )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)

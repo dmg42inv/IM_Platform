@@ -18,6 +18,8 @@ from datetime import date
 
 import pandas as pd
 
+from .entity_glossary import display_name
+
 
 def _fnum(v, digits: int = 2) -> str:
     if v is None or (isinstance(v, float) and pd.isna(v)):
@@ -63,7 +65,14 @@ def _section_subtotal(group: pd.DataFrame) -> dict:
     }
 
 
-def _render_deal_table(deals: pd.DataFrame, section_irr: pd.DataFrame, tab_label: str, as_of_date: str) -> str:
+def _render_deal_table(
+    deals: pd.DataFrame,
+    section_irr: pd.DataFrame,
+    tab_label: str,
+    as_of_date: str,
+    deal_entity_map: dict[str, str],
+    citation_lookup: dict[str, dict],
+) -> str:
     rows_html = []
     section_irr_map = {row["section"]: row["irr"] for _, row in section_irr[section_irr["tab"] == tab_label].iterrows()}
     tracker_src = f"Source: tracker's own '{'1. Live' if tab_label == 'Live' else '2. Exited'}' report tab, as of {as_of_date}"
@@ -75,14 +84,27 @@ def _render_deal_table(deals: pd.DataFrame, section_irr: pd.DataFrame, tab_label
                 f"Computed via XIRR from dated cash flows + latest fair value (see All Cashflows tab). {d['irr_note']}"
                 if d["irr_note"] else "Computed via XIRR from dated cash flows + latest fair value (see All Cashflows tab)."
             )
+            citation = citation_lookup.get(deal_entity_map.get(d["deal_name"], ""), {})
+            if citation.get("has_primary_source"):
+                investing_entity_tt = (
+                    "SPA/CAS-confirmed investing entit"
+                    + ("y" if len(citation["investing_entities"]) == 1 else "ies")
+                    + f": {', '.join(citation['investing_entities'])}. Tracker's own label may be a simplified grouping of this."
+                )
+            else:
+                investing_entity_tt = "NOT YET CONFIRMED against a primary transaction document - this is the tracker's own classification only."
+            if citation.get("commitments"):
+                committed_tt = f"{tracker_src}. Primary-source commitment per register: {'; '.join(citation['commitments'])}."
+            else:
+                committed_tt = f"{tracker_src}. No confirmed primary-source commitment amount in the register yet - tracker figure only."
             rows_html.append(
                 "<tr>"
                 + _td(f'<span class="tt" data-tt="{_esc(tracker_src)}">{_esc(d["deal_name"])}</span>', cls="left")
                 + _td(_esc(d["status"]))
-                + _td(_esc(d["investing_entity"]))
+                + _td(_esc(d["investing_entity"]), investing_entity_tt)
                 + _td(_esc(d["vintage"]))
                 + _td(_esc(d["instrument"]))
-                + _td(_fnum(d["committed"]), tracker_src)
+                + _td(_fnum(d["committed"]), committed_tt)
                 + _td(_fnum(d["invested"]), tracker_src)
                 + _td(_fnum(d["remaining_commitment"]), tracker_src)
                 + _td(_fnum(d["distributions"]), tracker_src)
@@ -144,10 +166,11 @@ def _render_cashflow_table(cashflow: pd.DataFrame) -> str:
         amt = r["amount"]
         cls = "pos" if amt >= 0 else "neg"
         tt = f"Source: {r.get('source_reference', '')} (tracker cashflow_id {r.get('cashflow_id', '')})"
+        name_tt = f"Register entity_id: {r['resolved_entity_id']}" if display_name(r["resolved_entity_id"]) != r["resolved_entity_id"] else ""
         rows_html.append(
             "<tr>"
             + _td(r["flow_date"].strftime("%Y-%m-%d") if pd.notna(r["flow_date"]) else "", cls="left")
-            + _td(_esc(r["resolved_entity_id"]), cls="left")
+            + _td(_esc(display_name(r["resolved_entity_id"])), name_tt, cls="left")
             + _td(_esc(r["flow_type"]))
             + _td(f"{amt:,.0f}", tt, cls=cls)
             + _td(_esc(r["currency"]))
@@ -159,6 +182,24 @@ def _render_cashflow_table(cashflow: pd.DataFrame) -> str:
         "<th>Amount (USD)</th><th>Currency</th><th class='left'>Consideration Type</th></tr></thead>"
     )
     return f"<table id='table-cashflows'>{header}<tbody>{''.join(rows_html)}</tbody></table>"
+
+
+def _render_glossary_table(glossary: pd.DataFrame) -> str:
+    rows_html = []
+    for _, r in glossary.iterrows():
+        rows_html.append(
+            "<tr>"
+            + _td(_esc(r["display_name"]), cls="left")
+            + _td(_esc(r["full_legal_name"]), cls="left")
+            + _td(_esc(r["entity_id"]), cls="left")
+            + _td(_esc(r["note"]), cls="left wrap")
+            + "</tr>"
+        )
+    header = (
+        "<thead><tr><th class='left'>Display Name</th><th class='left'>Full Legal Name</th>"
+        "<th class='left'>Internal Register ID</th><th class='left'>Note</th></tr></thead>"
+    )
+    return f"<table id='table-glossary'>{header}<tbody>{''.join(rows_html)}</tbody></table>"
 
 
 def _render_ownership_table(ownership: pd.DataFrame) -> str:
@@ -262,6 +303,9 @@ def build_tracker_style_dashboard_html(
     change_log: pd.DataFrame,
     issues: pd.DataFrame,
     triangulation_notes: list[str],
+    deal_entity_map: dict[str, str],
+    citation_lookup: dict[str, dict],
+    glossary: pd.DataFrame,
     scan_report: dict | None = None,
     as_of_date: str | None = None,
 ) -> str:
@@ -270,12 +314,13 @@ def build_tracker_style_dashboard_html(
     live_grand = _section_subtotal(deals[deals["tab"] == "Live"])
     exited_grand = _section_subtotal(deals[deals["tab"] == "Exited"])
 
-    live_table = _render_deal_table(deals, section_irr, "Live", as_of_date)
-    exited_table = _render_deal_table(deals, section_irr, "Exited", as_of_date)
+    live_table = _render_deal_table(deals, section_irr, "Live", as_of_date, deal_entity_map, citation_lookup)
+    exited_table = _render_deal_table(deals, section_irr, "Exited", as_of_date, deal_entity_map, citation_lookup)
     cashflow_table = _render_cashflow_table(cashflow)
     ownership_table = _render_ownership_table(ownership)
     log_table = _render_log_table(change_log)
     issues_table = _render_issues_table(issues)
+    glossary_table = _render_glossary_table(glossary)
     notes_html = _render_notes_list(triangulation_notes)
     scan_html = _render_scan_report(scan_report)
 
@@ -308,6 +353,7 @@ def build_tracker_style_dashboard_html(
         ownership_table=ownership_table,
         log_table=log_table,
         issues_table=issues_table,
+        glossary_table=glossary_table,
         notes_html=notes_html,
         scan_html=scan_html,
         nav_chart_json=json.dumps(nav_chart_data),
@@ -347,13 +393,13 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   .dl-btn {{ background: var(--sub-bg); border: 1px solid var(--border); color: var(--accent); border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; }}
   .dl-btn:hover {{ background: var(--border); }}
   table {{ width: 100%; min-width: 1100px; border-collapse: collapse; font-size: 12.5px; }}
-  th, td {{ padding: 6px 9px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  th, td {{ padding: 6px 9px; text-align: right; vertical-align: middle; border-bottom: 1px solid var(--border); white-space: nowrap; }}
   th.left, td.left {{ text-align: left; white-space: nowrap; min-width: 220px; }}
-  td.wrap {{ white-space: normal; max-width: 420px; min-width: 260px; }}
-  th {{ color: var(--muted); font-weight: 500; }}
-  tr.section-header td {{ background: var(--sub-bg); font-weight: 600; color: var(--accent); padding-top: 10px; padding-bottom: 6px; }}
-  tr.subtotal td {{ background: #182234; font-weight: 600; border-top: 1px solid var(--border); }}
-  tr.grand-total td {{ background: #0b1220; font-weight: 700; border-top: 2px solid var(--accent); }}
+  td.wrap {{ white-space: normal; max-width: 420px; min-width: 260px; vertical-align: middle; }}
+  th {{ color: var(--muted); font-weight: 500; vertical-align: middle; }}
+  tr.section-header td {{ background: var(--sub-bg); font-weight: 600; color: var(--accent); vertical-align: middle; }}
+  tr.subtotal td {{ background: #182234; font-weight: 600; border-top: 1px solid var(--border); vertical-align: middle; }}
+  tr.grand-total td {{ background: #0b1220; font-weight: 700; border-top: 2px solid var(--accent); vertical-align: middle; }}
   .pos {{ color: var(--green); }} .neg {{ color: var(--red); }}
   .muted {{ color: var(--muted); font-size: 13px; }}
   ul {{ margin: 0; padding-left: 20px; color: var(--text); font-size: 13px; line-height: 1.6; }}
@@ -400,6 +446,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   <button class="tab-btn" data-tab="log">Log</button>
   <button class="tab-btn" data-tab="growth">Portfolio Growth</button>
   <button class="tab-btn" data-tab="quality">Data Quality &amp; Triangulation</button>
+  <button class="tab-btn" data-tab="glossary">Glossary</button>
 </nav>
 
 <main>
@@ -467,6 +514,14 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
     <div class="panel"><h2>Triangulation Notes (register vs. tracker's own Live/Exited report)</h2>{notes_html}</div>
     <div class="panel"><h2>Data Quality Exceptions</h2>{issues_table}</div>
     <div class="panel"><h2>Update Scan (new/changed document folders)</h2>{scan_html}</div>
+  </section>
+
+  <section id="glossary" class="tab">
+    <div class="panel">
+      <div class="panel-head"><h2>Entity Name Glossary</h2><button class="dl-btn" onclick="downloadCSV('table-glossary','glossary.csv')">Download CSV</button></div>
+      <p class="muted">Display names shown across this dashboard vs. the full legal name and internal register identifier (often derived from document folder names) - use this if a name looks unfamiliar or abbreviated.</p>
+      {glossary_table}
+    </div>
   </section>
 
 </main>
