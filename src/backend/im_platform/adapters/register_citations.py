@@ -12,6 +12,8 @@ import re
 
 import pandas as pd
 
+from .formatting import fmt_money_millions
+
 # Fund sub-vehicle cashflow keys whose register investment_id doesn't equal
 # entity_id (funds with more than one distinct vehicle under one entity_id).
 _SUBVEHICLE_TO_INVESTMENT_ID = {
@@ -153,12 +155,12 @@ def build_entity_citation_lookup(draft: pd.DataFrame) -> dict[str, dict]:
         excluded_non_usd = []
         for _, r in rows.iterrows():
             if r["initial_commitment_amount"]:
-                commitments.append(f"{r['investment_currency']} {float(r['initial_commitment_amount']):,.2f} ({r['investment_id']})")
+                commitments.append(f"{fmt_money_millions(float(r['initial_commitment_amount']), r['investment_currency'])} ({r['investment_id']})")
                 if str(r["investment_currency"]).upper() == "USD":
                     commitment_amounts_usd.append(float(r["initial_commitment_amount"]))
                 else:
                     excluded_non_usd.append(
-                        f"{r['investment_currency']} {float(r['initial_commitment_amount']):,.2f} ({r['investment_id']})"
+                        f"{fmt_money_millions(float(r['initial_commitment_amount']), r['investment_currency'])} ({r['investment_id']})"
                     )
         confirmed_texts = [r["confirmed_by"] for _, r in rows.iterrows() if r["confirmed_by"]]
         close_dates = sorted({str(r["close_date"]) for _, r in rows.iterrows() if r["close_date"]})

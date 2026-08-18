@@ -1,5 +1,5 @@
 {
-  "scan_date": "2026-08-18T10:44:37",
+  "scan_date": "2026-08-18T15:57:10",
   "new_company_folders": [],
   "new_fund_folders": [],
   "recently_modified_folders": [
@@ -16,6 +16,10 @@
       "last_modified": "2036-02-07T06:28:16"
     },
     {
+      "folder": "4. MGX",
+      "last_modified": "2026-08-18T14:11:10"
+    },
+    {
       "folder": "1. New Space Capital Fund",
       "last_modified": "2026-08-17T16:08:47"
     },
@@ -26,10 +30,6 @@
     {
       "folder": "VTVT - vTv Therapeutics",
       "last_modified": "2026-08-16T20:53:50"
-    },
-    {
-      "folder": "4. MGX",
-      "last_modified": "2026-08-16T18:58:36"
     },
     {
       "folder": "Cerebras",
@@ -44,10 +44,48 @@
       "last_modified": "2026-07-22T14:35:54"
     }
   ],
-  "added_files": [],
+  "added_files": [
+    {
+      "file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\LPA\\4th_Closing_Executed_G42\\01. MGX Fund I LP - Fourth A_R LPA (Executed 01.05.26).pdf",
+      "impact": "Impact unclear from filename - review manually"
+    },
+    {
+      "file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\LPA\\4th_Closing_Executed_G42\\02. MGX I Denali Holding LP - Fifth A_R LPA (Executed 01.05.26).pdf",
+      "impact": "Impact unclear from filename - review manually"
+    },
+    {
+      "file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\LPA\\4th_Closing_Executed_G42\\03. MGX I AIV-1 LP - Third A&R LPA (Executed 01.05.26).pdf",
+      "impact": "Impact unclear from filename - review manually"
+    }
+  ],
   "modified_files": [],
-  "deleted_files": [],
-  "renamed_files": [],
+  "deleted_files": [
+    {
+      "file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\7. Q2 2026\\MGX Capital Account Statement 2026-Q2.zip",
+      "impact": "May affect Carrying Value / NAV"
+    },
+    {
+      "file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\7. Q2 2026\\MGX Quarterly Report 2026-Q2.zip",
+      "impact": "May affect Carrying Value / NAV"
+    }
+  ],
+  "renamed_files": [
+    {
+      "old_file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\CAS - MGX I Co-Invest.xlsx",
+      "new_file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\Rough\\CAS - MGX I Co-Invest.xlsx",
+      "impact": "Impact unclear from filename - review manually"
+    },
+    {
+      "old_file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\CAS - MGX I Denali.xlsx",
+      "new_file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\Rough\\CAS - MGX I Denali.xlsx",
+      "impact": "Impact unclear from filename - review manually"
+    },
+    {
+      "old_file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\CAS - MGX I.xlsx",
+      "new_file": "C:\\Users\\divyesh.mahajan\\OneDrive - G42\\Desktop\\0.1 SPPM ###\\1. I N V E S T M E N T S  -  Global (Ex China)\\1. F U N D - I N V E S T M E N T\\4. MGX\\Rough\\CAS - MGX I.xlsx",
+      "impact": "Impact unclear from filename - review manually"
+    }
+  ],
   "total_company_folders_scanned": 22,
   "total_fund_folders_scanned": 5
 }

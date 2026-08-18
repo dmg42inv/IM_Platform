@@ -1,5 +1,46 @@
 # PRD Change Log
 
+## 2026-08-18 (afternoon/evening) - v1.10.0
+
+- **Display/formatting rework, done structurally rather than case-by-case**:
+  all dollar figures and multiples across the dashboard and its hover
+  citations now format consistently (1 decimal by default, only stepping
+  to 2 decimals when 1 would hide a genuinely non-zero small value), large
+  exact dollar figures in citation text now render in millions instead of
+  full unrounded numbers, multiples are capped for absurd values instead
+  of showing a literal thousands-x figure, and Invested/Distributions
+  hover text was simplified to a plain sourcing statement with an explicit
+  "validated against a primary document" variant for positions specifically
+  cross-checked.
+- **Fixed a real IRR calculation bug**: the XIRR solver only used
+  Newton-Raphson, which can fail to converge - and silently return a blank
+  result - for extreme-loss cash flow shapes. Added a bisection fallback
+  so a genuine large negative return now displays correctly instead of a
+  blank cell.
+- **Corrected several commitment-amount figures against primary/updated
+  documents** (a formula-based cap superseded by the actual final signed
+  subscription in one case; an instrument-level calculation slightly off a
+  round headline figure due to per-unit price rounding in another; a
+  fund's original subscription commitment substantially reduced by a
+  later, separately executed side letter irrevocably waiving the
+  uncalled balance in a third) - each case is a distinct pattern, not
+  fixed by one blanket rule, and each is documented with its own citation.
+- **New standing policy: for fund vehicles, a Capital Account Statement
+  (or equivalent fund administrator statement) is primary for cumulative
+  Invested/Distributions, overriding the tracker's own cash-flow-derived
+  sum when they disagree** - implemented as a structural override
+  mechanism, not a one-off fix, and reusable for any fund found to have
+  the same issue going forward. Found via a case where the tracker's own
+  fund cash flow tagging had inconsistent sign conventions across
+  otherwise-identical transaction types, inflating both Invested and
+  Distributions by the same amount while the net position matched the
+  fund statement exactly - a strong, checkable validation signal before
+  trusting this kind of override (verify the net ties out before
+  applying it, not just the gross figures).
+- **Standing documentation convention** (reaffirmed again this session):
+  no deal names, companies, or figures in the PRD/changelog/architecture
+  docs - approach and structure only; specifics live in repo memory.
+
 ## 2026-08-17/18 - v1.9.0
 
 - **Closed out a class of stale lifecycle-status gaps**: the register's

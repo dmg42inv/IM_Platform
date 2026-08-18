@@ -116,7 +116,11 @@ time.**
 
 - `Invested` = sum of cash deployments from dated cash flows (register-
   confirmed entity -> cashflow join), not the tracker's own report figure.
-- `Distributions` = sum of cash distributions from dated cash flows.
+  Exception: for fund vehicles, the fund's own Capital Account Statement
+  cumulative figure is used instead when confirmed to differ from (and
+  supersede) the tracker cash-flow sum - see section 7.
+- `Distributions` = sum of cash distributions from dated cash flows (same
+  fund-vehicle exception as `Invested`, above).
 - `Carrying Value` = latest mark from the NAV tab.
 - `Committed` = register's primary-source commitment amount; falls back to
   the tracker's own figure only when no primary source is confirmed yet
@@ -150,6 +154,24 @@ time.**
 
 ## 7. Session updates (2026-08-17/18)
 
+- **Fund cash flow primacy: Capital Account Statement over tracker cash
+  flow rows.** For fund vehicles specifically (not direct equity/debt
+  deals), the fund's own CAS/Limited Partner Statement cumulative
+  Invested/Distributions is now treated as primary, overriding the sum of
+  the tracker's own dated cash flow rows when the two are found to
+  disagree. Found via a real case: some tracker fund-cashflow rows had
+  mixed sign conventions (a capital-call reduction/equalization recorded
+  as a positive amount, so it was wrongly bucketed as a gross distribution
+  instead of netting against invested) - both Invested and Distributions
+  were inflated by the same amount, while the NET position matched the
+  CAS exactly to the dollar (strong evidence the transaction data was
+  complete, just mis-bucketed in gross terms). Mechanism:
+  `_FUND_CAS_CASHFLOW_OVERRIDES` in `live_exited_sections.py` (same
+  pattern as `_COMMITTED_EQUALS_INVESTED_DEALS`) - `recompute_deal_
+  financials` checks it first, falling back to the cash-flow-sum
+  computation otherwise. The underlying dated tracker rows are never
+  deleted (still feed the All Cashflows tab and IRR) even when overridden
+  - verify the NET matches the CAS exactly before trusting an override.
 - **Fund vehicles that aren't in the tracker's own Live/Exited tabs**: a
   fund can have a co-invest/sub-vehicle with no line item there at all
   (unlike its sibling vehicles under the same fund family), so it was

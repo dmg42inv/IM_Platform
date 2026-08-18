@@ -51,6 +51,68 @@ _COMMITTED_EQUALS_INVESTED_DEALS: dict[str, str] = {
         "is pinned to Invested here (no separate cancellation document on file yet; user is "
         "trying to obtain one)."
     ),
+    "vTv Therapeutics Inc.": (
+        "User-confirmed (2026-08-18): the $25.0M agreed purchase price was reduced by a "
+        "document-verified 3.75% early-payment discount (~$468,750) on the deferred $12.5M "
+        "promissory note - G42 paid what was agreed, in full, with the discount reflecting the "
+        "deal's own terms, not an unfunded/outstanding balance. Committed is pinned to Invested "
+        "($24.53M) here rather than the register's raw $25.0M commitment-amount figure, since "
+        "there is no outstanding commitment remaining."
+    ),
+    "Inveniam Ltd": (
+        "User-confirmed (2026-08-18): the register's $100,032,722.58 figure is an exact "
+        "instrument-level calculation (13,481,499 SARs x $7.42/SAR) - the $7.42 strike price "
+        "itself is a rounded display of the actual per-unit price, so the product doesn't land "
+        "cleanly on the deal's real $100.0M size even though that IS the intended commitment. "
+        "There is no outstanding/remaining commitment - Committed is pinned to Invested ($100.0M) "
+        "here rather than the register's raw SAR-math figure."
+    ),
+    "North Summit Capital Fund": (
+        "Document-confirmed (2026-08-18) from the executed Side Letter dated December 2023 "
+        "(effective 1 January 2023) between Galbot Holding RSC Ltd (Investor) and North Summit "
+        "Capital Fund GP Limited: 'the General Partner hereby fully irrevocably and "
+        "unconditionally waives the Investor's obligation to make Capital Contributions...the "
+        "outstanding amount of US$217,693,608 which constitutes the Investor's outstanding "
+        "Capital Contribution...is hereby waived.' The register's $300,000,000 commitment figure "
+        "is the ORIGINAL 2019 subscription amount (still correctly the primary-source structural "
+        "fact for that date), but the entire remaining/uncalled balance was irrevocably released "
+        "in this side letter - no further capital will ever be called. Committed is pinned to "
+        "Invested here to reflect that there is no outstanding commitment remaining, not the "
+        "original $300M subscription size."
+    ),
+}
+
+# POLICY (user-confirmed 2026-08-18): for FUND vehicles, the Capital Account
+# Statement (or Limited Partner Statement) is the primary source of truth for
+# cumulative Invested/Distributions, not the sum of the tracker's own dated
+# "CF (Funds)" cash flow rows - proven necessary after finding the tracker's
+# own fund-cashflow tagging can have mixed sign conventions (e.g. a capital-
+# call reduction/equalization wrongly recorded as a gross distribution) or
+# gaps (an interim capital call not yet entered into the monthly tracker at
+# all). This does NOT apply to direct equity/debt deals, where the tracker's
+# dated cash flow + signed transaction documents remain primary (see
+# _CASHFLOW_VALIDATED_DEALS in tracker_style_dashboard.py for that side).
+# Always keep the underlying dated tracker rows too (never delete them) so
+# the All Cashflows drill-down and IRR still have something to compute from -
+# just know they may not individually foot to the CAS-sourced summary above
+# them until/unless the specific mis-tagged entries are separately corrected.
+_FUND_CAS_CASHFLOW_OVERRIDES: dict[str, dict] = {
+    "North Summit Capital Fund": {
+        "invested": 83.361611,
+        "distributions": 7.875571,
+        "note": (
+            "Sourced from the Q1 2026 Capital Account Statement (Galbot Holding RSC Ltd's 99.5% "
+            "allocation), 'since inception' cumulative figures - not summed from the tracker's own "
+            "dated cash flow rows. The tracker-derived NET position (Invested - Distributions) "
+            "matches this CAS exactly to the dollar ($75,486,040 both ways), confirming the "
+            "underlying transaction data is complete and correct in total - but the GROSS Invested/"
+            "Distributions were mis-bucketed by $16,647,690 (some capital-call reductions/"
+            "equalizations appear to have been wrongly recorded as distributions in the tracker). "
+            "The All Cashflows tab still shows the tracker's own dated entries, which will not "
+            "individually foot to this total until the specific mis-tagged rows are identified "
+            "(needs the underlying capital call/distribution notices, not yet located)."
+        ),
+    },
 }
 
 
@@ -194,8 +256,13 @@ def recompute_deal_financials(
     for _, d in deals.iterrows():
         entity = deal_entity_map.get(d["deal_name"], "")
         entity_cf = _deal_cashflow(d["deal_name"], entity, cf)
-        invested_usd = -entity_cf.loc[entity_cf["amount"] < 0, "amount"].sum() / 1_000_000
-        distributed_usd = entity_cf.loc[entity_cf["amount"] > 0, "amount"].sum() / 1_000_000
+        cas_override = _FUND_CAS_CASHFLOW_OVERRIDES.get(d["deal_name"])
+        if cas_override:
+            invested_usd = cas_override["invested"]
+            distributed_usd = cas_override["distributions"]
+        else:
+            invested_usd = -entity_cf.loc[entity_cf["amount"] < 0, "amount"].sum() / 1_000_000
+            distributed_usd = entity_cf.loc[entity_cf["amount"] > 0, "amount"].sum() / 1_000_000
 
         entity_val = _deal_valuation(d["deal_name"], entity, val).sort_values("valuation_date")
         carrying_usd = float(entity_val.iloc[-1]["fair_value_local"]) / 1_000_000 if len(entity_val) else 0.0

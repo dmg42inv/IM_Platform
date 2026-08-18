@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IM Platform - Process &amp; Progress Overview</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --text: #e2e8f0; --muted: #94a3b8;
+    --accent: #38bdf8; --green: #4ade80; --red: #f87171; --border: #334155; --sub-bg: #253449;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+  header { padding: 22px 32px; border-bottom: 1px solid var(--border); }
+  header h1 { font-size: 20px; margin: 0; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+  main { padding: 26px 32px; max-width: 1180px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .kpi-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .kpi-card .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .kpi-card .value { font-size: 22px; font-weight: 600; margin-top: 6px; }
+  .kpi-card .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 22px; }
+  .panel h2 { font-size: 14px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .mermaid { background: #0b1220; border-radius: 8px; padding: 16px; }
+  ul.milestones { margin: 0; padding-left: 20px; line-height: 1.8; font-size: 13.5px; }
+  ul.milestones li { margin-bottom: 4px; }
+  .tag { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 10px; margin-right: 6px; }
+  .tag.done { background: rgba(74,222,128,0.15); color: var(--green); }
+  .tag.open { background: rgba(248,113,113,0.15); color: var(--red); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11.5px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<header>
+  <h1>IM Platform &mdash; Process &amp; Progress Overview</h1>
+  <div class="meta">Prepared 2026-08-18 &middot; a shareable summary of how the platform verifies and reports portfolio data, and where things stand today.</div>
+</header>
+<main>
+
+  <div class="panel">
+    <h2>How data flows through the platform</h2>
+    <div class="mermaid">
+flowchart LR
+    A["Primary legal &amp; transaction<br/>documents (SPAs, CAS,<br/>loan agreements, etc.)"] --> B["Structural register<br/>(one row per commitment,<br/>each with a source citation)"]
+    C["Monthly Treasury tracker<br/>(cash flows &amp; NAV marks)"] --> D["Cash flow / valuation<br/>extract, reconciled to<br/>register entities"]
+    B --> E{"Triangulation checks:<br/>register vs. tracker<br/>vs. cash flow"}
+    D --> E
+    E -->|"match"| F["Portfolio dashboard<br/>&amp; reports"]
+    E -->|"mismatch found"| G["Flagged for review<br/>(never silently overwritten)"]
+    G --> H["Verified against a<br/>primary document / confirmed<br/>with the user"]
+    H --> B
+    F --> I["Data Quality &amp;<br/>Triangulation tab<br/>(full audit trail)"]
+
+    style A fill:#1e293b,stroke:#334155,color:#e2e8f0
+    style B fill:#1e293b,stroke:#38bdf8,color:#e2e8f0
+    style C fill:#1e293b,stroke:#334155,color:#e2e8f0
+    style D fill:#1e293b,stroke:#334155,color:#e2e8f0
+    style E fill:#253449,stroke:#38bdf8,color:#e2e8f0
+    style F fill:#1e293b,stroke:#4ade80,color:#e2e8f0
+    style G fill:#253449,stroke:#f87171,color:#e2e8f0
+    style H fill:#1e293b,stroke:#4ade80,color:#e2e8f0
+    style I fill:#1e293b,stroke:#334155,color:#e2e8f0
+    </div>
+    <p style="color:var(--muted); font-size:12.5px; margin-top:14px;">
+      The key control: structural facts (who we invested through, how much, when) are only ever sourced
+      from primary signed documents, never assumed from the tracker. Every number shown carries a citation
+      to its source, and any disagreement between the register and the tracker is surfaced, not hidden.
+    </p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="label">Register Positions</div><div class="value">44</div><div class="sub">across the equity &amp; fund portfolio</div></div>
+    <div class="kpi-card"><div class="label">Verified w/ Citation</div><div class="value">35 / 44</div><div class="sub">confirmed against a primary/CAS source</div></div>
+    <div class="kpi-card"><div class="label">Cash Flow Rows Resolved</div><div class="value">155 / 155</div><div class="sub">100% tied to a register entity</div></div>
+    <div class="kpi-card"><div class="label">Valuation Rows Resolved</div><div class="value">39 / 39</div><div class="sub">100% tied to a register entity</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Recent progress (this week)</h2>
+    <ul class="milestones">
+      <li><span class="tag done">Resolved</span> Two stale lifecycle-status positions corrected against primary closure/dissolution documents, with the exact dissolution date confirmed from a registrar filing.</li>
+      <li><span class="tag done">Resolved</span> An open commitment-amount question closed out using a newly available internal record plus the company's own audited public filing.</li>
+      <li><span class="tag done">Updated</span> Two fund vehicle families rolled forward to their latest quarterly reporting (commitment + NAV), including identifying and applying a material commitment restructuring on one vehicle.</li>
+      <li><span class="tag done">Fixed</span> Three underlying data/display bugs found and corrected during this work (a cash-flow sign error, a fund position missing from the main report table, and a report-viewing display bug).</li>
+      <li><span class="tag open">Open</span> A handful of positions still carry only a shallow, not-yet-primary-source-verified citation - being worked through systematically, one at a time.</li>
+      <li><span class="tag open">Open</span> A small number of fund-level figures are deferred as a dedicated follow-on review (bespoke per-fund reporting methodology).</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>What "verified" means here</h2>
+    <table>
+      <thead><tr><th>Confidence level</th><th>What it means</th></tr></thead>
+      <tbody>
+        <tr><td>Confirmed (signed document)</td><td>Cross-checked directly against an executed SPA, Capital Account Statement, loan agreement, or equivalent primary source.</td></tr>
+        <tr><td>Confirmed (public filing)</td><td>For listed portfolio companies, corroborated against the company's own audited/regulatory filing - independently reliable.</td></tr>
+        <tr><td>Shallow / AI-extracted</td><td>Sourced from an internal summary referencing a document that has not yet been directly read - flagged honestly, not presented as equally solid.</td></tr>
+        <tr><td>Tracker-sourced fallback</td><td>Used only when no primary source exists yet for a structural fact - visibly flagged as such in the report, not silently blended in.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>

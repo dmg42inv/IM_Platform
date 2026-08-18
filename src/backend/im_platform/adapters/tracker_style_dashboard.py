@@ -19,19 +19,29 @@ from datetime import date
 import pandas as pd
 
 from .entity_glossary import display_name, investing_entity_full_name
-from .live_exited_sections import _COMMITTED_EQUALS_INVESTED_DEALS
+from .formatting import fmt_multiple, fmt_num
+from .live_exited_sections import _COMMITTED_EQUALS_INVESTED_DEALS, _FUND_CAS_CASHFLOW_OVERRIDES
+
+# Deal names where the Invested/cash-flow figure has been specifically
+# cross-checked against a primary source document (not just "sourced from
+# Treasury" - actually verified to match). Extend this whenever a deal's
+# cash flow amount is confirmed against a signed document/CAS - see repo
+# memory for the verification trail behind each entry.
+_CASHFLOW_VALIDATED_DEALS: dict[str, str] = {
+    "Esyasoft Holding": "matches the executed Note Purchase Agreement/Debenture exactly.",
+    "Esyasoft Holding (Debt)": "matches the executed Loan Agreement exactly.",
+    "Mena Mobile Inc": "matches the executed Series B Purchase Agreement exactly.",
+    "Mena Mobile Inc (Debt)": "matches the executed Loan Agreement exactly.",
+    "vTv Therapeutics Inc.": "matches the audited public 10-K disclosure exactly.",
+}
 
 
-def _fnum(v, digits: int = 2) -> str:
-    if v is None or (isinstance(v, float) and pd.isna(v)):
-        return ""
-    return f"{v:,.{digits}f}"
+def _fnum(v, digits: int = 1) -> str:
+    return fmt_num(v, default_digits=digits)
 
 
 def _fx(v) -> str:
-    if v is None or (isinstance(v, float) and pd.isna(v)):
-        return ""
-    return f"{v:.2f}x"
+    return fmt_multiple(v)
 
 
 def _fpct(v) -> str:
@@ -107,8 +117,16 @@ def _render_deal_table(
                     " WARNING: Committed is UNDERSTATED - excludes a non-USD commitment not converted here: "
                     + "; ".join(committed_citation["excluded_non_usd_commitments"]) + "."
                 )
-            invested_tt = f"Computed from dated cash flows (sum of deployments), see All Cashflows tab. Not sourced from the {tracker_src}."
-            distributions_tt = f"Computed from dated cash flows (sum of distributions), see All Cashflows tab. Not sourced from the {tracker_src}."
+            invested_tt = "Sourced from cash flows provided by Treasury (see All Cashflows tab)."
+            distributions_tt = "Sourced from cash flows provided by Treasury (see All Cashflows tab)."
+            if d["deal_name"] in _CASHFLOW_VALIDATED_DEALS:
+                note = _CASHFLOW_VALIDATED_DEALS[d["deal_name"]]
+                invested_tt += f" Validated - {note}"
+                distributions_tt += f" Validated - {note}"
+            if d["deal_name"] in _FUND_CAS_CASHFLOW_OVERRIDES:
+                cas_note = _FUND_CAS_CASHFLOW_OVERRIDES[d["deal_name"]]["note"]
+                invested_tt = f"Sourced from the fund's own Capital Account Statement, not the tracker's cash flow rows. {cas_note}"
+                distributions_tt = invested_tt
             carrying_tt = "Latest carrying value from the tracker's own NAV tab (not the Live/Exited tab)."
             remaining_tt = "Formula: Committed - Invested."
             gain_tt = "Formula: Carrying Value + Distributions - Invested."
@@ -519,18 +537,19 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   .top-actions button {{ background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 8px 14px; font-size: 12px; cursor: pointer; }}
   .top-actions button:hover {{ border-color: var(--accent); color: var(--accent); }}
 
-  /* Hover tooltip - "soft popup" citing the source of a data point */
-  .tt {{ position: relative; cursor: help; border-bottom: 1px dotted var(--muted); }}
-  .tt::after {{
-    content: attr(data-tt);
-    position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
-    background: #0b1220; color: var(--text); border: 1px solid var(--accent);
-    padding: 8px 10px; border-radius: 6px; font-size: 11.5px; white-space: normal;
-    width: max-content; max-width: 320px; text-align: left; line-height: 1.4;
-    opacity: 0; visibility: hidden; transition: opacity 0.12s ease; z-index: 50;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  /* Hover tooltip - "soft popup" citing the source of a data point.
+     Rendered via JS into a single body-level fixed-position element (see
+     the script block below) rather than CSS ::after, so it can never be
+     clipped by any ancestor's overflow/scroll box - a real, hard-to-debug
+     bug hit with the pure-CSS version. */
+  .tt {{ cursor: help; border-bottom: 1px dotted var(--muted); }}
+  #jsTooltip {{
+    display: none; position: fixed; background: #0b1220; color: var(--text);
+    border: 1px solid var(--accent); padding: 8px 10px; border-radius: 6px;
+    font-size: 11.5px; white-space: normal; max-width: 320px; text-align: left;
+    line-height: 1.4; z-index: 1000; box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    pointer-events: none;
   }}
-  .tt:hover::after {{ opacity: 1; visibility: visible; }}
 
   #updateModal {{ display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100; align-items: center; justify-content: center; }}
   #updateModal .box {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 24px; max-width: 520px; }}
@@ -654,6 +673,8 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
 
 </main>
 
+<div id="jsTooltip"></div>
+
 <div id="updateModal">
   <div class="box">
     <h3>Update Portfolio Data</h3>
@@ -666,6 +687,41 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
 </div>
 
 <script>
+// JS-driven tooltip (see #jsTooltip CSS comment for why this replaced a
+// pure-CSS ::after popup): position:fixed on a body-level element can't be
+// clipped by any ancestor's overflow, unlike position:absolute inside a
+// scrollable table/panel.
+(function () {{
+  const tip = document.getElementById("jsTooltip");
+  function place(evt) {{
+    const margin = 14;
+    let x = evt.clientX + margin;
+    let y = evt.clientY + margin;
+    const maxX = window.innerWidth - tip.offsetWidth - margin;
+    const maxY = window.innerHeight - tip.offsetHeight - margin;
+    if (x > maxX) x = evt.clientX - tip.offsetWidth - margin;
+    if (y > maxY) y = evt.clientY - tip.offsetHeight - margin;
+    tip.style.left = Math.max(margin, x) + "px";
+    tip.style.top = Math.max(margin, y) + "px";
+  }}
+  document.body.addEventListener("mouseover", (evt) => {{
+    const el = evt.target.closest(".tt");
+    if (!el || !el.dataset.tt) return;
+    tip.textContent = el.dataset.tt;
+    tip.style.display = "block";
+    place(evt);
+  }});
+  document.body.addEventListener("mousemove", (evt) => {{
+    if (tip.style.display === "block") place(evt);
+  }});
+  document.body.addEventListener("mouseout", (evt) => {{
+    const el = evt.target.closest(".tt");
+    if (!el) return;
+    if (evt.relatedTarget && el.contains(evt.relatedTarget)) return;
+    tip.style.display = "none";
+  }});
+}})();
+
 document.querySelectorAll(".tab-btn").forEach(btn => {{
   btn.addEventListener("click", () => {{
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));

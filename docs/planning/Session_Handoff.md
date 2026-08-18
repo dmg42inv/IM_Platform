@@ -1,9 +1,133 @@
 # Session Handoff - read this first at the start of the next session
 
-Last updated: 2026-08-18 (mid-day). This file is meant to be overwritten
-at the end of each working session - it is the single "where did we leave
-off" reference, complementing (not duplicating) the durable policy already
-captured in `docs/prd/PRD_v1.md` and repo memory.
+Last updated: 2026-08-18 (afternoon, dashboard QA pass). This file is meant
+to be overwritten at the end of each working session - it is the single
+"where did we leave off" reference, complementing (not duplicating) the
+durable policy already captured in `docs/prd/PRD_v1.md` and repo memory.
+
+## -1. URGENT - dashboard not yet regenerated with today's afternoon fixes
+
+The tracker workbook has been locked (open in Excel) all afternoon -
+`generate-tracker-dashboard` keeps failing with `PermissionError`. As soon
+as it's closed, run:
+```
+.\.venv\Scripts\python.exe -m im_platform.cli generate-tracker-dashboard --tracker-file "C:\Users\divyesh.mahajan\OneDrive - G42\Desktop\0.2 Portfolio Management - Monthly\1. Main (monthly report)\2.7 31 Jul 26\1. Portfolio Summary Jul'26 v2.0.xlsx"
+```
+then visually re-check every item in section 0b below against the fresh
+dashboard.
+
+## 0b. Dashboard QA pass (2026-08-18 afternoon) - structural fixes + open items
+
+User did a hands-on review pass of `Tracker_Style_Dashboard.html` and gave
+a batch of feedback, explicitly asking for structural fixes (not
+one-off patches) plus a running record of what still needs evidence.
+
+### Structural fixes DONE (apply everywhere, not per-deal)
+- All dollar figures + tooltips now format at 1 decimal place by default,
+  bumping to 2 decimals only when 1 decimal would show "0.0" for a
+  genuinely non-zero value (`adapters/formatting.py`, new shared module -
+  `fmt_num`/`fmt_multiple`/`fmt_money_millions`, used by both
+  `tracker_style_dashboard.py` and `register_citations.py`).
+- TVPI/multiple display capped at ">100x" for absurd values (e.g. a tiny-
+  basis warrant marked up thousands of times over) - `fmt_multiple(v, cap=100)`.
+- Citation/tooltip text for commitment amounts now shows "USD 6.0M" style
+  instead of the full unrounded "USD 6,000,000.00" - large exact numbers in
+  hover text were flagged as unpleasant to read.
+- Invested/Distributions tooltips simplified to a fixed phrase: "Sourced
+  from cash flows provided by Treasury (see All Cashflows tab)." - with an
+  additional "Validated - matches the executed [document] exactly." suffix
+  for deals in the new `_CASHFLOW_VALIDATED_DEALS` dict
+  (`live_exited_sections.py`/`tracker_style_dashboard.py`) - currently
+  populated with EsyaSoft (both tranches), Mena Mobile (both tranches),
+  vTv Therapeutics. Extend this dict whenever a cash flow amount is
+  specifically cross-checked against a primary document (not just "sourced
+  from Treasury" generically).
+- **Real IRR bug fixed**: `_xirr()` in `calculations.py` only used
+  Newton-Raphson, which can fail to converge (silently returning `None`,
+  i.e. a blank IRR cell) for extreme-loss cash flow shapes where the true
+  IRR is a large negative number near -100%. Added a bisection fallback
+  that runs whenever Newton fails - verified with a synthetic big-loss case
+  (previously would have returned `None`, now correctly returns ~-57%).
+  This was flagged via Tools for Humanity Corporation showing a blank IRR
+  when it should show a large negative one.
+
+### Deal-specific corrections applied (document-confirmed)
+- **vTv Therapeutics Inc.**: added to `_COMMITTED_EQUALS_INVESTED_DEALS`
+  (Committed pinned to Invested, $24.53M) - user confirmed the ~$0.47M gap
+  vs the $25M agreed price is the already-verified early-payment discount,
+  not an outstanding/unfunded commitment.
+- **Acies Investments Fund I, L.P.**: register commitment corrected from
+  $50,000,000 to **$17,112,500**, per the Q1 2026 Capital Account Statement
+  (`...\3. ACIES\4. Monitoring\2. Capital Account Statement\2026
+  Q1-CapitalAccountStatement.pdf`), which explicitly states "Commitment
+  $17,112,500" (Paid-in $15,726,388, Remaining $1,386,113). The old $50M
+  figure was a FORMULA/CAP from the original CEF+Anchor MOU ("the lesser of
+  50% of aggregate LP commitments or $50M", target fund size $150M) - the
+  fund's actual final size came in smaller, so 50% landed at $17.1M rather
+  than hitting the $50M cap. Not a data-entry error, just an earlier-stage
+  document superseded by the actual final subscription.
+
+### Investigated, explained, NOT changed (no error found)
+- **Inveniam**: user flagged "$100.3M, not $100M - where did that come
+  from?" - fully explained, no error: the original 15 Jun 2024 Token
+  Purchase Agreement described a "$100M" headline deal size, but the
+  actual instrument granted (Convertible SAR, 13,481,499 units x
+  $7.42/SAR) computes to $100,032,722.58 exactly - a real, document-
+  derived instrument value, ~0.03% above the round headline figure from
+  SAR pricing mechanics, not an error. With the new 1-decimal formatting
+  this will now display as "100.0" (not "100.3") - the user's original
+  "100.3" observation was very likely a misread of "100.03" under the old
+  2-decimal display, now moot either way.
+
+### OPEN - needs a decision or more evidence (do NOT guess/apply silently)
+
+1. **New Space Capital Fund I - real structural bug found, needs a fix
+   decision.** Root cause of "more drawn than committed": both New Space
+   register rows (`NewSpace-ICEYE-2020` EUR19,015,957.27, `NewSpace-GPCom-
+   2023` EUR2,300,000) are booked in EUR. The current commitment-lookup
+   logic (`build_entity_citation_lookup`) only sums `commitment_amounts_usd`
+   for USD-denominated rows and completely EXCLUDES non-USD ones from that
+   sum (by original design, since no historical FX rate is captured on the
+   register) - so `recompute_deal_financials` falls all the way back to the
+   tracker's own raw "Committed" figure for this deal (currently ~$26.78M,
+   NOT derived from our register at all), while Invested is computed
+   independently from real (larger, correctly-converted-to-USD) cash flows.
+   This is why Invested > Committed. FIX OPTIONS to discuss with the user:
+   (a) add a historical EUR/USD rate at each commitment's close date (Sep
+   2020) and convert properly - most correct, needs a rate source; (b) at
+   minimum, make the "Committed" WARNING/flag much more visible when this
+   fallback happens (currently only shows a `excluded_non_usd_commitments`
+   warning when there IS a partial USD commitment_amounts_usd sum to show
+   - here there's none at all, so it falls back silently to the tracker
+   figure with no warning shown). Do not silently apply a same-day FX rate
+   to a 2020 commitment - flagged, not fixed.
+2. **North Summit Capital Fund - cash flow doesn't match the CAS, NAV
+   does.** The Q1 2026 CAS/Unaudited FS (`...\2. North Summit Capital
+   Fund\2. Monitoring\2. Quarterly Reports, Financials\8. 2026\`) confirms
+   our NAV is already exactly right ($69,985,053, matches
+   `Tracker_Extract_Reconciled.xlsx` exactly). But our computed
+   Invested ($100,009,301) and Distributions ($24,523,261) do NOT match the
+   CAS's cumulative figures (Contributions $83,361,611 / Distributions
+   $7,875,571 for Galbot's 99.5% share). Root cause: of the 17 raw "CF
+   (Funds)" cashflow rows tagged to this fund, several are labeled
+   `CapitalCall` but carry a POSITIVE amount (e.g. +$9,950,000 on
+   2020-11-16, +$4,975,000 on 2020-12-31, +$6,787,910 on 2023-11-13) -
+   these get bucketed as Distributions by the sign-based rule, but they may
+   actually be recallable-capital-call reversals/equalizations that should
+   count as (reduced) contributions instead, not real cash back to G42.
+   Register's $300,000,000 commitment figure itself IS well-cited (Capital
+   Call Notice #1, 21 Jun 2019, HIGH CONFIDENCE) - no evidence found that
+   THIS figure is wrong. Needs either the underlying Capital Call/
+   Distribution notices (Acies has a dedicated notices folder; North
+   Summit's equivalent wasn't obviously present in the folders checked) or
+   direct user clarification on how to treat the positive-signed
+   `CapitalCall` rows before touching anything.
+3. **Cerebras Systems Inc (2)** - the >100x-capped warrant position from
+   yesterday's US Investments note is still flagged as worth a sanity
+   check against Cerebras's actual latest valuation - unrelated to today's
+   items but still open.
+4. News article on MGX/NewSpace the user mentioned 2026-08-17 - never
+   received; ask again if a corroborating citation is still wanted.
 
 ## 0. First thing to do next session
 

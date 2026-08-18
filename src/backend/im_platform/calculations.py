@@ -14,13 +14,14 @@ def _xirr(cashflows: list[tuple[datetime, float]]) -> float | None:
     if not (has_pos and has_neg):
         return None
 
+    t0 = cashflows[0][0]
+
     def npv(rate: float) -> float:
-        t0 = cashflows[0][0]
         return sum(v / ((1 + rate) ** ((d - t0).days / 365.0)) for d, v in cashflows)
 
+    # Newton-Raphson first (fast, exact when it converges).
     rate = 0.1
     for _ in range(80):
-        t0 = cashflows[0][0]
         f = 0.0
         df = 0.0
         for d, v in cashflows:
@@ -32,11 +33,35 @@ def _xirr(cashflows: list[tuple[datetime, float]]) -> float | None:
         if abs(df) < 1e-12:
             break
         new_rate = rate - f / df
+        if new_rate <= -0.999999:
+            break  # would go out of domain - fall through to bisection below
         if abs(new_rate - rate) < 1e-8:
             return new_rate
         rate = new_rate
 
-    return None
+    # Bisection fallback: Newton-Raphson can fail to converge (and silently
+    # return None) for extreme cases - e.g. a large realized/unrealized loss
+    # where the true IRR is a large negative number close to -100%. Bisection
+    # is slower but far more robust as long as npv() changes sign somewhere
+    # in a wide bracket, which it always does for a genuine loss or gain.
+    lo, hi = -0.999999, 100.0
+    f_lo, f_hi = npv(lo), npv(hi)
+    if f_lo == 0:
+        return lo
+    if f_hi == 0:
+        return hi
+    if (f_lo > 0) == (f_hi > 0):
+        return None  # no sign change in the bracket - genuinely unsolvable
+    for _ in range(200):
+        mid = (lo + hi) / 2
+        f_mid = npv(mid)
+        if f_mid == 0 or (hi - lo) < 1e-10:
+            return mid
+        if (f_lo > 0) == (f_mid > 0):
+            lo, f_lo = mid, f_mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
 
 
 def _to_usd_amount(df: pd.DataFrame, amount_col: str, currency_col: str, fx_col: str) -> pd.Series:
