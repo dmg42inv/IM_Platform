@@ -47,6 +47,12 @@ _DEAL_NAME_TO_INVESTMENT_IDS: dict[str, list[str]] = {
     "Mena Mobile Inc": ["MenaMobile-SeriesB-2019"],
     "Mena Mobile Inc (Debt)": ["MenaMobile-Loan-2021"],
     "MGX I Denali Holding LP": ["MGX-I-DenaliHolding-2024"],
+    # Two separate legal fund vehicles under one tracker entity_id (user-
+    # confirmed 2026-08-18) - without this, "New Space Capital Fund I" would
+    # pool in NewSpace-GPCom-2023's EUR2.3M too, since both rows share
+    # entity_id "1. New Space Capital Fund".
+    "New Space Capital Fund I": ["NewSpace-FundSCS-2020"],
+    "New Space Capital GP Com SCSp": ["NewSpace-GPCom-2023"],
 }
 
 # Ordered so the most specific/authoritative document type wins when several
@@ -135,6 +141,19 @@ def extract_instrument(confirmed_texts: list[str]) -> str | None:
     return None
 
 
+# Fixed conversion rates (units of USD per 1 unit of foreign currency) for
+# specific register rows booked in a non-USD currency, used ONLY to populate
+# commitment_amounts_usd below (the register row itself keeps its original
+# currency/amount as the primary-source figure). User-confirmed 2026-08-18:
+# this is the same fixed hedging/conversion rate Treasury uses for this fund,
+# not a spot/historical market rate - it also reconciles almost exactly with
+# the tracker's own previously-unexplained Committed figure for this deal
+# (EUR23,234,461.87 x 1.15 = USD26.7M vs tracker's USD26.8M).
+_FIXED_FX_RATES_TO_USD: dict[str, float] = {
+    "NewSpace-FundSCS-2020": 1.15,
+}
+
+
 def build_entity_citation_lookup(draft: pd.DataFrame) -> dict[str, dict]:
     """confirmed_entity_id -> {investing_entities: [...], commitments: [...],
     confidence: str, has_primary_source: bool}, aggregating all register
@@ -156,8 +175,11 @@ def build_entity_citation_lookup(draft: pd.DataFrame) -> dict[str, dict]:
         for _, r in rows.iterrows():
             if r["initial_commitment_amount"]:
                 commitments.append(f"{fmt_money_millions(float(r['initial_commitment_amount']), r['investment_currency'])} ({r['investment_id']})")
+                fx_rate = _FIXED_FX_RATES_TO_USD.get(r["investment_id"])
                 if str(r["investment_currency"]).upper() == "USD":
                     commitment_amounts_usd.append(float(r["initial_commitment_amount"]))
+                elif fx_rate is not None:
+                    commitment_amounts_usd.append(float(r["initial_commitment_amount"]) * fx_rate)
                 else:
                     excluded_non_usd.append(
                         f"{fmt_money_millions(float(r['initial_commitment_amount']), r['investment_currency'])} ({r['investment_id']})"

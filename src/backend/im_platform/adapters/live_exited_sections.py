@@ -59,6 +59,14 @@ _COMMITTED_EQUALS_INVESTED_DEALS: dict[str, str] = {
         "($24.53M) here rather than the register's raw $25.0M commitment-amount figure, since "
         "there is no outstanding commitment remaining."
     ),
+    "Life Biosciences LLC": (
+        "User-confirmed (2026-08-18): actual cash invested was $40.0M on a dollar basis (a "
+        "$20.0M initial convertible note, plus a further ~$20.0M on conversion). The register's "
+        "$40,947,395.44 figure includes ~$0.95M of accrued PIK interest on that convertible note, "
+        "paid in additional converted shares rather than cash - not an unfunded/outstanding "
+        "balance. Committed is pinned to Invested ($40.0M) here rather than the register's raw "
+        "figure, since there is no outstanding commitment remaining."
+    ),
     "Inveniam Ltd": (
         "User-confirmed (2026-08-18): the register's $100,032,722.58 figure is an exact "
         "instrument-level calculation (13,481,499 SARs x $7.42/SAR) - the $7.42 strike price "
@@ -111,6 +119,35 @@ _FUND_CAS_CASHFLOW_OVERRIDES: dict[str, dict] = {
             "The All Cashflows tab still shows the tracker's own dated entries, which will not "
             "individually foot to this total until the specific mis-tagged rows are identified "
             "(needs the underlying capital call/distribution notices, not yet located)."
+        ),
+    },
+    "New Space Capital Fund I": {
+        "invested": 17.80166535,
+        "distributions": 6.50828684,
+        "note": (
+            "Invested is 'Total contributions' EUR 15,479,709 (since inception) from the latest "
+            "(Q2 2026, 30 June 2026) Limited Partner Statement for NewSpace Capital Fund S.C.S. - "
+            "already NET of every equalisation capital-return event (confirmed against the "
+            "Remaining Commitment rollforward in each Drawdown/Equalisation notice). Distributions "
+            "is NOT the Statement's own 'Total distributions' line (EUR 2,402,466), because that "
+            "line is explicitly labelled 'Non-recallable' and by design excludes equalisation-"
+            "driven cash payments to G42 (confirmed user-explained 2026-08-18: as new investors "
+            "join, the Fund returns capital AND pays actualisation interest to existing investors "
+            "for having funded earlier) - those are real cash but are recallable/capital-return in "
+            "nature, not permanent profit distributions. Distributions here = EUR 2,402,466 (non-"
+            "recallable) + EUR 3,256,913.86 (the actualisation INTEREST component only, traced "
+            "through every Drawdown/Equalisation/Distribution notice 2023-2025 and confirmed as "
+            "actually paid out in cash, not merely netted against a still-positive capital call: "
+            "EUR2,067,567.04 in Distribution 1/27-Jan-2023, EUR62,495.83 in Distribution 2/DD14, "
+            "EUR345,590.90 in Distribution 4/DD17, EUR781,260.09 in DD20 - DD16's EUR56,063.44 "
+            "interest is excluded because it only reduced a still-net-positive capital call, never "
+            "paid out as cash) = EUR 5,659,379.86, converted to USD at the fixed 1.15 EUR/USD "
+            "hedging rate used by Treasury for this fund (same rate applied to Committed - see "
+            "NewSpace-FundSCS-2020 in register_citations.py). Not summed from the tracker's own "
+            "dated cash flow rows, which totalled a much larger USD36.1M invested - overstated by "
+            "the same class of sign/bucketing bug found at North Summit (e.g. the Aug-2025 "
+            "Drawdown 20 notice's 3 components were tracker-tagged 'Distribution'/'Fee'/"
+            "'CapitalCall' with signs that invert their true economic direction)."
         ),
     },
 }
@@ -265,7 +302,12 @@ def recompute_deal_financials(
             distributed_usd = entity_cf.loc[entity_cf["amount"] > 0, "amount"].sum() / 1_000_000
 
         entity_val = _deal_valuation(d["deal_name"], entity, val).sort_values("valuation_date")
-        carrying_usd = float(entity_val.iloc[-1]["fair_value_local"]) / 1_000_000 if len(entity_val) else 0.0
+        if len(entity_val):
+            latest_val = entity_val.iloc[-1]
+            fx_to_usd = float(latest_val["fx_to_usd"]) if pd.notna(latest_val.get("fx_to_usd")) else 1.0
+            carrying_usd = float(latest_val["fair_value_local"]) * fx_to_usd / 1_000_000
+        else:
+            carrying_usd = 0.0
 
         # Deal-name-specific citation first (see _DEAL_NAME_TO_INVESTMENT_IDS
         # in register_citations.py) so Committed isn't pooled across every

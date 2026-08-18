@@ -38,7 +38,7 @@ GLOSSARY: dict[str, tuple[str, str, str]] = {
     "X-fusion": ("X-fusion", "X-fusion", "Tracker-only entity - no primary transaction documents located; name not independently verified."),
     "Honor Device Co Ltd": ("Honor Device", "Honor Device Co., Ltd.", "Tracker-only entity - no primary transaction documents located."),
     "Jollychic Holding Limited": ("Jollychic Holding", "Jollychic Holding Limited", "Tracker-only entity - no primary transaction documents located."),
-    "1. New Space Capital Fund": ("New Space Capital Fund", "NewSpace Capital Fund S.C.A., SICAV-RAIF (ICEYE Sub-Fund)", "Leading '1.' is a register/folder ordering artifact, not part of the fund's name."),
+    "1. New Space Capital Fund": ("New Space Capital Fund", "NewSpace Capital Fund S.C.S.", "Leading '1.' is a register/folder ordering artifact, not part of the fund's name. Originally structured as 'NewSpace Capital Fund S.C.A., SICAV-RAIF' and converted to a simple partnership (S.C.S.) in 2021 - all Capital Account Statements/Drawdown Notices from 2022 onward (and the fund's own current NAV/Partner Statements) use the S.C.S. name. Not to be confused with the separate 'NewSpace Capital GP Com SCSp' vehicle (a distinct legal entity, GP-economics only)."),
     "2. Sinovation Disrupt Fund": ("Sinovation Disrupt Fund", "Sinovation Disrupt Fund, L.P.", "Leading '2.' is a register/folder ordering artifact, not part of the fund's name."),
     "2. North Summit Capital Fund": ("North Summit Capital Fund", "North Summit Capital Fund", "Leading '2.' is a register/folder ordering artifact, not part of the fund's name."),
     "3. ACIES": ("Acies", "Acies Ventures Fund I, L.P.", "Leading '3.' is a register/folder ordering artifact, not part of the fund's name."),

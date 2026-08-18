@@ -208,3 +208,57 @@ time.**
   absolutely-positioned hover-tooltip popups on data cells. Fixed by
   moving horizontal scroll to a dedicated `.table-scroll` wrapper around
   each `<table>` instead of applying it to the whole `.panel`.
+
+## 8. Session updates (2026-08-18, evening)
+
+- **Non-USD fund figures need an explicit, sourced conversion rate - never
+  a silent spot-rate substitution, and never a silent no-op either.** Two
+  distinct bugs were found in the same fund vehicle: (1) a non-USD
+  commitment amount was being fully excluded from every USD roll-up
+  (correctly flagged as understated, but never actually resolved), and (2)
+  a non-USD NAV/carrying-value mark was being divided by a million with
+  no FX conversion applied at all, even though a valid FX rate already
+  existed on that valuation record - a genuine latent bug, not a
+  missing-data gap. Fixed by (a) adding an explicit, small keyed override
+  for the fund's own fixed hedging/conversion rate (used only for that
+  specific commitment, sourced and documented, not a blanket market-rate
+  assumption), and (b) correcting the carrying-value computation to apply
+  whatever FX rate is already present on the valuation row instead of
+  ignoring it. **Structural takeaway**: any code path that converts/rolls
+  up a monetary figure into USD must be checked for whether a rate field
+  already exists on the record before assuming a conversion is missing -
+  "exclude and flag" is an acceptable interim state, never a final one.
+- **One tracker-level grouping can hide more than one legal entity.** Two
+  distinct fund vehicles were sharing one internal grouping key, so one
+  vehicle's commitment was being pooled into the other's citation/rollup
+  even though the dashboard already displayed them as separate rows.
+  Fixed using the same explicit per-entity mapping mechanism already used
+  elsewhere for this exact class of problem, rather than a bespoke patch.
+  **Structural takeaway**: the moment a tracker "deal" turns out to be
+  more than one legal vehicle, add it to the existing explicit-mapping
+  mechanism immediately.
+- **A fund statement's own headline distribution figure can itself be
+  incomplete by design** - refining the CAS-primacy policy from the prior
+  session. A fund's summary distribution line was explicitly scoped to
+  exclude a whole category of real cash payments to the investor (capital
+  returned as later investors are admitted, plus interest earned on
+  capital funded ahead of those investors) - both genuinely paid in cash,
+  confirmed against the fund's own transaction-level notices, but neither
+  counted in the statement's own headline total. Resolved by (a) trusting
+  the fund's net cumulative-contributions figure as-is for Invested (it
+  already nets out capital returned to the investor correctly), and (b)
+  separately identifying and adding back only the portion that is real
+  economic income (interest), verified line-by-line against every
+  transaction notice to confirm it was actually paid in cash rather than
+  merely netted against a still-outstanding capital call. **Structural
+  takeaway**: a fund administrator's own summary line is not automatically
+  complete just because it's the primary source - check what it's
+  explicitly scoped to exclude, and reconcile against transaction-level
+  detail before accepting a headline total.
+- **OCR fallback gap**: the PDF text extraction fallback to OCR only
+  triggers when extraction returns fully empty text - it does not detect
+  "succeeded but garbled" extraction (some PDFs' embedded font encoding
+  produces non-empty but nonsensical output). Widened practice: treat
+  clearly non-language output as a signal to force OCR, not just empty
+  output.
+

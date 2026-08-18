@@ -1,5 +1,69 @@
 # PRD Change Log
 
+## 2026-08-18 (evening) - v1.11.0
+
+- **New standing policy: non-USD fund commitments and NAV marks need an
+  explicit, defensible conversion rate - never a silent same-day/spot
+  rate substitution.** A fund vehicle's commitment and NAV were booked in
+  a foreign currency; the platform's default behaviour was to either drop
+  the amount entirely from USD roll-ups (flagged as understated) or, for
+  NAV, silently divide by a million with no FX conversion applied at all
+  even though the underlying data already carried a valid rate. Resolved
+  by (1) using the fund's own stated fixed hedging/conversion rate
+  (confirmed by the user as the rate Treasury actually uses for this
+  vehicle, not a market/spot rate) for the commitment conversion, and (2)
+  fixing the NAV/carrying-value computation to apply the FX rate already
+  present in the valuation data instead of ignoring it - a genuine latent
+  bug, not a missing-data problem. **Structural takeaway**: any USD roll-
+  up of a non-USD figure must have an explicit, sourced conversion rate
+  attached to it; "exclude and flag" is an acceptable interim state but
+  must never be treated as the final answer, and any code path that
+  divides/multiplies a monetary figure should be checked for whether an
+  FX field already exists on that record before assuming a rate is
+  missing.
+- **New standing policy: for a fund with more than one legal vehicle
+  sharing one tracker-level grouping, each vehicle needs its own explicit
+  identity mapping - do not rely on a shared grouping key to keep them
+  separate.** Two distinct legal fund entities were being grouped under
+  one internal identifier, causing one vehicle's commitment to be pooled
+  into the other's citation/rollup. Fixed by adding an explicit per-
+  vehicle mapping (the same pattern already used elsewhere for splitting
+  pooled entities), rather than a one-off patch to the specific pair
+  found. **Structural takeaway**: whenever a tracker-level "deal" turns
+  out to be more than one legal entity, add it to the existing explicit-
+  mapping mechanism immediately rather than special-casing it.
+- **Reaffirmed and extended the fund Capital Account Statement (CAS)
+  primacy policy from the previous session, with an important
+  refinement**: a fund's own headline "distributions" figure can itself
+  be incomplete by design (e.g. explicitly scoped to "non-recallable"
+  distributions only), excluding real cash paid to the investor through
+  a different, equally legitimate mechanism (capital returned to existing
+  investors as new investors are admitted, plus interest earned on
+  capital funded ahead of those later investors). **Structural takeaway**:
+  a fund statement's own summary line should not be trusted at face value
+  just because it comes from the fund administrator - always check what
+  the line item is explicitly scoped to exclude, and cross-reference
+  against the fund's own transaction-level notices (capital call/
+  distribution/equalisation notices) before accepting a headline total as
+  complete. Distinguish (a) capital returned to an investor because of a
+  later investor's admission - already reflected in a properly-computed
+  net funded-capital figure - from (b) interest paid on that capital for
+  the intervening period, which is real income and must be added
+  separately if the headline distribution figure excludes it.
+- **Process lesson on document reliability**: a PDF's extracted text can
+  be silently unreadable (garbled/encoded placeholder characters) even
+  though extraction technically "succeeds" (returns non-empty text) - the
+  existing OCR fallback only triggers on genuinely empty extraction, not
+  on garbled-but-non-empty text. Widened practice: when extracted text
+  looks like it isn't real words, force OCR rather than trusting a
+  non-empty-but-nonsensical result.
+- **Process lesson reaffirmed**: when a user's stated figure doesn't
+  match the platform's own data, the correct response is to independently
+  verify against the primary source documents before either accepting or
+  overriding the user's number - in this session this approach surfaced a
+  genuine platform bug (the FX/rollup issues above) that a passive
+  "trust whichever side" response would have missed either way.
+
 ## 2026-08-18 (afternoon/evening) - v1.10.0
 
 - **Display/formatting rework, done structurally rather than case-by-case**:
