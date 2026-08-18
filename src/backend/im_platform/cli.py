@@ -425,7 +425,7 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
 
     as_of_date = valuation["valuation_date"].max() if len(valuation) else None
     html = build_tracker_style_dashboard_html(
-        deals, section_irr, vintage_irr, quarterly, historical_nav, cashflow, ownership, change_log,
+        deals, section_irr, vintage_irr, quarterly, historical_nav, cashflow, valuation, ownership, change_log,
         pd.DataFrame(), triangulation_notes, deal_entity_map, citation_lookup, glossary,
         scan_report=scan_report, as_of_date=as_of_date,
     )

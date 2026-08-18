@@ -20,7 +20,16 @@ import pandas as pd
 
 from .entity_glossary import display_name, investing_entity_full_name
 from .formatting import fmt_multiple, fmt_num
-from .live_exited_sections import _COMMITTED_EQUALS_INVESTED_DEALS, _FUND_CAS_CASHFLOW_OVERRIDES
+from .live_exited_sections import _COMMITTED_EQUALS_INVESTED_DEALS, _FUND_CAS_CASHFLOW_OVERRIDES, compute_vintage_irr
+
+# Exploratory curated view (user-requested 2026-08-19): same as the Vintage
+# tab, but excluding MGX (large, recently-added, tends to dominate its
+# vintage year) and every Exited position - "just want to see the portfolio
+# without those". Kept as its own separate tab rather than replacing the
+# main Vintage tab, which stays complete/unfiltered.
+_VINTAGE1_EXCLUDED_DEALS = {
+    "MGX I LP", "MGX I Denali Holding LP", "MGX 1 Strategic Co-invest", "MGX Group Holding 1 Ltd (GP)",
+}
 
 # Deal names where the Invested/cash-flow figure has been specifically
 # cross-checked against a primary source document (not just "sourced from
@@ -223,6 +232,7 @@ def _render_vintage_table(
     as_of_date: str,
     deal_entity_map: dict[str, str],
     citation_lookup: dict[str, dict],
+    table_id: str = "table-vintage",
 ) -> str:
     """Same deal-level table as _render_deal_table, but grouped by vintage
     year (across BOTH Live and Exited) instead of by investing entity - shows
@@ -349,7 +359,7 @@ def _render_vintage_table(
         "<col style='width:8%'><col style='width:8%'><col style='width:7%'><col style='width:5%'><col style='width:5%'>"
         "</colgroup>"
     )
-    return f"<div class='table-scroll'><table id='table-vintage' class='deal-table'>{colgroup}{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
+    return f"<div class='table-scroll'><table id='{table_id}' class='deal-table'>{colgroup}{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
 
 def _render_cashflow_table(cashflow: pd.DataFrame) -> str:
@@ -564,6 +574,7 @@ def build_tracker_style_dashboard_html(
     quarterly: pd.DataFrame,
     historical_nav: pd.DataFrame,
     cashflow: pd.DataFrame,
+    valuation: pd.DataFrame,
     ownership: pd.DataFrame,
     change_log: pd.DataFrame,
     issues: pd.DataFrame,
@@ -582,6 +593,11 @@ def build_tracker_style_dashboard_html(
     live_table = _render_deal_table(deals, section_irr, "Live", as_of_date, deal_entity_map, citation_lookup)
     exited_table = _render_deal_table(deals, section_irr, "Exited", as_of_date, deal_entity_map, citation_lookup)
     vintage_table = _render_vintage_table(deals, vintage_irr, as_of_date, deal_entity_map, citation_lookup)
+    vintage1_deals = deals[(deals["tab"] == "Live") & (~deals["deal_name"].isin(_VINTAGE1_EXCLUDED_DEALS))]
+    vintage1_irr = compute_vintage_irr(vintage1_deals, cashflow, valuation, deal_entity_map)
+    vintage1_table = _render_vintage_table(
+        vintage1_deals, vintage1_irr, as_of_date, deal_entity_map, citation_lookup, table_id="table-vintage1"
+    )
     cashflow_table = _render_cashflow_table(cashflow)
     ownership_table = _render_ownership_table(ownership)
     log_table = _render_log_table(change_log)
@@ -617,6 +633,7 @@ def build_tracker_style_dashboard_html(
         live_table=live_table,
         exited_table=exited_table,
         vintage_table=vintage_table,
+        vintage1_table=vintage1_table,
         cashflow_table=cashflow_table,
         ownership_table=ownership_table,
         log_table=log_table,
@@ -715,6 +732,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   <button class="tab-btn active" data-tab="live">Live Investments</button>
   <button class="tab-btn" data-tab="exited">Exited Investments</button>
   <button class="tab-btn" data-tab="vintage">Vintage</button>
+  <button class="tab-btn" data-tab="vintage1">Vintage 1</button>
   <button class="tab-btn" data-tab="cashflows">All Cashflows</button>
   <button class="tab-btn" data-tab="ownership">Ownership &amp; Domiciliation</button>
   <button class="tab-btn" data-tab="log">Log</button>
@@ -760,6 +778,14 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
     <div class="panel">
       <div class="panel-head"><h2>All Investments, by Vintage Year</h2><button class="dl-btn" onclick="downloadCSV('table-vintage','vintage.csv')">Download CSV</button></div>
       {vintage_table}
+    </div>
+  </section>
+
+  <section id="vintage1" class="tab">
+    <div class="panel">
+      <div class="panel-head"><h2>Live Investments (excl. MGX), by Vintage Year</h2><button class="dl-btn" onclick="downloadCSV('table-vintage1','vintage1.csv')">Download CSV</button></div>
+      <p class="muted">Exploratory view: Live positions only, excluding MGX I LP / MGX I Denali Holding LP / MGX 1 Strategic Co-invest / MGX Group Holding 1 Ltd (GP) - to see portfolio performance by vintage without MGX or exited positions skewing the totals.</p>
+      {vintage1_table}
     </div>
   </section>
 
