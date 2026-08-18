@@ -130,3 +130,56 @@ def extract_change_log(path: Path) -> pd.DataFrame:
         if company_cell and update_cell:
             rows.append({"month": current_month, "company": company_cell, "update": update_cell})
     return pd.DataFrame(rows)
+
+
+# The tracker's own "NAV" sheet is laid out as: a "NAV Date" cell near the
+# top, a header row ("Investments"/"Investing Entity"/"Instrument"/
+# "Carrying Value"/.../"Comment"), then deals grouped under plain-text
+# section rows ("Direct Investments", "Debt Investments", "Funds
+# Investments") - the MGX rows continue directly after "Funds Investments"
+# with no section label of their own, still Funds. A trailing "Note:" row
+# (and any further bullet notes under it) ends the data.
+_NAV_SHEET_SECTION_LABELS = {"direct investments", "debt investments", "funds investments"}
+
+
+def extract_nav_sheet(path: Path) -> tuple[pd.DataFrame, str]:
+    """Parses the tracker's own 'NAV' sheet for the two fields not otherwise
+    captured anywhere else in the pipeline: an asset Type (Listed/Fund/PE,
+    derived from the section + the tracker's own Comment text) and a
+    Comment (source/last-revised note per deal). Returns (nav_df, nav_date)
+    - nav_df has columns deal_name/investment_type/comment. Deliberately
+    does NOT return the tracker's own Carrying Value figures - those are
+    joined onto the platform's own already FX-corrected `carrying_value`
+    by deal name instead, so this sheet is only a source for Type/Comment,
+    not for the NAV number itself."""
+    raw = pd.read_excel(path, sheet_name="NAV", header=None)
+
+    nav_date = ""
+    for idx in range(len(raw)):
+        row = raw.iloc[idx]
+        if _norm(row[1]).lower() == "nav date" and len(row) > 2 and pd.notna(row[2]):
+            nav_date = pd.Timestamp(row[2]).strftime("%d %b %Y")
+            break
+
+    rows = []
+    current_section = ""
+    for idx in range(len(raw)):
+        row = raw.iloc[idx]
+        deal_name = _norm(row[1]) if len(row) > 1 else ""
+        if not deal_name:
+            continue
+        if deal_name.lower() == "note:":
+            break
+        if deal_name.lower() in _NAV_SHEET_SECTION_LABELS:
+            current_section = deal_name.lower()
+            continue
+        comment = _norm(row[7]) if len(row) > 7 else ""
+        if current_section == "funds investments":
+            investment_type = "Fund"
+        elif "listed" in comment.lower():
+            investment_type = "Listed"
+        else:
+            investment_type = "PE"
+        rows.append({"deal_name": deal_name, "investment_type": investment_type, "comment": comment})
+    return pd.DataFrame(rows), nav_date
+

@@ -124,12 +124,19 @@ time.**
 - `Carrying Value` = latest mark from the NAV tab.
 - `Committed` = register's primary-source commitment amount; falls back to
   the tracker's own figure only when no primary source is confirmed yet
-  (and is flagged as such).
+  (and is flagged as such). A non-USD commitment amount is converted using
+  a documented fixed rate when one has been confirmed (see section 8);
+  otherwise it is excluded from the USD roll-up and flagged as understated
+  rather than silently dropped. For a fully exited position, Committed is
+  always pinned to Invested (no outstanding commitment can remain once a
+  position has exited, regardless of the original commitment figure).
 - `Remaining` = Committed - Invested.
 - `Gain` = Carrying Value + Distributions - Invested.
 - `TVPI` = (Distributions + Carrying Value) / Invested.
 - `IRR` (deal and section/pooled level) = XIRR over the same dated cash
-  flows, with the latest NAV mark as a terminal cash flow.
+  flows, with the latest NAV mark as a terminal cash flow. A vintage-level
+  IRR (pooling every deal that shares a commitment year, across both Live
+  and Exited) is computed the same way - see section 9.
 
 ## 6. Known limitations (as of 2026-08-16)
 
@@ -261,4 +268,48 @@ time.**
   produces non-empty but nonsensical output). Widened practice: treat
   clearly non-language output as a signal to force OCR, not just empty
   output.
+
+## 9. Session updates (2026-08-19)
+
+- **Non-USD conversion rates are per-vehicle, not one global constant.**
+  Two related vehicles under the same fund family were found to use two
+  DIFFERENT fixed conversion factors (confirmed against each vehicle's own
+  tracker-reported figures, not assumed) - reinforcing that the fixed-rate
+  override mechanism introduced in section 8 must stay keyed per
+  investment/vehicle, never applied as a single fund-family-wide constant.
+- **When our own recomputed figure disagrees with the tracker's raw
+  figure, check whether the tracker is actually the one that's right**
+  before assuming the recompute pipeline is authoritative. The general
+  policy (register/cash-flow recompute over the tracker's own report
+  figures) is a default, not an absolute rule - in one case this session,
+  the tracker's own raw Committed/Invested numbers turned out to already
+  correctly reflect a vehicle's specific economics (paid in full upfront),
+  while our own cash-flow-derived recompute had inherited an unconverted-
+  currency bug. Resolution: verify independently (here, by reproducing the
+  tracker's implied math from the register's own commitment figure) rather
+  than defaulting to "our pipeline overrides the tracker" as an unquestioned
+  rule.
+- **New aggregation dimension: vintage year.** Deals can now be viewed
+  grouped by vintage (commitment year) instead of investing entity,
+  pooling across both Live and Exited status, with the same subtotal/
+  grand-total/blended-IRR pattern already used for entity-based sections.
+  This is a genuinely different cut of the same underlying per-deal data,
+  not a new data source - implemented as an additional grouping function
+  parallel to the existing entity-based one.
+- **Curated/filtered views belong in their own additional tab, not as a
+  destructive filter on an existing one.** When a user wants to see the
+  portfolio with certain deals/positions excluded "just to see", the
+  right pattern is a new, clearly-labelled tab reusing the same rendering
+  function with a pre-filtered input, leaving the complete/unfiltered view
+  untouched and still the default. Keeps exploratory views honest (clearly
+  labelled as a subset) without fragmenting the underlying data model.
+- **A monthly snapshot + period-over-period diff capability was designed
+  (not yet built)**: persist a per-deal, per-period snapshot of the final
+  corrected figures every time the report is regenerated, then compute a
+  diff (new/exited/changed deals, with notable-change flags) between the
+  two most recent periods. Snapshotting must capture the POST-correction
+  figures, not the tracker's raw ones, and must be a side effect of the
+  normal regeneration step (not a separate manual action) so it can't be
+  forgotten. See repo memory / session handoff for the open design
+  questions before building this.
 

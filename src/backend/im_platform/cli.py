@@ -41,6 +41,7 @@ from .adapters.tracker_supplementary_tabs import (
     build_historical_nav_series,
     discover_monthly_tracker_files,
     extract_change_log,
+    extract_nav_sheet,
     extract_ownership_domicile,
 )
 from .adapters.scan_for_updates import scan_for_new_investments, write_scan_report
@@ -418,6 +419,8 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
 
     ownership = extract_ownership_domicile(args.tracker_file)
     change_log = extract_change_log(args.tracker_file)
+    nav_sheet_df, nav_date = extract_nav_sheet(args.tracker_file)
+    nav_info = nav_sheet_df.set_index("deal_name")[["investment_type", "comment"]].to_dict(orient="index")
 
     scan_report = None
     if scan_report_path.exists():
@@ -425,8 +428,9 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
 
     as_of_date = valuation["valuation_date"].max() if len(valuation) else None
     html = build_tracker_style_dashboard_html(
-        deals, section_irr, vintage_irr, quarterly, historical_nav, cashflow, valuation, ownership, change_log,
+        deals, section_irr, vintage_irr, quarterly, historical_nav, cashflow, ownership, change_log,
         pd.DataFrame(), triangulation_notes, deal_entity_map, citation_lookup, glossary,
+        nav_info=nav_info, nav_date=nav_date,
         scan_report=scan_report, as_of_date=as_of_date,
     )
 

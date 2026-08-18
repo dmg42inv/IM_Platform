@@ -1,5 +1,67 @@
 # PRD Change Log
 
+## 2026-08-19 - v1.12.0
+
+- **Refined the non-USD conversion policy from v1.11.0**: a fixed
+  conversion rate is defined per specific vehicle/instrument, never as one
+  constant applied across a whole fund family - two related vehicles
+  under the same fund were confirmed to use two different rates, each
+  independently verified against that vehicle's own reported figures
+  before being applied. Reapplying a rate confirmed for one vehicle to a
+  related one without separately verifying it would have been wrong.
+- **New standing policy: an exited position always shows zero outstanding
+  commitment.** Committed is now structurally pinned to Invested for every
+  position in an Exited/realized status, applied as a blanket rule rather
+  than case-by-case - a fully exited position cannot have any capital left
+  to call, regardless of what the original commitment document says.
+- **Process lesson refining the "recompute over trust the tracker"
+  default**: that default is not absolute. When the platform's own
+  recomputed figure disagreed with the tracker's own raw figure for a
+  specific vehicle, independent verification (reproducing the tracker's
+  implied calculation from the vehicle's own confirmed commitment amount)
+  showed the tracker was actually right, and the platform's own cash-flow-
+  derived recompute had inherited a currency-conversion bug. Lesson:
+  investigate a disagreement on its merits rather than assuming either
+  side is automatically authoritative.
+- **New portfolio view: by vintage year.** Deals can now be viewed grouped
+  by commitment/vintage year (pooling Live and Exited together) instead of
+  by investing entity, with the same subtotal-per-group and blended-IRR
+  pattern used elsewhere - answers "how much was deployed, and how has it
+  performed, per vintage" directly, a question the entity-grouped view
+  couldn't answer without manual re-aggregation.
+- **New pattern: curated/filtered exploratory views live in their own
+  additional tab**, reusing the same rendering logic against a pre-
+  filtered subset of the same underlying data, rather than altering or
+  replacing the complete/default view. Keeps ad hoc "what if we exclude
+  X" looks clearly labelled as a subset without fragmenting the primary
+  data model.
+- **Designed (not yet built): a monthly snapshot + period-over-period
+  diff capability.** Persisting the final, corrected per-deal figures at
+  each reporting period, then computing what changed (new/exited/changed
+  positions, with notable-change flags) between the two most recent
+  periods - intended to make month-over-month review fast without manual
+  re-comparison. Snapshotting must capture post-correction figures (not
+  the tracker's raw ones) and must happen automatically as part of the
+  normal report-generation step.
+- **New portfolio view: NAV as-of-date, grouped by asset type.** A field
+  the platform doesn't otherwise capture (an asset-type classification -
+  listed/fund/private) is sourced from the tracker where it already
+  exists, joined onto the platform's own figures by deal name - the
+  underlying NAV/carrying-value number itself still always comes from the
+  platform's own corrected computation, never the tracker's raw figure
+  for that same field. Live and Exited positions are shown in separate
+  sections rather than mixed together, since a NAV-by-type breakdown is
+  only meaningful for active positions.
+- **Important correction to the above, caught during review**: a
+  source/last-revised note describing WHY a figure is what it is must
+  also come from the platform's own record of what it last did, not be
+  copy-pasted from the external tracker - the tracker's own equivalent
+  note can go stale the moment the platform rolls a figure forward on its
+  own initiative, silently misdescribing an up-to-date number with an
+  outdated source reference. General rule: when displaying "why is this
+  number this value", always point at the platform's own most recent
+  action, not an external system's account of it.
+
 ## 2026-08-18 (evening) - v1.11.0
 
 - **New standing policy: non-USD fund commitments and NAV marks need an

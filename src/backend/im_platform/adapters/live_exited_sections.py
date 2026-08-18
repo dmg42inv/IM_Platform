@@ -307,6 +307,7 @@ def recompute_deal_financials(
 
     new_committed, new_invested, new_remaining = [], [], []
     new_distributions, new_carrying, new_gain, new_tvpi = [], [], [], []
+    new_assumption_note, new_valuation_date = [], []
 
     for _, d in deals.iterrows():
         entity = deal_entity_map.get(d["deal_name"], "")
@@ -324,8 +325,12 @@ def recompute_deal_financials(
             latest_val = entity_val.iloc[-1]
             fx_to_usd = float(latest_val["fx_to_usd"]) if pd.notna(latest_val.get("fx_to_usd")) else 1.0
             carrying_usd = float(latest_val["fair_value_local"]) * fx_to_usd / 1_000_000
+            assumption_note = str(latest_val.get("assumption_note", "") or "")
+            valuation_date = latest_val["valuation_date"].strftime("%Y-%m-%d") if pd.notna(latest_val["valuation_date"]) else ""
         else:
             carrying_usd = 0.0
+            assumption_note = ""
+            valuation_date = ""
 
         # Deal-name-specific citation first (see _DEAL_NAME_TO_INVESTMENT_IDS
         # in register_citations.py) so Committed isn't pooled across every
@@ -351,6 +356,8 @@ def recompute_deal_financials(
         new_carrying.append(carrying_usd)
         new_gain.append(gain_usd)
         new_tvpi.append(tvpi_val)
+        new_assumption_note.append(assumption_note)
+        new_valuation_date.append(valuation_date)
 
     deals["committed"] = new_committed
     deals["invested"] = new_invested
@@ -359,6 +366,8 @@ def recompute_deal_financials(
     deals["carrying_value"] = new_carrying
     deals["gain"] = new_gain
     deals["tvpi"] = new_tvpi
+    deals["assumption_note"] = new_assumption_note
+    deals["valuation_date"] = new_valuation_date
     return deals
 
 

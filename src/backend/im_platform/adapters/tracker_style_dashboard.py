@@ -20,16 +20,7 @@ import pandas as pd
 
 from .entity_glossary import display_name, investing_entity_full_name
 from .formatting import fmt_multiple, fmt_num
-from .live_exited_sections import _COMMITTED_EQUALS_INVESTED_DEALS, _FUND_CAS_CASHFLOW_OVERRIDES, compute_vintage_irr
-
-# Exploratory curated view (user-requested 2026-08-19): same as the Vintage
-# tab, but excluding MGX (large, recently-added, tends to dominate its
-# vintage year) and every Exited position - "just want to see the portfolio
-# without those". Kept as its own separate tab rather than replacing the
-# main Vintage tab, which stays complete/unfiltered.
-_VINTAGE1_EXCLUDED_DEALS = {
-    "MGX I LP", "MGX I Denali Holding LP", "MGX 1 Strategic Co-invest", "MGX Group Holding 1 Ltd (GP)",
-}
+from .live_exited_sections import _COMMITTED_EQUALS_INVESTED_DEALS, _FUND_CAS_CASHFLOW_OVERRIDES
 
 # Deal names where the Invested/cash-flow figure has been specifically
 # cross-checked against a primary source document (not just "sourced from
@@ -362,6 +353,95 @@ def _render_vintage_table(
     return f"<div class='table-scroll'><table id='{table_id}' class='deal-table'>{colgroup}{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
 
+def _render_nav_table(deals: pd.DataFrame, nav_info: dict[str, dict], nav_date: str) -> str:
+    """NAV-focused view: Live deals grouped by asset Type (Listed/Fund/PE),
+    with Exited deals kept in their own separate trailing section (mostly
+    zero NAV, not worth sub-grouping by Type) - with a subtotal per group
+    and a grand total. Carrying Value is always the platform's OWN already
+    FX-corrected figure, never the tracker's raw NAV sheet number. Type
+    comes from the tracker's own 'NAV' sheet (not captured anywhere else in
+    the pipeline). Comment is the platform's OWN `assumption_note` for the
+    exact valuation row used for Carrying Value (paired with its date) -
+    deliberately NOT the tracker's own NAV-sheet Comment text, which can go
+    stale relative to the platform's own NAV roll-forwards (e.g. showing
+    last quarter's CAS after this session already rolled the figure
+    forward to the latest one)."""
+    rows_html = []
+
+    def _comment_for(d: pd.Series) -> str:
+        note = d.get("assumption_note", "") or ""
+        vdate = d.get("valuation_date", "") or ""
+        if note and vdate:
+            return f"{note} (as of {vdate})"
+        return note
+
+    def _render_group(group: pd.DataFrame, type_label: str) -> None:
+        for _, d in group.iterrows():
+            comment = _comment_for(d)
+            comment_tt = "Platform's own valuation source note for this Carrying Value - see the Live/Exited tabs for full sourcing."
+            carrying_tt = "Latest carrying value, FX-corrected - same figure shown in the Live/Exited tabs."
+            rows_html.append(
+                "<tr>"
+                + _td(_esc(d["deal_name"]), cls="left")
+                + _td(_esc(d["status"]))
+                + _td(_esc(d["investing_entity"]))
+                + _td(_esc(d["instrument"]))
+                + _td(_esc(type_label))
+                + _td(_fnum(d["carrying_value"]), carrying_tt)
+                + _td(_esc(comment), comment_tt, cls="left wrap")
+                + "</tr>"
+            )
+        subtotal = group["carrying_value"].sum()
+        rows_html.append(
+            '<tr class="subtotal">'
+            + _td("Subtotal", cls="left") + "<td></td><td></td><td></td><td></td>"
+            + _td(_fnum(subtotal))
+            + "<td></td>"
+            + "</tr>"
+        )
+
+    live_deals = deals[deals["tab"] == "Live"]
+    exited_deals = deals[deals["tab"] == "Exited"]
+
+    type_order = ["Listed", "Fund", "PE", "Not classified"]
+    live_with_type = live_deals.assign(
+        _nav_type=live_deals["deal_name"].map(lambda d: nav_info.get(d, {}).get("investment_type", "Not classified"))
+    )
+    for inv_type in type_order:
+        group = live_with_type[live_with_type["_nav_type"] == inv_type]
+        if len(group) == 0:
+            continue
+        rows_html.append(f'<tr class="section-header"><td colspan="7">{_esc(inv_type)}</td></tr>')
+        _render_group(group, inv_type)
+
+    if len(exited_deals):
+        rows_html.append('<tr class="section-header"><td colspan="7">Exited</td></tr>')
+        _render_group(exited_deals, "Exited")
+
+    grand_total = deals["carrying_value"].sum()
+    rows_html.append(
+        '<tr class="grand-total">'
+        + _td("Grand Total", cls="left") + "<td></td><td></td><td></td><td></td>"
+        + _td(_fnum(grand_total))
+        + "<td></td>"
+        + "</tr>"
+    )
+
+    header = (
+        "<thead><tr>"
+        "<th class='left'>Deal</th><th>Status</th><th>Investing Entity</th><th>Instrument</th><th>Type</th>"
+        "<th>Carrying Value ($m)</th><th class='left'>Comment</th>"
+        "</tr></thead>"
+    )
+    colgroup = (
+        "<colgroup>"
+        "<col style='width:18%'><col style='width:8%'><col style='width:10%'><col style='width:10%'>"
+        "<col style='width:7%'><col style='width:10%'><col style='width:37%'>"
+        "</colgroup>"
+    )
+    return f"<div class='table-scroll'><table id='table-nav' class='deal-table'>{colgroup}{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
+
+
 def _render_cashflow_table(cashflow: pd.DataFrame) -> str:
     cf = cashflow.copy()
     cf["flow_date"] = pd.to_datetime(cf["flow_date"], errors="coerce")
@@ -396,13 +476,10 @@ def _render_glossary_table(glossary: pd.DataFrame) -> str:
             "<tr>"
             + _td(_esc(r["display_name"]), cls="left")
             + _td(_esc(r["full_legal_name"]), cls="left")
-            + _td(_esc(r["entity_id"]), cls="left")
-            + _td(_esc(r["note"]), cls="left wrap")
             + "</tr>"
         )
     header = (
-        "<thead><tr><th class='left'>Display Name</th><th class='left'>Full Legal Name</th>"
-        "<th class='left'>Internal Register ID</th><th class='left'>Note</th></tr></thead>"
+        "<thead><tr><th class='left'>Display Name</th><th class='left'>Full Legal Name</th></tr></thead>"
     )
     return f"<div class='table-scroll'><table id='table-glossary'>{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
@@ -574,7 +651,6 @@ def build_tracker_style_dashboard_html(
     quarterly: pd.DataFrame,
     historical_nav: pd.DataFrame,
     cashflow: pd.DataFrame,
-    valuation: pd.DataFrame,
     ownership: pd.DataFrame,
     change_log: pd.DataFrame,
     issues: pd.DataFrame,
@@ -582,6 +658,8 @@ def build_tracker_style_dashboard_html(
     deal_entity_map: dict[str, str],
     citation_lookup: dict[str, dict],
     glossary: pd.DataFrame,
+    nav_info: dict[str, dict] | None = None,
+    nav_date: str = "",
     scan_report: dict | None = None,
     as_of_date: str | None = None,
 ) -> str:
@@ -593,11 +671,7 @@ def build_tracker_style_dashboard_html(
     live_table = _render_deal_table(deals, section_irr, "Live", as_of_date, deal_entity_map, citation_lookup)
     exited_table = _render_deal_table(deals, section_irr, "Exited", as_of_date, deal_entity_map, citation_lookup)
     vintage_table = _render_vintage_table(deals, vintage_irr, as_of_date, deal_entity_map, citation_lookup)
-    vintage1_deals = deals[(deals["tab"] == "Live") & (~deals["deal_name"].isin(_VINTAGE1_EXCLUDED_DEALS))]
-    vintage1_irr = compute_vintage_irr(vintage1_deals, cashflow, valuation, deal_entity_map)
-    vintage1_table = _render_vintage_table(
-        vintage1_deals, vintage1_irr, as_of_date, deal_entity_map, citation_lookup, table_id="table-vintage1"
-    )
+    nav_table = _render_nav_table(deals, nav_info or {}, nav_date)
     cashflow_table = _render_cashflow_table(cashflow)
     ownership_table = _render_ownership_table(ownership)
     log_table = _render_log_table(change_log)
@@ -633,7 +707,8 @@ def build_tracker_style_dashboard_html(
         live_table=live_table,
         exited_table=exited_table,
         vintage_table=vintage_table,
-        vintage1_table=vintage1_table,
+        nav_table=nav_table,
+        nav_date=nav_date or as_of_date,
         cashflow_table=cashflow_table,
         ownership_table=ownership_table,
         log_table=log_table,
@@ -732,7 +807,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   <button class="tab-btn active" data-tab="live">Live Investments</button>
   <button class="tab-btn" data-tab="exited">Exited Investments</button>
   <button class="tab-btn" data-tab="vintage">Vintage</button>
-  <button class="tab-btn" data-tab="vintage1">Vintage 1</button>
+  <button class="tab-btn" data-tab="nav">NAV</button>
   <button class="tab-btn" data-tab="cashflows">All Cashflows</button>
   <button class="tab-btn" data-tab="ownership">Ownership &amp; Domiciliation</button>
   <button class="tab-btn" data-tab="log">Log</button>
@@ -781,11 +856,11 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
     </div>
   </section>
 
-  <section id="vintage1" class="tab">
+  <section id="nav" class="tab">
     <div class="panel">
-      <div class="panel-head"><h2>Live Investments (excl. MGX), by Vintage Year</h2><button class="dl-btn" onclick="downloadCSV('table-vintage1','vintage1.csv')">Download CSV</button></div>
-      <p class="muted">Exploratory view: Live positions only, excluding MGX I LP / MGX I Denali Holding LP / MGX 1 Strategic Co-invest / MGX Group Holding 1 Ltd (GP) - to see portfolio performance by vintage without MGX or exited positions skewing the totals.</p>
-      {vintage1_table}
+      <div class="panel-head"><h2>NAV as of {nav_date}, by Type</h2><button class="dl-btn" onclick="downloadCSV('table-nav','nav.csv')">Download CSV</button></div>
+      <p class="muted">Type (Listed/Fund/PE) is sourced from the tracker's own "NAV" sheet. Carrying Value and Comment (source/last-revised note) are the platform's OWN figures - Carrying Value is the same FX-corrected number shown in the Live/Exited tabs, and Comment is that same valuation row's own source note (not the tracker's NAV-sheet Comment text, which can go stale after this platform rolls a NAV forward). Live positions are grouped by Type; Exited positions are kept in their own separate section below.</p>
+      {nav_table}
     </div>
   </section>
 
