@@ -112,6 +112,12 @@ def _render_deal_table(
                 committed_tt = f"No confirmed primary-source commitment amount in the register yet - showing {tracker_src}."
             if d["deal_name"] in _COMMITTED_EQUALS_INVESTED_DEALS:
                 committed_tt = _COMMITTED_EQUALS_INVESTED_DEALS[d["deal_name"]]
+            elif tab_label == "Exited":
+                committed_tt = (
+                    "Position fully exited - Committed is pinned to Invested here (no outstanding "
+                    "commitment remains for an exited position, regardless of the original commitment "
+                    "document's figure)."
+                )
             elif committed_citation.get("excluded_non_usd_commitments"):
                 committed_tt += (
                     " WARNING: Committed is UNDERSTATED - excludes a non-USD commitment not converted here: "

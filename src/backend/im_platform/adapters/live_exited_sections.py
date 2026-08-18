@@ -315,7 +315,11 @@ def recompute_deal_financials(
         citation = citation_lookup.get(d["deal_name"]) or citation_lookup.get(entity, {})
         commitment_amounts = citation.get("commitment_amounts_usd", [])
         committed_usd = sum(commitment_amounts) / 1_000_000 if commitment_amounts else d["committed"]
-        if d["deal_name"] in _COMMITTED_EQUALS_INVESTED_DEALS:
+        # A fully exited position has no outstanding commitment left by
+        # definition, regardless of what the original commitment document
+        # said - structural rule (user-confirmed 2026-08-19), applies to
+        # every deal in the Exited tab, not a case-by-case list.
+        if d["tab"] == "Exited" or d["deal_name"] in _COMMITTED_EQUALS_INVESTED_DEALS:
             committed_usd = invested_usd
 
         remaining_usd = committed_usd - invested_usd if committed_usd is not None else None
