@@ -217,6 +217,141 @@ def _render_deal_table(
     return f"<div class='table-scroll'><table id='{table_id}' class='deal-table'>{colgroup}{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
 
+def _render_vintage_table(
+    deals: pd.DataFrame,
+    vintage_irr: pd.DataFrame,
+    as_of_date: str,
+    deal_entity_map: dict[str, str],
+    citation_lookup: dict[str, dict],
+) -> str:
+    """Same deal-level table as _render_deal_table, but grouped by vintage
+    year (across BOTH Live and Exited) instead of by investing entity - shows
+    how much was deployed and how each vintage has performed, cutting across
+    current Live/Exited status rather than being split by it."""
+    rows_html = []
+    vintage_irr_map = {row["vintage"]: row["irr"] for _, row in vintage_irr.iterrows()}
+    tracker_src = f"tracker's own report tabs, as of {as_of_date}"
+
+    def _vintage_sort_key(v: str):
+        return (1, "") if not v else (0, v)
+
+    vintages = sorted(deals["vintage"].unique(), key=_vintage_sort_key)
+    for vintage in vintages:
+        group = deals[deals["vintage"] == vintage]
+        label = vintage if vintage else "Unknown vintage"
+        rows_html.append(f'<tr class="section-header"><td colspan="13">{_esc(label)}</td></tr>')
+        for _, d in group.iterrows():
+            irr_tt = (
+                f"Computed via XIRR from dated cash flows + latest NAV fair value (see All Cashflows tab). {d['irr_note']}"
+                if d["irr_note"] else "Computed via XIRR from dated cash flows + latest NAV fair value (see All Cashflows tab)."
+            )
+            citation = citation_lookup.get(deal_entity_map.get(d["deal_name"], ""), {})
+            committed_citation = citation_lookup.get(d["deal_name"]) or citation
+            full_code_name = investing_entity_full_name(d["investing_entity"])
+            investing_entity_tt = f"{citation.get('short_citation', 'Not yet confirmed against a primary document')}: {full_code_name}."
+            if committed_citation.get("commitments"):
+                committed_tt = f"{committed_citation.get('short_citation', '')}: {'; '.join(committed_citation['commitments'])}."
+            elif "commitment_amounts_usd" in committed_citation:
+                committed_tt = committed_citation.get("short_citation", "")
+            else:
+                committed_tt = f"No confirmed primary-source commitment amount in the register yet - showing {tracker_src}."
+            if d["deal_name"] in _COMMITTED_EQUALS_INVESTED_DEALS:
+                committed_tt = _COMMITTED_EQUALS_INVESTED_DEALS[d["deal_name"]]
+            elif d["tab"] == "Exited":
+                committed_tt = (
+                    "Position fully exited - Committed is pinned to Invested here (no outstanding "
+                    "commitment remains for an exited position, regardless of the original commitment "
+                    "document's figure)."
+                )
+            elif committed_citation.get("excluded_non_usd_commitments"):
+                committed_tt += (
+                    " WARNING: Committed is UNDERSTATED - excludes a non-USD commitment not converted here: "
+                    + "; ".join(committed_citation["excluded_non_usd_commitments"]) + "."
+                )
+            invested_tt = "Sourced from cash flows provided by Treasury (see All Cashflows tab)."
+            distributions_tt = "Sourced from cash flows provided by Treasury (see All Cashflows tab)."
+            if d["deal_name"] in _CASHFLOW_VALIDATED_DEALS:
+                note = _CASHFLOW_VALIDATED_DEALS[d["deal_name"]]
+                invested_tt += f" Validated - {note}"
+                distributions_tt += f" Validated - {note}"
+            if d["deal_name"] in _FUND_CAS_CASHFLOW_OVERRIDES:
+                cas_note = _FUND_CAS_CASHFLOW_OVERRIDES[d["deal_name"]]["note"]
+                invested_tt = f"Sourced from the fund's own Capital Account Statement, not the tracker's cash flow rows. {cas_note}"
+                distributions_tt = invested_tt
+            carrying_tt = "Latest carrying value from the tracker's own NAV tab (not the Live/Exited tab)."
+            remaining_tt = "Formula: Committed - Invested."
+            gain_tt = "Formula: Carrying Value + Distributions - Invested."
+            tvpi_tt = "Formula: (Distributions + Carrying Value) / Invested."
+            if citation.get("instrument"):
+                instrument_tt = f"{citation.get('short_citation', '')}: '{citation['instrument']}' as stated in the citation."
+            else:
+                instrument_tt = f"Not yet cross-checked against a primary document - showing {tracker_src}."
+            rows_html.append(
+                "<tr>"
+                + _td(_esc(d["deal_name"]), cls="left")
+                + _td(_esc(d["status"]))
+                + _td(_esc(d["tab"]))
+                + _td(_esc(d["investing_entity"]), investing_entity_tt)
+                + _td(_esc(d["instrument"]), instrument_tt)
+                + _td(_fnum(d["committed"]), committed_tt)
+                + _td(_fnum(d["invested"]), invested_tt)
+                + _td(_fnum(d["remaining_commitment"]), remaining_tt)
+                + _td(_fnum(d["distributions"]), distributions_tt)
+                + _td(_fnum(d["carrying_value"]), carrying_tt)
+                + _td(_fnum(d["gain"]), gain_tt)
+                + _td(_fx(d["tvpi"]), tvpi_tt)
+                + _td(_fpct(d["irr"]), irr_tt)
+                + "</tr>"
+            )
+        sub = _section_subtotal(group)
+        irr_val = vintage_irr_map.get(vintage)
+        vintage_irr_tt = "Blended IRR: pools every deal's cash flows + latest fair value for this vintage year, then runs XIRR once."
+        rows_html.append(
+            '<tr class="subtotal">'
+            + _td("Subtotal", cls="left") + "<td></td><td></td><td></td><td></td>"
+            + _td(_fnum(sub["committed"]))
+            + _td(_fnum(sub["invested"]))
+            + _td(_fnum(sub["remaining_commitment"]))
+            + _td(_fnum(sub["distributions"]))
+            + _td(_fnum(sub["carrying_value"]))
+            + _td(_fnum(sub["gain"]))
+            + _td(_fx(sub["tvpi"]))
+            + _td(_fpct(irr_val), vintage_irr_tt)
+            + "</tr>"
+        )
+
+    grand = _section_subtotal(deals)
+    rows_html.append(
+        '<tr class="grand-total">'
+        + _td("Grand Total", cls="left") + "<td></td><td></td><td></td><td></td>"
+        + _td(_fnum(grand["committed"]))
+        + _td(_fnum(grand["invested"]))
+        + _td(_fnum(grand["remaining_commitment"]))
+        + _td(_fnum(grand["distributions"]))
+        + _td(_fnum(grand["carrying_value"]))
+        + _td(_fnum(grand["gain"]))
+        + _td(_fx(grand["tvpi"]))
+        + "<td></td>"
+        + "</tr>"
+    )
+
+    header = (
+        "<thead><tr>"
+        "<th class='left'>Deal</th><th>Status</th><th>Tab</th><th>Investing Entity</th><th>Instrument</th>"
+        "<th>Committed ($m)</th><th>Invested ($m)</th><th>Remaining ($m)</th><th>Distributions ($m)</th>"
+        "<th>Carrying Value ($m)</th><th>Gain ($m)</th><th>TVPI</th><th>IRR</th>"
+        "</tr></thead>"
+    )
+    colgroup = (
+        "<colgroup>"
+        "<col style='width:16%'><col style='width:6%'><col style='width:6%'><col style='width:9%'>"
+        "<col style='width:9%'><col style='width:7%'><col style='width:7%'><col style='width:7%'>"
+        "<col style='width:8%'><col style='width:8%'><col style='width:7%'><col style='width:5%'><col style='width:5%'>"
+        "</colgroup>"
+    )
+    return f"<div class='table-scroll'><table id='table-vintage' class='deal-table'>{colgroup}{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
+
+
 def _render_cashflow_table(cashflow: pd.DataFrame) -> str:
     cf = cashflow.copy()
     cf["flow_date"] = pd.to_datetime(cf["flow_date"], errors="coerce")
@@ -425,6 +560,7 @@ def _render_scan_report(scan_report: dict | None) -> str:
 def build_tracker_style_dashboard_html(
     deals: pd.DataFrame,
     section_irr: pd.DataFrame,
+    vintage_irr: pd.DataFrame,
     quarterly: pd.DataFrame,
     historical_nav: pd.DataFrame,
     cashflow: pd.DataFrame,
@@ -445,6 +581,7 @@ def build_tracker_style_dashboard_html(
 
     live_table = _render_deal_table(deals, section_irr, "Live", as_of_date, deal_entity_map, citation_lookup)
     exited_table = _render_deal_table(deals, section_irr, "Exited", as_of_date, deal_entity_map, citation_lookup)
+    vintage_table = _render_vintage_table(deals, vintage_irr, as_of_date, deal_entity_map, citation_lookup)
     cashflow_table = _render_cashflow_table(cashflow)
     ownership_table = _render_ownership_table(ownership)
     log_table = _render_log_table(change_log)
@@ -479,6 +616,7 @@ def build_tracker_style_dashboard_html(
         exited_tvpi=_fx(exited_grand["tvpi"]),
         live_table=live_table,
         exited_table=exited_table,
+        vintage_table=vintage_table,
         cashflow_table=cashflow_table,
         ownership_table=ownership_table,
         log_table=log_table,
@@ -576,6 +714,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
 <nav>
   <button class="tab-btn active" data-tab="live">Live Investments</button>
   <button class="tab-btn" data-tab="exited">Exited Investments</button>
+  <button class="tab-btn" data-tab="vintage">Vintage</button>
   <button class="tab-btn" data-tab="cashflows">All Cashflows</button>
   <button class="tab-btn" data-tab="ownership">Ownership &amp; Domiciliation</button>
   <button class="tab-btn" data-tab="log">Log</button>
@@ -614,6 +753,13 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
     <div class="panel">
       <div class="panel-head"><h2>Exited Investments, by Investing Entity</h2><button class="dl-btn" onclick="downloadCSV('table-exited','exited_investments.csv')">Download CSV</button></div>
       {exited_table}
+    </div>
+  </section>
+
+  <section id="vintage" class="tab">
+    <div class="panel">
+      <div class="panel-head"><h2>All Investments, by Vintage Year</h2><button class="dl-btn" onclick="downloadCSV('table-vintage','vintage.csv')">Download CSV</button></div>
+      {vintage_table}
     </div>
   </section>
 

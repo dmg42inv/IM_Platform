@@ -31,6 +31,7 @@ from .adapters.live_exited_sections import (
     build_deal_entity_map,
     build_quarterly_cashflows,
     compute_section_irr,
+    compute_vintage_irr,
     enrich_with_irr,
     extract_live_exited_sections,
     recompute_deal_financials,
@@ -406,6 +407,7 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     deals = enrich_with_irr(deals, cashflow, valuation, deal_entity_map)
     deals = recompute_deal_financials(deals, cashflow, valuation, deal_entity_map, citation_lookup)
     section_irr = compute_section_irr(deals, cashflow, valuation, deal_entity_map)
+    vintage_irr = compute_vintage_irr(deals, cashflow, valuation, deal_entity_map)
     quarterly = build_quarterly_cashflows(cashflow)
     triangulation_notes = _build_triangulation_notes(deals, deal_entity_map, intake_path)
     triangulation_notes += _build_financials_triangulation_notes(deals)
@@ -423,7 +425,7 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
 
     as_of_date = valuation["valuation_date"].max() if len(valuation) else None
     html = build_tracker_style_dashboard_html(
-        deals, section_irr, quarterly, historical_nav, cashflow, ownership, change_log,
+        deals, section_irr, vintage_irr, quarterly, historical_nav, cashflow, ownership, change_log,
         pd.DataFrame(), triangulation_notes, deal_entity_map, citation_lookup, glossary,
         scan_report=scan_report, as_of_date=as_of_date,
     )

@@ -88,6 +88,20 @@ _COMMITTED_EQUALS_INVESTED_DEALS: dict[str, str] = {
         "Invested here to reflect that there is no outstanding commitment remaining, not the "
         "original $300M subscription size."
     ),
+    "New Space Capital GP Com SCSp": (
+        "User-confirmed (2026-08-19): this vehicle's EUR 2,300,000 commitment was a GP-economics "
+        "investment (Class C Units in 'NewSpace Capital Partners SCSp', the GP-side carry "
+        "vehicle) that was already paid for in full at the time of the original 2020 commitment, "
+        "not a typical LP interest with an unfunded/undrawn balance. It was later converted into "
+        "an LP-style stake in the restructured 'NewSpace Capital GP Com SCSp' entity (see the "
+        "register's own confirmed_by citation for the full restructuring lineage), but that "
+        "conversion did not create any new unfunded commitment - there is nothing further to "
+        "call. Committed is pinned to Invested here rather than the register's raw commitment "
+        "figure, since there is no outstanding commitment remaining. Note: this vehicle's NAV is "
+        "driven by its ownership ratio in the carry economics PLUS a share of the underlying "
+        "Fund's uncalled capital ratio (not a simple cost-basis mark) - flagged here, not yet "
+        "separately modelled in the Carrying Value computation."
+    ),
 }
 
 # POLICY (user-confirmed 2026-08-18): for FUND vehicles, the Capital Account
@@ -459,6 +473,54 @@ def compute_section_irr(
             {
                 "tab": tab,
                 "section": section,
+                "irr": _xirr(sorted(points, key=lambda x: x[0])),
+                "as_of_date": as_of.strftime("%Y-%m-%d") if as_of is not None and pd.notna(as_of) else "",
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def compute_vintage_irr(
+    deals: pd.DataFrame,
+    cashflow: pd.DataFrame,
+    valuation: pd.DataFrame,
+    deal_entity_map: dict[str, str],
+) -> pd.DataFrame:
+    """One row per vintage year: pools every deal's cash flows (Live AND
+    Exited together - a vintage groups deals by when capital was committed,
+    not by current status) + latest fair value as a terminal cash flow, for
+    a genuine blended vintage-level IRR. Same per-deal cashflow granularity
+    rule as compute_section_irr (exact tracker deal-name tag when separately
+    tagged, else pooled by entity) to avoid double-counting an entity's cash
+    flow once per deal row sharing it."""
+    cf = cashflow.copy()
+    cf["flow_date"] = pd.to_datetime(cf["flow_date"], errors="coerce")
+    val = valuation.copy()
+    val["valuation_date"] = pd.to_datetime(val["valuation_date"], errors="coerce")
+
+    rows = []
+    for vintage, group in deals.groupby("vintage"):
+        points = []
+        valuation_dates = []
+        for _, d in group.iterrows():
+            entity = deal_entity_map.get(d["deal_name"], "")
+            deal_cf = _deal_cashflow(d["deal_name"], entity, cf)
+            points.extend(
+                (dt.to_pydatetime(), float(a))
+                for dt, a in zip(deal_cf["flow_date"], deal_cf["amount"])
+                if pd.notna(dt)
+            )
+            deal_val = _deal_valuation(d["deal_name"], entity, val).sort_values("valuation_date")
+            if len(deal_val):
+                last = deal_val.iloc[-1]
+                if pd.notna(last["valuation_date"]) and last["fair_value_local"]:
+                    points.append((last["valuation_date"].to_pydatetime(), float(last["fair_value_local"])))
+                    valuation_dates.append(last["valuation_date"])
+
+        as_of = max(valuation_dates) if valuation_dates else None
+        rows.append(
+            {
+                "vintage": vintage,
                 "irr": _xirr(sorted(points, key=lambda x: x[0])),
                 "as_of_date": as_of.strftime("%Y-%m-%d") if as_of is not None and pd.notna(as_of) else "",
             }
