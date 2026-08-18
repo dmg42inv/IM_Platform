@@ -149,8 +149,13 @@ def extract_instrument(confirmed_texts: list[str]) -> str | None:
 # not a spot/historical market rate - it also reconciles almost exactly with
 # the tracker's own previously-unexplained Committed figure for this deal
 # (EUR23,234,461.87 x 1.15 = USD26.7M vs tracker's USD26.8M).
+# NewSpace-GPCom-2023 uses a DIFFERENT rate (divide by 0.85, i.e. x1.176471)
+# - user-confirmed 2026-08-19, and matches the tracker's own raw Committed/
+# Invested figures for this vehicle exactly (EUR2,300,000 / 0.85 = USD
+# 2,705,882.35, tracker shows 2.705882352941176 for both).
 _FIXED_FX_RATES_TO_USD: dict[str, float] = {
     "NewSpace-FundSCS-2020": 1.15,
+    "NewSpace-GPCom-2023": 1 / 0.85,
 }
 
 

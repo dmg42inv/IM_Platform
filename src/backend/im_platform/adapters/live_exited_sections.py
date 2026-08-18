@@ -88,20 +88,6 @@ _COMMITTED_EQUALS_INVESTED_DEALS: dict[str, str] = {
         "Invested here to reflect that there is no outstanding commitment remaining, not the "
         "original $300M subscription size."
     ),
-    "New Space Capital GP Com SCSp": (
-        "User-confirmed (2026-08-19): this vehicle's EUR 2,300,000 commitment was a GP-economics "
-        "investment (Class C Units in 'NewSpace Capital Partners SCSp', the GP-side carry "
-        "vehicle) that was already paid for in full at the time of the original 2020 commitment, "
-        "not a typical LP interest with an unfunded/undrawn balance. It was later converted into "
-        "an LP-style stake in the restructured 'NewSpace Capital GP Com SCSp' entity (see the "
-        "register's own confirmed_by citation for the full restructuring lineage), but that "
-        "conversion did not create any new unfunded commitment - there is nothing further to "
-        "call. Committed is pinned to Invested here rather than the register's raw commitment "
-        "figure, since there is no outstanding commitment remaining. Note: this vehicle's NAV is "
-        "driven by its ownership ratio in the carry economics PLUS a share of the underlying "
-        "Fund's uncalled capital ratio (not a simple cost-basis mark) - flagged here, not yet "
-        "separately modelled in the Carrying Value computation."
-    ),
 }
 
 # POLICY (user-confirmed 2026-08-18): for FUND vehicles, the Capital Account
@@ -162,6 +148,24 @@ _FUND_CAS_CASHFLOW_OVERRIDES: dict[str, dict] = {
             "the same class of sign/bucketing bug found at North Summit (e.g. the Aug-2025 "
             "Drawdown 20 notice's 3 components were tracker-tagged 'Distribution'/'Fee'/"
             "'CapitalCall' with signs that invert their true economic direction)."
+        ),
+    },
+    "New Space Capital GP Com SCSp": {
+        "invested": 2.705882352941176,
+        "distributions": 0.20616173,
+        "note": (
+            "User-confirmed (2026-08-19): this vehicle's EUR 2,300,000 commitment was paid in "
+            "full upfront (a GP-economics investment, not a typical LP interest with an unfunded "
+            "balance), so Invested = Committed here - matching the tracker's OWN raw Live-tab "
+            "figures exactly (Committed 2.705882 = Invested 2.705882 = EUR2,300,000 / 0.85, the "
+            "same EUR/USD conversion divisor implied by the register's commitment - see "
+            "NewSpace-GPCom-2023 in register_citations.py). NOT summed from the tracker's dated "
+            "cash flow rows for Invested (which total only USD2.1M) - those rows are booked with "
+            "source_currency EUR but mislabelled as face-value USD (fx_to_usd=1), the same "
+            "understatement bug found and fixed for the sibling Fund S.C.S. Distributions = the "
+            "one dated distribution row (EUR175,237.47, 30-Dec-2025), converted at the same /0.85 "
+            "divisor = USD206,161.73 (tracker's own report figure still shows 0 here, likely not "
+            "yet refreshed for this distribution)."
         ),
     },
 }
