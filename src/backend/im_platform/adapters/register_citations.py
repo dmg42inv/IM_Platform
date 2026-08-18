@@ -40,6 +40,11 @@ _DEAL_NAME_TO_INVESTMENT_IDS: dict[str, list[str]] = {
     "Cerebras Systems Inc (2)": ["Cerebras-Warrant1-2026", "Cerebras-Warrant2-2026"],
     "Tools for Humanity Corporation": ["TFH-SeriesC-2023"],
     "WLD Tokens": [],
+    "Esyasoft Holding": ["EsyaSoft-NOTE-2020"],
+    "Esyasoft Holding (Debt)": ["EsyaSoft-WCLOAN-2021"],
+    "Mena Mobile Inc": ["MenaMobile-SeriesB-2019"],
+    "Mena Mobile Inc (Debt)": ["MenaMobile-Loan-2021"],
+    "MGX I Denali Holding LP": ["MGX-I-DenaliHolding-2024"],
 }
 
 # Ordered so the most specific/authoritative document type wins when several

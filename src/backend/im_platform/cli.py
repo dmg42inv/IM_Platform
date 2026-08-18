@@ -352,6 +352,48 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     deals = extract_live_exited_sections(args.tracker_file)
     deal_entity_map = build_deal_entity_map(reconciliation_path)
 
+    # MGX I Denali Holding LP has no line item in the tracker's own "1. Live"/
+    # "2. Exited" report tabs at all (unlike MGX I LP / Strategic Co-Invest /
+    # Group Holding 1 GP) - it only exists in our register + manual valuation
+    # override. Inject a synthetic deal row so it isn't silently missing from
+    # the dashboard's main Live Investments table; its own committed/invested/
+    # carrying value are still recomputed from cashflow/valuation below, not
+    # hardcoded here.
+    if "MGX I Denali Holding LP" not in deals["deal_name"].values:
+        deal_entity_map["MGX I Denali Holding LP"] = "MGX I Denali Holding LP"
+        denali_row = pd.DataFrame([{
+            "tab": "Live",
+            "section": "GX Investments Ltd : MGX and Related Investments",
+            "deal_name": "MGX I Denali Holding LP",
+            "status": "Unrealized",
+            "investing_entity": "G42 Holding",
+            "investing_entity_raw": "G42 Holding",
+            "vintage": "2024",
+            "instrument": "LP",
+            "committed": None, "invested": None, "remaining_commitment": None,
+            "distributions": None, "carrying_value": None, "gain": None, "tvpi": None,
+            "notes": "Not in the tracker's own Live/Exited tabs - added from register + manual NAV override.",
+        }])
+        deals = pd.concat([deals, denali_row], ignore_index=True)
+
+    # User-specified display order within the MGX section (2026-08-18):
+    # LP, Denali, Strategic Co-Invest, Group Holding GP - overriding whatever
+    # order the tracker/injection happened to produce.
+    _mgx_order = {
+        "MGX I LP": 0,
+        "MGX I Denali Holding LP": 1,
+        "MGX 1 Strategic Co-invest": 2,
+        "MGX Group Holding 1 Ltd (GP)": 3,
+    }
+    mgx_section = "GX Investments Ltd : MGX and Related Investments"
+    deals = deals.reset_index(drop=True)
+    deals["_pos"] = deals.index.astype(float)
+    mask = deals["section"] == mgx_section
+    if mask.any():
+        anchor = deals.loc[mask, "_pos"].min()
+        deals.loc[mask, "_pos"] = deals.loc[mask, "deal_name"].map(_mgx_order).fillna(99) + anchor - 0.5
+    deals = deals.sort_values("_pos", kind="stable").drop(columns="_pos").reset_index(drop=True)
+
     draft = pd.read_excel(intake_path, sheet_name="Investment_Register_Draft").fillna("")
     citation_lookup = build_entity_citation_lookup(draft)
     glossary = build_glossary_table()

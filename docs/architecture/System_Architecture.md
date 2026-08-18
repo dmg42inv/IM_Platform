@@ -1,6 +1,6 @@
 # System Architecture (V1, as implemented)
 
-Date: 2026-08-16
+Date: 2026-08-18
 Status: Living document - reflects the real-data pipeline as built, not an
 aspirational target. Update this alongside code changes, not after the fact.
 
@@ -129,11 +129,11 @@ time.**
 
 ## 6. Known limitations (as of 2026-08-16)
 
-- Fund-level tracker figures (New Space, MGX, Sinovation, North Summit) are
-  computed from raw cash flow sums here, which legitimately differs from
-  the tracker's own bespoke per-fund tabs (e.g. `'8. NewSpace'!O35`) - not
-  a bug, but a real, flagged divergence pending a deeper fund-specific
-  review (explicitly deferred by the user as a separate workstream).
+- Some fund-level tracker figures are computed from raw cash flow sums
+  here, which legitimately differs from the tracker's own bespoke
+  per-fund tabs - not a bug, but a real, flagged divergence pending a
+  deeper fund-specific review (explicitly deferred by the user as a
+  separate workstream, tracked by name in repo memory, not here).
   the tracker's own report vs the computed figures are surfaced in the Data
   Quality & Triangulation tab, not silently reconciled.
 - Several equity investments still carry only a shallow ("AI-extracted")
@@ -147,3 +147,42 @@ time.**
 - `Governance_and_Control` and `Monitoring_Summary` (per
   `V1_Output_Pack_Spec.md`) remain placeholders - no IC/governance decision
   or monthly KPI/covenant input dataset has been built yet.
+
+## 7. Session updates (2026-08-17/18)
+
+- **Fund vehicles that aren't in the tracker's own Live/Exited tabs**: a
+  fund can have a co-invest/sub-vehicle with no line item there at all
+  (unlike its sibling vehicles under the same fund family), so it was
+  silently missing from the dashboard's main deal table even though it
+  was fully tracked in the register and valuation extract. `cli.py`'s
+  `_generate_tracker_dashboard_command` now injects a synthetic deal row
+  for any such vehicle, with its Committed/Invested/Carrying Value still
+  recomputed from the register + cashflow + valuation extract exactly like
+  every other row (never hardcoded). A configurable fixed display-order
+  override can also be applied within a fund family's section, for cases
+  where the user has a preferred presentation sequence that doesn't match
+  the tracker's own row order.
+- **Fund NAV/commitment roll-forward methodology** (between a fund's
+  quarterly Capital Account Statement mark and the platform's monthly
+  reporting cadence): interim NAV = last quarter-end CAS NAV +
+  contributions/capital calls since quarter-end - distributions since
+  quarter-end (a pure cash roll-forward, not a new appraisal); cumulative
+  paid-in capital increases by the same amount. Ad hoc Treasury-reported
+  interim capital calls get their own dated cashflow row (citing the
+  communication) rather than being folded silently into the NAV number.
+  When a capital call isn't labelled with which fund vehicle it belongs to,
+  triangulate using each vehicle's remaining unfunded commitment capacity
+  (from the CAS) rather than guessing - a vehicle that's already fully/
+  near-fully called cannot have generated a large new call.
+- **Cashflow sign convention reminder** (real bug hit 2026-08-17):
+  `recompute_deal_financials` buckets cash flow purely by sign - negative
+  amounts sum into Invested, positive amounts into Distributions,
+  regardless of the `flow_type` label. Any new cashflow row for a capital
+  call/deployment MUST be entered as negative, or it silently miscounts as
+  a distribution instead.
+- **Dashboard tooltip CSS bug**: `.panel`'s `overflow-x: auto` forced
+  `overflow-y` to also clip (per the CSS overflow spec, an element can't
+  have one axis clip and the other stay fully visible), cutting off the
+  absolutely-positioned hover-tooltip popups on data cells. Fixed by
+  moving horizontal scroll to a dedicated `.table-scroll` wrapper around
+  each `<table>` instead of applying it to the whole `.panel`.

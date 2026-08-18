@@ -190,7 +190,7 @@ def _render_deal_table(
         "</colgroup>"
     )
     table_id = f"table-{tab_label.lower()}"
-    return f"<table id='{table_id}' class='deal-table'>{colgroup}{header}<tbody>{''.join(rows_html)}</tbody></table>"
+    return f"<div class='table-scroll'><table id='{table_id}' class='deal-table'>{colgroup}{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
 
 def _render_cashflow_table(cashflow: pd.DataFrame) -> str:
@@ -217,7 +217,7 @@ def _render_cashflow_table(cashflow: pd.DataFrame) -> str:
         "<thead><tr><th class='left'>Date</th><th class='left'>Investment</th><th>Flow Type</th>"
         "<th>Amount (USD)</th><th>Currency</th><th class='left'>Consideration Type</th></tr></thead>"
     )
-    return f"<table id='table-cashflows'>{header}<tbody>{''.join(rows_html)}</tbody></table>"
+    return f"<div class='table-scroll'><table id='table-cashflows'>{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
 
 def _render_glossary_table(glossary: pd.DataFrame) -> str:
@@ -235,7 +235,7 @@ def _render_glossary_table(glossary: pd.DataFrame) -> str:
         "<thead><tr><th class='left'>Display Name</th><th class='left'>Full Legal Name</th>"
         "<th class='left'>Internal Register ID</th><th class='left'>Note</th></tr></thead>"
     )
-    return f"<table id='table-glossary'>{header}<tbody>{''.join(rows_html)}</tbody></table>"
+    return f"<div class='table-scroll'><table id='table-glossary'>{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
 
 def _render_ownership_table(ownership: pd.DataFrame) -> str:
@@ -259,7 +259,7 @@ def _render_ownership_table(ownership: pd.DataFrame) -> str:
         "<thead><tr><th class='left'>Deal</th><th>Status</th><th>Shares/Units</th><th>Fully Diluted Total</th>"
         "<th>Ownership %</th><th class='left'>Jurisdiction</th><th class='left'>Country</th></tr></thead>"
     )
-    return f"<table id='table-ownership'>{header}<tbody>{''.join(rows_html)}</tbody></table>"
+    return f"<div class='table-scroll'><table id='table-ownership'>{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
 
 def _render_log_table(change_log: pd.DataFrame) -> str:
@@ -273,7 +273,7 @@ def _render_log_table(change_log: pd.DataFrame) -> str:
             + "</tr>"
         )
     header = "<thead><tr><th class='left'>Month</th><th class='left'>Company</th><th class='left'>Update</th></tr></thead>"
-    return f"<table id='table-log'>{header}<tbody>{''.join(rows_html)}</tbody></table>"
+    return f"<div class='table-scroll'><table id='table-log'>{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
 
 def _render_issues_table(issues: pd.DataFrame) -> str:
@@ -291,7 +291,7 @@ def _render_issues_table(issues: pd.DataFrame) -> str:
             + "</tr>"
         )
     header = "<thead><tr><th class='left'>Dataset</th><th class='left'>Record</th><th class='left'>Issue Type</th><th class='left'>Description</th><th>Severity</th></tr></thead>"
-    return f"<table id='table-issues'>{header}<tbody>{''.join(rows_html)}</tbody></table>"
+    return f"<div class='table-scroll'><table id='table-issues'>{header}<tbody>{''.join(rows_html)}</tbody></table></div>"
 
 
 def _render_notes_list(notes: list[str]) -> str:
@@ -494,7 +494,8 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   .kpi-card {{ background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }}
   .kpi-card .label {{ color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }}
   .kpi-card .value {{ font-size: 20px; font-weight: 600; margin-top: 6px; }}
-  .panel {{ background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 18px; overflow-x: auto; }}
+  .panel {{ background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 18px; }}
+  .table-scroll {{ overflow-x: auto; }}
   .panel-head {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
   .panel h2 {{ font-size: 13px; margin: 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }}
   .dl-btn {{ background: var(--sub-bg); border: 1px solid var(--border); color: var(--accent); border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; }}

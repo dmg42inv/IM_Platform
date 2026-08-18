@@ -1,5 +1,59 @@
 # PRD Change Log
 
+## 2026-08-17/18 - v1.9.0
+
+- **Closed out a class of stale lifecycle-status gaps**: the register's
+  `lifecycle_state` field can lag behind the tracker's own Live/Exited
+  classification for a position pending user confirmation before
+  overwriting - the existing register-vs-tracker triangulation check was
+  already correctly detecting these mismatches; the gap was in resolving
+  them, not detecting them. Also closed a related pattern: a position's
+  debt/loan tranche can exist in cash flow data with no corresponding
+  register row at all - now added from primary signed loan documents when
+  found, including confirming exact dissolution/wind-up dates from
+  registrar filings where available.
+- **Resolved an open item via newly available external evidence**: an
+  internal communication plus a portfolio company's own audited public
+  filing both independently corroborated a prior figure, closing out a
+  discrepancy that had been flagged and left open pending confirmation
+  rather than silently assumed either way.
+- **Rolled multiple fund vehicles forward to their latest quarterly fund
+  reporting** (Capital Account Statements/Limited Partner Statements):
+  commitment and NAV figures updated per vehicle. Found and (with user
+  direction) applied a real, material commitment-transfer event on one
+  vehicle, sourced from the fund administrator's own statement footnote
+  (not yet cross-checked against a signed transfer/assignment agreement -
+  flagged as such). Where an interim cash movement wasn't labelled with
+  which specific vehicle it belonged to, attributed it by triangulating
+  each candidate vehicle's remaining unfunded-commitment capacity rather
+  than guessing (documented as inferred, not source-confirmed).
+- **Codified a fund NAV/commitment roll-forward methodology** for the gap
+  between a fund's quarterly NAV mark and the platform's monthly reporting
+  cadence: interim NAV = last quarter-end NAV + contributions - 
+  distributions since quarter-end (a pure cash roll-forward, not a new
+  appraisal), with cumulative paid-in capital increased by the same
+  amount (see `/memories/repo/architecture-policy.md` for the full
+  methodology and worked reasoning - deal-specific figures and citations
+  live in repo memory, not here).
+- **Fixed three real bugs found via this work**: (1) a cash flow sign-
+  convention error - new capital-call rows entered with the wrong sign
+  wrongly inflated Distributions and understated Invested (the pipeline
+  buckets cash flow purely by amount sign, not by its label - confirmed
+  by reading the recompute logic directly); (2) a fund vehicle with no
+  line item in the tracker's own Live/Exited report tabs at all was
+  silently absent from the dashboard's main deal table despite being
+  fully tracked in the register/valuation extract - fixed by injecting a
+  synthetic deal row for any such vehicle, still fully recomputed from the
+  register/cashflow/valuation data, never hardcoded; (3) a dashboard CSS
+  bug where a container's horizontal-scroll style was inadvertently
+  clipping hover-tooltip popups (per the CSS overflow spec, one axis can't
+  clip while the other stays fully visible) - fixed by isolating
+  horizontal scroll to a dedicated wrapper around each table.
+- **Standing documentation convention reaffirmed**: the PRD and changelog
+  describe approach/methodology/structure only - portfolio-company names,
+  deal figures, and citations belong in repo memory (or a dedicated
+  source-of-truth log), never in these documents.
+
 ## 2026-08-16 - v1.8.0
 
 - **Extended the Vintage and Commitment Verification Discipline** (PRD_v1.md

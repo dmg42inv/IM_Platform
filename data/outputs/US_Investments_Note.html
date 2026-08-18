@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>US Investments Note</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --text: #e2e8f0; --muted: #94a3b8;
+    --accent: #38bdf8; --green: #4ade80; --red: #f87171; --border: #334155; --sub-bg: #253449;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+  header { padding: 18px 28px; border-bottom: 1px solid var(--border); }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  main { padding: 22px 28px; max-width: 1200px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .kpi-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .kpi-card .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .kpi-card .value { font-size: 20px; font-weight: 600; margin-top: 6px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 18px; overflow-x: auto; }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .panel h2 { font-size: 13px; margin: 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .dl-btn { background: var(--sub-bg); border: 1px solid var(--border); color: var(--accent); border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; }
+  .dl-btn:hover { background: var(--border); }
+  table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 7px 9px; text-align: right; vertical-align: middle; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th.left, td.left { text-align: left; white-space: nowrap; min-width: 200px; }
+  th { color: var(--muted); font-weight: 500; }
+  tr.grand-total td { background: #0b1220; font-weight: 700; border-top: 2px solid var(--accent); }
+  .pos { color: var(--green); } .neg { color: var(--red); }
+  .muted { color: var(--muted); font-size: 13px; }
+  ul { margin: 0; padding-left: 20px; color: var(--text); font-size: 13px; line-height: 1.7; }
+  .warn { color: var(--red); font-weight: 600; }
+  .tt { position: relative; cursor: help; border-bottom: 1px dotted var(--muted); }
+  .tt:hover::after {
+    content: attr(data-tt); position: absolute; left: 0; bottom: 120%;
+    background: #0b1220; color: var(--text); border: 1px solid var(--accent);
+    border-radius: 6px; padding: 8px 10px; font-size: 11.5px; white-space: normal;
+    width: 320px; z-index: 50; box-shadow: 0 4px 14px rgba(0,0,0,0.4); text-align: left;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>US Investments &mdash; Live Positions Only</h1>
+  <div class="meta">Generated 2026-08-17. Exited/written-off US positions removed (Glass Earth Holdings LLC). Source: tracker's own "%" (Ownership &amp; Domiciliation) tab cross-referenced against Live/Exited financial tables, tracker data through 2026-07-31. Tracker workbook was locked in Excel at generation time - not a fresh re-pull; regenerate the main dashboard once closed to confirm nothing's moved.</div>
+</header>
+<main>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="label">Positions</div><div class="value">12 (+1 flagged)</div></div>
+    <div class="kpi-card"><div class="label">Committed ($m)</div><div class="value">410.8</div></div>
+    <div class="kpi-card"><div class="label">Invested ($m)</div><div class="value">375.1</div></div>
+    <div class="kpi-card"><div class="label">Carrying Value ($m)</div><div class="value tt" data-tt="Excludes the flagged Cerebras Systems Inc (2) line - see note below.">746.2</div></div>
+    <div class="kpi-card"><div class="label">Gain ($m)</div><div class="value tt" data-tt="Excludes the flagged Cerebras Systems Inc (2) line - see note below.">371.2</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>Live US Investments</h2></div>
+    <table>
+      <thead>
+        <tr>
+          <th class="left">Deal</th><th class="left">Investing Entity</th><th>Vintage</th><th class="left">Instrument</th>
+          <th>Committed ($m)</th><th>Invested ($m)</th><th>Carrying Value ($m)</th><th>Gain ($m)</th><th>TVPI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="left">Flyr Inc</td><td class="left">Mozn</td><td>2019</td><td class="left">B-1,2 Prefs</td><td>10.00</td><td>10.00</td><td>14.60</td><td class="pos">4.60</td><td>1.46x</td></tr>
+        <tr><td class="left">Beyond Limits</td><td class="left">Mozn</td><td>2020</td><td class="left">C Prefs</td><td>90.00</td><td>90.00</td><td>21.70</td><td class="neg">-68.30</td><td>0.24x</td></tr>
+        <tr><td class="left">Endless Studios LLC</td><td class="left">Mozn</td><td>2021</td><td class="left">A Pref Units</td><td>8.00</td><td>8.00</td><td>6.50</td><td class="neg">-1.50</td><td>0.81x</td></tr>
+        <tr><td class="left">Cerebras Systems Inc (1)</td><td class="left">Mozn</td><td>2021</td><td class="left">Class A/B</td><td>40.00</td><td>40.00</td><td>286.48</td><td class="pos">246.48</td><td>7.16x</td></tr>
+        <tr><td class="left">eSpace</td><td class="left">Mozn</td><td>2022</td><td class="left">B Prefs</td><td>15.00</td><td>15.00</td><td>230.01</td><td class="pos">215.01</td><td>15.33x</td></tr>
+        <tr><td class="left">Tools for Humanity Corporation</td><td class="left">Mozn</td><td>2023</td><td class="left">C Prefs</td><td>15.00</td><td>15.00</td><td>1.20</td><td class="neg">-13.80</td><td>0.08x</td></tr>
+        <tr><td class="left">E-line Ventures LLC</td><td class="left">Mozn</td><td>2023</td><td class="left">B Prefs</td><td>6.00</td><td>6.00</td><td>7.10</td><td class="pos">1.10</td><td>1.18x</td></tr>
+        <tr><td class="left">vTv Therapeutics Inc.</td><td class="left">G42 Investments</td><td>2022</td><td class="left">Ordinary Shares</td><td>25.00</td><td>24.53</td><td>8.40</td><td class="neg">-16.13</td><td>0.34x</td></tr>
+        <tr><td class="left">Acies Investments Fund I, L.P.</td><td class="left">G42 Investments</td><td>2021</td><td class="left">LP</td><td>50.00</td><td>15.73</td><td>12.68</td><td class="neg">-3.04</td><td>0.81x</td></tr>
+        <tr><td class="left">Life Biosciences LLC</td><td class="left">G42 Capital</td><td>2024</td><td class="left">D Prefs</td><td>40.95</td><td>40.00</td><td>40.95</td><td class="pos">0.95</td><td>1.02x</td></tr>
+        <tr><td class="left">Liquid AI</td><td class="left">G42 Capital</td><td>2025</td><td class="left">Series A</td><td>60.82</td><td>60.82</td><td>66.60</td><td class="pos">5.78</td><td>1.10x</td></tr>
+        <tr><td class="left">Neuralink</td><td class="left">G42 Capital</td><td>2025</td><td class="left">Series E</td><td>50.00</td><td>50.00</td><td>50.00</td><td>0.00</td><td>1.00x</td></tr>
+        <tr class="grand-total"><td class="left">Subtotal (12 positions)</td><td class="left"></td><td></td><td class="left"></td><td>410.77</td><td>375.08</td><td>746.22</td><td class="pos">371.15</td><td>1.99x</td></tr>
+        <tr><td class="left tt" data-tt="Tracker's own NAV tab tags this separately from Cerebras (1). Carrying value looks anomalous relative to the $35K invested via 2 exercised warrants - not silently accepted, see flag below.">Cerebras Systems Inc (2) &#9888;</td><td class="left">G42 Capital</td><td>2026</td><td class="left">Class A/B (Warrants)</td><td>0.04</td><td>0.04</td><td>698.17</td><td class="pos">698.13</td><td class="warn">19,871x</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>Removed from this note (already exited)</h2></div>
+    <ul>
+      <li><strong>Glass Earth Holdings LLC</strong> (Mozn, 2019, Promissory Note) &mdash; written off, $8.00m invested, $0.00m carrying value, -$8.00m gain. Excluded per your instruction to drop already-exited positions.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>Flags &mdash; not silently accepted, worth your review</h2></div>
+    <ul>
+      <li><strong>Cerebras Systems Inc (2)</strong>: $698.17m carrying value against $0.04m invested (2 exercised warrants) &rarr; ~19,871x TVPI. The tracker's own NAV tab does tag this separately from Cerebras (1), so it isn't an obvious data-pooling bug, but a multiple this extreme deserves a sanity check against Cerebras's actual latest valuation/IPO price before relying on it. Excluded from the subtotal above; shown as its own flagged row.</li>
+      <li><strong>E-line Ventures LLC</strong>: genuinely a US (New Jersey) entity, but the tracker's own "%" tab has a data-entry gap &mdash; its Country cell literally reads "New Jersey" instead of "USA" (a rollup that was never done at source).</li>
+      <li><strong>Domicile classification basis</strong>: US status is taken directly from the tracker's own jurisdiction/country tagging (Delaware/Nevada corporations, Delaware LLCs) except E-line Ventures LLC (Country cell says "New Jersey", corrected here to USA).</li>
+      <li><strong>Excluded as non-US</strong>: Mena Mobile Inc (Debt) and Esyasoft Holding (Debt) tranches (Cayman/DIFC entities per their equity siblings), and the MGX-family fund vehicles (UAE/DIFC-domiciled).</li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>
