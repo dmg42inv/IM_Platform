@@ -36,9 +36,11 @@ from .adapters.live_exited_sections import (
     extract_live_exited_sections,
     recompute_deal_financials,
 )
+from .adapters.monthly_snapshot import build_monthly_snapshot, write_snapshot_outputs
 from .adapters.tracker_style_dashboard import build_tracker_style_dashboard_html
 from .adapters.tracker_supplementary_tabs import (
     build_historical_nav_series,
+    build_per_company_nav_history,
     discover_monthly_tracker_files,
     extract_change_log,
     extract_nav_sheet,
@@ -344,14 +346,8 @@ def _build_financials_triangulation_notes(deals: pd.DataFrame, tolerance_pct: fl
     return notes
 
 
-def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
-    output_path = args.output_file or Path("data/outputs/Tracker_Style_Dashboard.html")
-    intake_path = args.intake_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
-    tracker_extract_path = args.tracker_extract_file or Path("data/outputs/Tracker_Extract_Reconciled.xlsx")
-    reconciliation_path = args.reconciliation_file or Path("data/source_of_truth/Entity_Reconciliation.xlsx")
-    scan_report_path = Path("data/outputs/Update_Scan_Report.json")
-
-    deals = extract_live_exited_sections(args.tracker_file)
+def _prepare_tracker_deals(tracker_file: Path, reconciliation_path: Path) -> tuple[pd.DataFrame, dict[str, str]]:
+    deals = extract_live_exited_sections(tracker_file)
     deal_entity_map = build_deal_entity_map(reconciliation_path)
 
     # MGX I Denali Holding LP has no line item in the tracker's own "1. Live"/
@@ -395,18 +391,55 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
         anchor = deals.loc[mask, "_pos"].min()
         deals.loc[mask, "_pos"] = deals.loc[mask, "deal_name"].map(_mgx_order).fillna(99) + anchor - 0.5
     deals = deals.sort_values("_pos", kind="stable").drop(columns="_pos").reset_index(drop=True)
+    return deals, deal_entity_map
 
+
+def _load_reconciled_tracker_extract(tracker_file: Path, reconciliation_path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+    mapping = load_confirmed_mapping(reconciliation_path)
+    cashflow = apply_confirmed_mapping(load_tracker_cashflows(tracker_file), mapping)
+    valuation = apply_confirmed_mapping(load_tracker_valuations(tracker_file), mapping)
+    return cashflow, valuation
+
+
+def _filter_resolved_extract(cashflow: pd.DataFrame, valuation: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    cashflow = cashflow[cashflow["entity_resolved"] == True].copy()  # noqa: E712
+    valuation = valuation[valuation["entity_resolved"] == True].copy()  # noqa: E712
+    return cashflow, valuation
+
+
+def _correct_deals_for_snapshot(
+    deals: pd.DataFrame,
+    cashflow: pd.DataFrame,
+    valuation: pd.DataFrame,
+    deal_entity_map: dict[str, str],
+    intake_path: Path,
+) -> tuple[pd.DataFrame, dict[str, dict]]:
     draft = pd.read_excel(intake_path, sheet_name="Investment_Register_Draft").fillna("")
     citation_lookup = build_entity_citation_lookup(draft)
+
+    deals = enrich_with_irr(deals, cashflow, valuation, deal_entity_map)
+    deals = recompute_deal_financials(deals, cashflow, valuation, deal_entity_map, citation_lookup)
+    return deals, citation_lookup
+
+
+def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
+    output_path = args.output_file or Path("data/outputs/Tracker_Style_Dashboard.html")
+    intake_path = args.intake_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
+    tracker_extract_path = args.tracker_extract_file or Path("data/outputs/Tracker_Extract_Reconciled.xlsx")
+    reconciliation_path = args.reconciliation_file or Path("data/source_of_truth/Entity_Reconciliation.xlsx")
+    scan_report_path = Path("data/outputs/Update_Scan_Report.json")
+    snapshot_history_path = Path("data/source_of_truth/Portfolio_Snapshot_History.xlsx")
+    monthly_diff_path = Path("data/outputs/Portfolio_Monthly_Diff.xlsx")
+
+    deals, deal_entity_map = _prepare_tracker_deals(args.tracker_file, reconciliation_path)
+
     glossary = build_glossary_table()
 
     cashflow = pd.read_excel(tracker_extract_path, sheet_name="Cashflow_Extract").fillna("")
     valuation = pd.read_excel(tracker_extract_path, sheet_name="Valuation_Extract").fillna("")
-    cashflow = cashflow[cashflow["entity_resolved"] == True].copy()  # noqa: E712
-    valuation = valuation[valuation["entity_resolved"] == True].copy()  # noqa: E712
+    cashflow, valuation = _filter_resolved_extract(cashflow, valuation)
 
-    deals = enrich_with_irr(deals, cashflow, valuation, deal_entity_map)
-    deals = recompute_deal_financials(deals, cashflow, valuation, deal_entity_map, citation_lookup)
+    deals, citation_lookup = _correct_deals_for_snapshot(deals, cashflow, valuation, deal_entity_map, intake_path)
     section_irr = compute_section_irr(deals, cashflow, valuation, deal_entity_map)
     vintage_irr = compute_vintage_irr(deals, cashflow, valuation, deal_entity_map)
     quarterly = build_quarterly_cashflows(cashflow)
@@ -416,6 +449,7 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     monthly_root = args.tracker_file.parent.parent
     monthly_files = discover_monthly_tracker_files(monthly_root)
     historical_nav = build_historical_nav_series(monthly_files)
+    per_company_nav = build_per_company_nav_history(monthly_files)
 
     ownership = extract_ownership_domicile(args.tracker_file)
     change_log = extract_change_log(args.tracker_file)
@@ -427,11 +461,16 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
         scan_report = json.loads(scan_report_path.read_text(encoding="utf-8"))
 
     as_of_date = valuation["valuation_date"].max() if len(valuation) else None
+    snapshot = build_monthly_snapshot(deals, str(as_of_date) if as_of_date is not None else "")
+    snapshot_history, monthly_diff = write_snapshot_outputs(snapshot, snapshot_history_path, monthly_diff_path)
+
     html = build_tracker_style_dashboard_html(
         deals, section_irr, vintage_irr, quarterly, historical_nav, cashflow, ownership, change_log,
         pd.DataFrame(), triangulation_notes, deal_entity_map, citation_lookup, glossary,
         nav_info=nav_info, nav_date=nav_date,
-        scan_report=scan_report, as_of_date=as_of_date,
+        scan_report=scan_report, as_of_date=as_of_date, monthly_diff=monthly_diff,
+        snapshot_history=snapshot_history,
+        per_company_nav=per_company_nav,
     )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -440,7 +479,44 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     print(f"Live deals: {len(deals[deals['tab'] == 'Live'])}. Exited deals: {len(deals[deals['tab'] == 'Exited'])}.")
     print(f"Triangulation notes: {len(triangulation_notes)}.")
     print(f"Historical NAV months: {len(historical_nav)}. Ownership rows: {len(ownership)}. Log rows: {len(change_log)}.")
+    print(f"Snapshot history rows: {len(snapshot_history)}. Monthly diff rows: {len(monthly_diff)}.")
+    print(f"Snapshot history written to: {snapshot_history_path}")
+    print(f"Monthly diff written to: {monthly_diff_path}")
     print(f"Dashboard written to: {output_path}")
+
+
+def _backfill_monthly_snapshot_command(args: argparse.Namespace) -> None:
+    intake_path = args.intake_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
+    reconciliation_path = args.reconciliation_file or Path("data/source_of_truth/Entity_Reconciliation.xlsx")
+    snapshot_history_path = args.snapshot_history_file or Path("data/source_of_truth/Portfolio_Snapshot_History.xlsx")
+    monthly_diff_path = args.monthly_diff_file or Path("data/outputs/Portfolio_Monthly_Diff.xlsx")
+
+    snapshot_history = pd.DataFrame()
+    monthly_diff = pd.DataFrame()
+    for tracker_file in args.tracker_file:
+        deals, deal_entity_map = _prepare_tracker_deals(tracker_file, reconciliation_path)
+        cashflow, valuation = _load_reconciled_tracker_extract(tracker_file, reconciliation_path)
+        total_cf = len(cashflow)
+        total_val = len(valuation)
+        resolved_cf = int(cashflow["entity_resolved"].sum())
+        resolved_val = int(valuation["entity_resolved"].sum())
+        cashflow, valuation = _filter_resolved_extract(cashflow, valuation)
+
+        deals, _citation_lookup = _correct_deals_for_snapshot(deals, cashflow, valuation, deal_entity_map, intake_path)
+        as_of_date = valuation["valuation_date"].max() if len(valuation) else None
+        snapshot = build_monthly_snapshot(deals, str(as_of_date) if as_of_date is not None else "")
+        snapshot_history, monthly_diff = write_snapshot_outputs(snapshot, snapshot_history_path, monthly_diff_path)
+
+        month = snapshot["snapshot_month"].iloc[0] if len(snapshot) else "unknown"
+        print(
+            f"Backfilled {month} from {tracker_file.name}: "
+            f"{len(snapshot)} deals, cashflow {resolved_cf}/{total_cf} resolved, "
+            f"valuation {resolved_val}/{total_val} resolved."
+        )
+
+    print(f"Snapshot history rows: {len(snapshot_history)}. Monthly diff rows: {len(monthly_diff)}.")
+    print(f"Snapshot history written to: {snapshot_history_path}")
+    print(f"Monthly diff written to: {monthly_diff_path}")
 
 
 def _scan_for_updates_command(args: argparse.Namespace) -> None:
@@ -564,6 +640,23 @@ def main() -> None:
     tracker_dashboard_parser.add_argument("--reconciliation-file", type=Path, default=None, help="Path to the Entity_Reconciliation workbook")
     tracker_dashboard_parser.add_argument("--output-file", type=Path, default=None, help="Where to write the HTML dashboard")
     tracker_dashboard_parser.set_defaults(func=_generate_tracker_dashboard_command)
+
+    snapshot_backfill_parser = subparsers.add_parser(
+        "backfill-monthly-snapshot",
+        help="Append or replace historical portfolio snapshots from one or more monthly tracker workbooks.",
+    )
+    snapshot_backfill_parser.add_argument(
+        "--tracker-file",
+        type=Path,
+        action="append",
+        required=True,
+        help="Path to a monthly Portfolio Summary tracker workbook. Repeat for multiple months.",
+    )
+    snapshot_backfill_parser.add_argument("--intake-file", type=Path, default=None, help="Path to the Investment_Register_Intake workbook")
+    snapshot_backfill_parser.add_argument("--reconciliation-file", type=Path, default=None, help="Path to the Entity_Reconciliation workbook")
+    snapshot_backfill_parser.add_argument("--snapshot-history-file", type=Path, default=None, help="Where to write/read the cumulative snapshot history workbook")
+    snapshot_backfill_parser.add_argument("--monthly-diff-file", type=Path, default=None, help="Where to write the latest monthly diff workbook")
+    snapshot_backfill_parser.set_defaults(func=_backfill_monthly_snapshot_command)
 
     scan_parser = subparsers.add_parser(
         "scan-for-updates",

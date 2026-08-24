@@ -1,0 +1,39 @@
+{
+  "_comment": "Descriptive company facts for the dashboard Company Profiles. Keyed by the consolidated deal name (lowercased). Each entry's 'source' labels where website/description/sector/hq came from. Domicile is intentionally NOT set here - it is sourced from the legal documents (grounded) per the sourcing rule. External/web facts are candidates pending analyst confirmation.",
+  "_source_policy": "cashflows->tracker; domicile+legal facts->legal docs (cited); website/description/sector/hq->internet (labeled).",
+  "neuralink": {
+    "description": "American neurotechnology company developing implantable brain-computer interfaces (BCIs) to link the human brain with computers.",
+    "website": "https://neuralink.com",
+    "sector": "Neurotechnology",
+    "hq": "Fremont, California, USA",
+    "source": "Wikipedia (fetched 2026-08-23)"
+  },
+  "cerebras systems inc": {
+    "description": "AI compute company that builds the world's largest processors (Wafer-Scale Engine) and CS-series supercomputers, plus AI inference and training cloud services.",
+    "website": "https://cerebras.ai",
+    "sector": "Semiconductors / AI compute",
+    "hq": "Sunnyvale, California, USA",
+    "source": "Wikipedia (fetched 2026-08-23)"
+  },
+  "ont plc": {
+    "description": "UK genomics company that develops nanopore-based sequencing technology for real-time analysis of DNA and RNA (MinION, GridION, PromethION); listed on the London Stock Exchange.",
+    "website": "https://nanoporetech.com",
+    "sector": "Genomics / DNA sequencing",
+    "hq": "Oxford, United Kingdom",
+    "source": "Wikipedia (fetched 2026-08-23)"
+  },
+  "drivenets": {
+    "description": "Israeli networking-software company providing a disaggregated, cloud-native network operating system on white-box hardware and an Ethernet-based AI networking fabric.",
+    "website": "https://drivenets.com",
+    "sector": "Networking software / Telecom",
+    "hq": "Ra'anana, Israel",
+    "source": "Wikipedia (fetched 2026-08-23)"
+  },
+  "instadeep limited": {
+    "description": "AI company specialising in decision-making AI for the enterprise; London-based, a subsidiary of BioNTech.",
+    "website": "https://instadeep.com",
+    "sector": "Artificial intelligence",
+    "hq": "London, United Kingdom",
+    "source": "Wikipedia (fetched 2026-08-23)"
+  }
+}

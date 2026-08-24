@@ -81,7 +81,8 @@ flowchart LR
 | `tracker_supplementary_tabs.py` | Historical NAV series (scans prior monthly tracker snapshots), ownership %/domiciliation, tracker's own change log. |
 | `entity_glossary.py` | Clean display names for entities whose `entity_id` carries folder-derived artifacts (numeric prefixes, internal codenames, ticker-style names). |
 | `scan_for_updates.py` | Detects new company/fund folders, and file-level added/modified/deleted/renamed-or-moved changes (manifest diff by path/size/mtime, with a same-size heuristic pairing deletions to additions as likely renames), each with a plain-English note on likely report impact - NOT auto-triggered (a static HTML dashboard cannot invoke a local process; run from a terminal, at the start of every session and before month-end reporting). |
-| `tracker_style_dashboard.py` | Renders the HTML dashboard: sectioned Live/Exited tables (tracker format, register+cashflow+NAV data), All Cashflows, Ownership, Log, Portfolio Growth (historical NAV + quarterly cash flow charts), Data Quality & Triangulation, Glossary. Every data cell carries a hover citation. |
+| `monthly_snapshot.py` | Persists the final post-recomputed per-deal monthly snapshot history and computes the latest period-over-period diff from the two most recent snapshot months. |
+| `tracker_style_dashboard.py` | Renders the HTML dashboard: sectioned Live/Exited tables (tracker format, register+cashflow+NAV data), All Cashflows, Ownership, Log, Portfolio Growth (historical NAV + quarterly cash flow charts), Monthly Diff, Data Quality & Triangulation, Glossary. Every data cell carries a hover citation. |
 | `output_pack.py` | V1 Output Pack Excel workbook + Markdown summary note (a separate, spec-driven deliverable per `V1_Output_Pack_Spec.md`). |
 | `calculations.py` | Core XIRR solver and portfolio snapshot/returns summary calculations shared across dashboard and output pack. |
 
@@ -102,6 +103,7 @@ time.**
 | `Entity_Reconciliation.xlsx` | Tracker free-text name -> register `entity_id` mapping, with `parent_fund_folder` for fund sub-vehicles. `reconcile-entities` preserves prior confirmations across re-runs. |
 | `Document_Manifest.json` | Baseline file manifest (path/size/mtime) for change detection - deleting this makes `scan-for-updates` treat every existing document as new. |
 | `Cashflow_SourceOfTruth_<date>.xlsx` | Dated, frozen cash flow + valuation snapshot, manually taken from the tracker at a point in time. Not yet wired as a CLI default input (still a manual copy) - intended to let reporting pin to a known-good extract instead of whatever the "current" tracker file happens to contain. |
+| `Portfolio_Snapshot_History.xlsx` | Cumulative per-deal, per-month snapshot history written by `generate-tracker-dashboard`. Uses final post-correction figures after register/cashflow/NAV recomputation, not the tracker's raw report-tab outputs. Same-month reruns replace that month's rows rather than appending duplicates. |
 
 ### `data/outputs/` (regenerable - safe to delete, rebuilt by CLI commands)
 
@@ -110,7 +112,14 @@ time.**
 | `Tracker_Extract_Preview.xlsx` / `Tracker_Extract_Reconciled.xlsx` | Cash flow + valuation extract, rebuilt from the tracker file and `Entity_Reconciliation.xlsx` on every `extract-tracker` / `apply-reconciliation` run. **Known gotcha**: `apply-reconciliation` rebuilds this from scratch, so any manually-added row (e.g. `MANUAL-VAL-0001` for MGX Denali) must be re-added after every run. |
 | `Update_Scan_Report.json` | Last `scan-for-updates` run's findings (new folders, new/modified files, likely impact) - a report, rebuilt each scan. |
 | `Tracker_Style_Dashboard.html` | The current, primary reporting deliverable. |
+| `Portfolio_Monthly_Diff.xlsx` | Latest period-over-period review workbook, comparing the two most recent snapshot months and classifying New / Exited / Changed / Removed deals with per-metric deltas. |
 | `V1_Output_Pack.xlsx` / `V1_Output_Pack_Summary_Note.md` | Spec-driven output pack (separate track from the dashboard). |
+
+### `src/frontend/`
+
+| File | Role |
+|---|---|
+| `streamlit_app.py` | Localhost app with browser login, snapshot month selector, portfolio snapshot table, and latest monthly diff view, reading only persisted snapshot/diff workbooks. |
 
 ## 5. Derived metric formulas (verified against the tracker's own logic)
 
@@ -303,13 +312,17 @@ time.**
   function with a pre-filtered input, leaving the complete/unfiltered view
   untouched and still the default. Keeps exploratory views honest (clearly
   labelled as a subset) without fragmenting the underlying data model.
-- **A monthly snapshot + period-over-period diff capability was designed
-  (not yet built)**: persist a per-deal, per-period snapshot of the final
-  corrected figures every time the report is regenerated, then compute a
-  diff (new/exited/changed deals, with notable-change flags) between the
-  two most recent periods. Snapshotting must capture the POST-correction
-  figures, not the tracker's raw ones, and must be a side effect of the
-  normal regeneration step (not a separate manual action) so it can't be
-  forgotten. See repo memory / session handoff for the open design
-  questions before building this.
+- **Monthly snapshot + period-over-period diff is now built into normal
+  dashboard regeneration**: every `generate-tracker-dashboard` run writes
+  the final corrected per-deal figures into the cumulative snapshot
+  history, then computes the latest diff between the two most recent
+  snapshot months. Snapshotting captures POST-correction figures, not the
+  tracker's raw ones, and same-month reruns replace that month's rows so
+  corrections do not create duplicate monthly records. The latest diff is
+  written to an output workbook and rendered in the dashboard's Monthly
+  Diff tab.
+- **Historical snapshot backfill is deliberate, not manual workbook editing**:
+  `backfill-monthly-snapshot` runs the same corrected deal-row computation
+  against one or more historical tracker files, upserts those months into
+  the durable history workbook, then rewrites the latest diff workbook.
 

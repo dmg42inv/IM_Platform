@@ -1,10 +1,10 @@
-# IM Platform Product Requirements Document (PRD) v1.8
+# IM Platform Product Requirements Document (PRD) v1.16
 
 ## 1. Document Control
 
 - Product: IM Platform
-- Version: 1.8
-- Date: 2026-08-16
+- Version: 1.16
+- Date: 2026-08-23
 - Status: Draft
 - Owners: Product, Engineering, Operations
 
@@ -117,6 +117,7 @@ Current investment processes are fragmented across spreadsheets, email, and disc
 - Structured due diligence checklist templates.
 - Artifact repository with versioning and tagging.
 - Findings log with owners, severity, and remediation status.
+- Document-intelligence workspace for source documents, semantic evidence nodes, machine-extracted candidates, analyst-confirmed facts, and review queues.
 
 ### E5 IC Workflow
 
@@ -180,6 +181,7 @@ Current investment processes are fragmented across spreadsheets, email, and disc
 - Change intelligence agents to track file-level changes, investment state changes, and workflow transitions.
 - Macro intelligence agents to ingest relevant market and policy news and map impacts to investments and risk themes.
 - Configurable daily/weekly digests and threshold-based alerts for portfolio teams.
+- Source-grounded answer generation with document/page/clause provenance and explicit caveats when evidence is machine-extracted, incomplete, conflicting, or pending review.
 
 ## 10. Non-Functional Requirements
 
@@ -452,6 +454,55 @@ are durable verification rules, not one-off fixes:
   plainly and keep the document's figure, rather than adopting the
   recollection because it was more recently stated. Do not fix what
   isn't broken by matching a claim that lacks evidence.
+
+### 19.6 Document Intelligence and Evidence Graph Requirements (added 2026-08-20)
+
+Sandbox pilots established a required structural pattern for scaling source-document review across investments. This is a product requirement, even where the current implementation is still sandbox/local.
+
+- **Document lineage must be explicit**: each source file promoted for review must retain original path, curated active path, curation action, source-of-truth role, classification, review caveats, and copy/identity verification where available.
+- **Semantic evidence must be modeled separately from files**: the platform must support source-grounded evidence nodes with stable IDs, source document/page references, typed values, relationships, and review status. A relevant file is not itself a confirmed fact.
+- **Machine-extracted candidates must be separate from analyst-confirmed facts**: candidate facts, clause extractions, workbook row scans, and tracker reconciliations must remain marked as requiring review until a human confirms or rejects them. Search/retrieval must not rank `not analyst confirmed` evidence as confirmed evidence.
+- **Human review queues are first-class workflow objects**: open candidates must be collected into a review queue with source references, review questions, caveats, and confirmation state so analysts can resolve evidence deliberately rather than by editing final outputs directly.
+- **Graph relationships are required for deal history**: the model must capture relationships among deal documents, versions, parties, obligations, rights, securities, cashflows, certificates/registers, valuation records, public-market context, and evidence gaps.
+- **Vector/semantic search is an access layer, not an authority layer**: semantic/vector retrieval can help find likely evidence, but answer generation must also consider source-of-truth role, review state, relationship context, and caveats before presenting a result.
+- **Answers must be source-grounded and uncertainty-aware**: generated answers must cite evidence and explicitly distinguish confirmed facts, tracker-supported portfolio facts, workbook-derived candidates, legal-document candidates, and unresolved discrepancies.
+- **Tracker/legal reconciliation gaps must remain visible**: when legal documents, workbook/register records, cashflow rows, valuation rows, or output packs disagree, the platform must preserve the disagreement as a review item rather than silently choosing one value.
+- **Sandbox-to-production promotion requires controls**: sandbox review artifacts may inform product requirements and migration design, but production source-of-truth records must be promoted only through governed validation, review, and approval workflows.
+
+### 19.7 Answer Verification and Numerical Grounding Middleware (added 2026-08-22)
+
+Because reporting is business-critical, no answer may be presented to a user until it has passed a mandatory internal verification and grounding step. This step is a hidden middleware stage between retrieval and final rendering: it does not converse with the user; it validates the retrieved payload, resolves overriding legal language, grounds every number to source text, and emits a machine-parseable validation state that the application uses to decide whether the answer is safe to render.
+
+**Input payload.** The middleware receives the user query, the primary clause node returned by retrieval, and the graph-traversed context (linked definitions and cross-references) from the knowledge graph.
+
+**Internal execution protocol (executed in order):**
+
+1. **Override and exception scan.** Scan the primary clause node and all graph-traversed context for modifying or overriding legal language, including but not limited to "Notwithstanding anything to the contrary...", "Subject to [Section/Clause X]...", "Except as otherwise provided...", and "Unless expressly stated otherwise...". If a modifying or overriding clause is found, the primary rule must be treated as conditional and the overriding clause elevated as the governing condition for all subsequent logic.
+2. **Numerical grounding and verification.** Identify every number, percentage, date, and financial figure required to answer the query. Each number must exist verbatim as a token substring within the primary clause node or graph-traversed context. Where a figure results from a multi-clause calculation, it must be derived explicitly using only textually proven figures. Any target number that cannot be found verbatim or mathematically proven from the text must be marked `[UNVERIFIED_NUMBER]` and suppressed from the answer.
+3. **Synthesis and validation-state construction.** Build the internal validation payload using the schema below. The backend parses this schema to determine whether the output is safe to render.
+
+**Internal output schema (JSON-compatible):**
+
+```json
+{
+  "validation_status": "PASSED" | "OVERRIDDEN" | "FAILED_UNVERIFIED_DATA",
+  "override_detected": true,
+  "governing_clauses": ["Section X.X", "Section Y.Y"],
+  "numerical_grounding_verified": true,
+  "verified_extracted_data": {
+    "figures_found": ["List all numbers/dates used and confirm they exist in text"],
+    "calculation_notes": "None or explanation of math"
+  },
+  "synthesized_response": "The final legally sound, exception-aware, and numerically verified answer passed downstream to the user interface."
+}
+```
+
+**Requirements derived from this protocol:**
+
+- Every rendered answer must be produced from cited nodes only; ungrounded numbers must never reach the user.
+- Overriding/conditional language must be detected and must govern the logic; a primary rule may not be presented as unconditional when the graph context qualifies it.
+- The validation state (`PASSED` / `OVERRIDDEN` / `FAILED_UNVERIFIED_DATA`) is a hard gate: `FAILED_UNVERIFIED_DATA` must block rendering of the affected figures.
+- Governing clauses and grounded figures must be recorded alongside the answer so the reasoning is auditable and reproducible.
 
 ## 20. Delivery Readiness Gaps and Additions
 

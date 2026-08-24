@@ -61,6 +61,33 @@ def build_historical_nav_series(monthly_files: dict[str, Path]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def build_per_company_nav_history(monthly_files: dict[str, Path]) -> pd.DataFrame:
+    """Per-company carrying-value / invested history across the prepared
+    monthly tracker workbooks - one row per deal per month, using the same
+    Live/Exited parser as the main dashboard. This is the source for each
+    company's NAV-history sparkline (the full historical series, not the
+    recent two-month snapshot file). Month order is preserved via month_index
+    (monthly_files is already chronological)."""
+    rows = []
+    for index, (label, path) in enumerate(monthly_files.items()):
+        try:
+            deals = extract_live_exited_sections(path)
+        except Exception:  # noqa: BLE001 - skip a month that won't parse
+            continue
+        for _, d in deals.iterrows():
+            rows.append(
+                {
+                    "month": label,
+                    "month_index": index,
+                    "deal_name": str(d.get("deal_name", "")).strip(),
+                    "tab": d.get("tab", ""),
+                    "carrying_value": d.get("carrying_value"),
+                    "invested": d.get("invested"),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def _norm(v: object) -> str:
     return str(v).strip() if pd.notna(v) else ""
 

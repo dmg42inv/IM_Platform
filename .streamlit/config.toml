@@ -1,0 +1,41 @@
+[server]
+headless = true
+runOnSave = true
+
+[theme]
+# Garamond everywhere — body, headings, tables and charts inherit this.
+font = "'EB Garamond':https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&display=swap"
+headingFont = "'EB Garamond':https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600;700&display=swap"
+baseFontSize = 16
+baseRadius = "10px"
+showWidgetBorder = true
+# Brand palette (green-led) for categorical chart series.
+chartCategoricalColors = ["#2F6B45", "#5A9E78", "#8FBFA3", "#B25A12", "#C9862B", "#6b746a", "#b3253a"]
+chartSequentialColors = ["#F4F1E7", "#DDEADF", "#BFD8C6", "#9CC3AC", "#77AD8E", "#529674", "#2F6B45", "#245538", "#1A402A", "#102A1B"]
+
+[theme.light]
+primaryColor = "#2F6B45"
+backgroundColor = "#E8E1CF"
+secondaryBackgroundColor = "#FBFAF6"
+textColor = "#22302A"
+borderColor = "#D9D2BE"
+linkColor = "#2F6B45"
+greenColor = "#2F6B45"
+redColor = "#b3253a"
+orangeColor = "#B25A12"
+dataframeHeaderBackgroundColor = "#EFEBDF"
+dataframeBorderColor = "#E4E0D0"
+
+[theme.dark]
+primaryColor = "#5AA97C"
+backgroundColor = "#141E19"
+secondaryBackgroundColor = "#1E2C25"
+textColor = "#ECE7D6"
+borderColor = "#33413A"
+linkColor = "#8FBFA3"
+greenColor = "#5AA97C"
+redColor = "#e0748a"
+orangeColor = "#E0A24E"
+dataframeHeaderBackgroundColor = "#243329"
+dataframeBorderColor = "#33413A"
+chartCategoricalColors = ["#5AA97C", "#8FBFA3", "#B9D8C4", "#E0A24E", "#E7C57A", "#9aa39a", "#e0748a"]

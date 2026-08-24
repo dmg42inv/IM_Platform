@@ -1,0 +1,336 @@
+{
+  "_comment": "Grounded domicile candidates extracted from the legal knowledge base (charters/articles/agreements). status='candidate' means analyst confirmation is required before it is treated as final. Keyed by lowercased consolidated tracker company name. For fund/SPV deals the top value may be the holding vehicle or adviser rather than the operating company - see domicile_candidates for alternatives.",
+  "_source_policy": "domicile = legal docs (cited), never the tracker.",
+  "school hack (airev holding limited)": {
+    "domicile": "Abu Dhabi Global Market (ADGM)",
+    "domicile_source": "9e._Schoolhack_-_Shareholders'_Agreement_-_Execution_Version.pdf (legal doc, candidate - confirm)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated under the laws of the Abu Dhabi Global Market",
+    "domicile_candidates": [
+      "Abu Dhabi Global Market (ADGM)"
+    ]
+  },
+  "inveniam ltd": {
+    "domicile": "Abu Dhabi Global Market (ADGM)",
+    "domicile_source": "G42 x PGIM - NDA 20.11.2024 v1.docx (legal doc, candidate - confirm; alt: Delaware)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "registered in the Abu Dhabi Global Market",
+    "domicile_candidates": [
+      "Abu Dhabi Global Market (ADGM)",
+      "Delaware",
+      "United Arab Emirates",
+      "New York",
+      "Canada"
+    ]
+  },
+  "liquid ai": {
+    "domicile": "Delaware",
+    "domicile_source": "Liquid AI, Inc. - Series A - Secretary's Certificate [EXECUTED].pdf (legal doc, candidate - confirm)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "registered office in the State of Delaware",
+    "domicile_candidates": [
+      "Delaware",
+      "June",
+      "July"
+    ]
+  },
+  "neuralink": {
+    "domicile": "Nevada",
+    "domicile_source": "Neuralink Investment Summary .docx (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated in Nevada",
+    "domicile_candidates": [
+      "Nevada",
+      "Abu Dhabi Global Market (ADGM)"
+    ]
+  },
+  "verses ai inc": {
+    "domicile": "California",
+    "domicile_source": "Verses Technologies USA Inc & Subs - FYE 3.31.22 CA Return.pdf (legal doc, candidate - confirm; alt: Wyoming)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "domicile is in California",
+    "domicile_candidates": [
+      "California",
+      "Wyoming"
+    ]
+  },
+  "acies investments fund i, l.p.": {
+    "domicile": "Delaware",
+    "domicile_source": "Acies -- Anchor Summary of Terms (execution version).DOCX (legal doc, candidate - confirm)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "organized as a Delaware",
+    "domicile_candidates": [
+      "Delaware"
+    ]
+  },
+  "drivenets": {
+    "domicile": "Israel",
+    "domicile_source": "DriveNets - Series D - SPA [Meitar April 16, 2026](14938774.23).docx (legal doc, candidate - confirm)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "existing under the laws of the State of Israel",
+    "domicile_candidates": [
+      "Israel"
+    ]
+  },
+  "new space capital fund i": {
+    "domicile": "Luxembourg",
+    "domicile_source": "Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "Registered with the Luxembourg",
+    "domicile_candidates": [
+      "Luxembourg",
+      "Finland",
+      "United Arab Emirates",
+      "UAE",
+      "Japan"
+    ]
+  },
+  "new space capital gp com scsp": {
+    "domicile": "Luxembourg",
+    "domicile_source": "Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "Registered with the Luxembourg",
+    "domicile_candidates": [
+      "Luxembourg",
+      "Finland",
+      "United Arab Emirates",
+      "UAE",
+      "Japan"
+    ]
+  },
+  "north summit capital fund": {
+    "domicile": "China",
+    "domicile_source": "1. North Summit Capital Fund - Amended and.PDF (legal doc, candidate - confirm; alt: Cayman Islands)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "organized under PRC",
+    "domicile_candidates": [
+      "China",
+      "Cayman Islands",
+      "Germany",
+      "Hong Kong",
+      "France"
+    ]
+  },
+  "vtv therapeutics inc.": {
+    "domicile": "Delaware",
+    "domicile_source": "AGM Notice May 2025.pdf (legal doc, candidate - confirm; alt: New York)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "Incorporated, a Delaware",
+    "domicile_candidates": [
+      "Delaware",
+      "New York",
+      "Abu Dhabi Global Market (ADGM)",
+      "Abu Dhabi"
+    ]
+  },
+  "mgx 1 strategic co-invest": {
+    "domicile": "Abu Dhabi Global Market (ADGM)",
+    "domicile_source": "MGX Strategic Co-invest LP - Audited Financial Statement - 2024_GX Investments Ltd.pdf (legal doc, candidate - confirm; alt: Cayman Islands)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "registered in the Abu Dhabi Global Market",
+    "domicile_candidates": [
+      "Abu Dhabi Global Market (ADGM)",
+      "Cayman Islands",
+      "Abu Dhabi",
+      "Delaware",
+      "New York"
+    ]
+  },
+  "mgx group holding 1 ltd (gp)": {
+    "domicile": "Abu Dhabi Global Market (ADGM)",
+    "domicile_source": "MGX Strategic Co-invest LP - Audited Financial Statement - 2024_GX Investments Ltd.pdf (legal doc, candidate - confirm; alt: Cayman Islands)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "registered in the Abu Dhabi Global Market",
+    "domicile_candidates": [
+      "Abu Dhabi Global Market (ADGM)",
+      "Cayman Islands",
+      "Abu Dhabi",
+      "Delaware",
+      "New York"
+    ]
+  },
+  "mgx i denali holding lp": {
+    "domicile": "Abu Dhabi Global Market (ADGM)",
+    "domicile_source": "MGX Strategic Co-invest LP - Audited Financial Statement - 2024_GX Investments Ltd.pdf (legal doc, candidate - confirm; alt: Cayman Islands)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "registered in the Abu Dhabi Global Market",
+    "domicile_candidates": [
+      "Abu Dhabi Global Market (ADGM)",
+      "Cayman Islands",
+      "Abu Dhabi",
+      "Delaware",
+      "New York"
+    ]
+  },
+  "mgx i lp": {
+    "domicile": "Abu Dhabi Global Market (ADGM)",
+    "domicile_source": "MGX Strategic Co-invest LP - Audited Financial Statement - 2024_GX Investments Ltd.pdf (legal doc, candidate - confirm; alt: Cayman Islands)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "registered in the Abu Dhabi Global Market",
+    "domicile_candidates": [
+      "Abu Dhabi Global Market (ADGM)",
+      "Cayman Islands",
+      "Abu Dhabi",
+      "Delaware",
+      "New York"
+    ]
+  },
+  "applied ai corporation limited": {
+    "domicile": "Abu Dhabi Global Market (ADGM)",
+    "domicile_source": "Certificate of Incorporation - APPLIED AI CORPORATION LIMITED.pdf (legal doc, candidate - confirm; alt: Delaware)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated company pursuant to Abu Dhabi Global Market",
+    "domicile_candidates": [
+      "Abu Dhabi Global Market (ADGM)",
+      "Delaware"
+    ]
+  },
+  "beyond limits": {
+    "domicile": "Delaware",
+    "domicile_source": "Project Emerald - DD Report.pdf (legal doc, candidate - confirm; alt: California)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated in the State of Delaware",
+    "domicile_candidates": [
+      "Delaware",
+      "California",
+      "UAE"
+    ]
+  },
+  "cerebras systems inc": {
+    "domicile": "Delaware",
+    "domicile_source": "10Q Q126  Cerebras.pdf (legal doc, candidate - confirm; alt: California)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated in Delaware",
+    "domicile_candidates": [
+      "Delaware",
+      "California",
+      "Japan",
+      "Canada"
+    ]
+  },
+  "e-line ventures llc": {
+    "domicile": "Delaware",
+    "domicile_source": "Round 1, Endless Studios Limited Liability Company Agreement.pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))",
+    "domicile_status": "candidate",
+    "domicile_phrase": "organized as a Delaware",
+    "domicile_candidates": [
+      "Delaware",
+      "Abu Dhabi Global Market (ADGM)"
+    ]
+  },
+  "endless studios llc": {
+    "domicile": "Delaware",
+    "domicile_source": "Round 1, Endless Studios Limited Liability Company Agreement.pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))",
+    "domicile_status": "candidate",
+    "domicile_phrase": "organized as a Delaware",
+    "domicile_candidates": [
+      "Delaware",
+      "Abu Dhabi Global Market (ADGM)"
+    ]
+  },
+  "flyr inc": {
+    "domicile": "Delaware",
+    "domicile_source": "FLYR, Inc. and Subsidiaries FS 12 31 21.pdf (legal doc, candidate - confirm; alt: England and Wales)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated in Delaware",
+    "domicile_candidates": [
+      "Delaware",
+      "England and Wales",
+      "Germany"
+    ]
+  },
+  "heygears": {
+    "domicile": "China",
+    "domicile_source": "1. HeyGears - MOZN SHA (EXE).pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated under the laws of People's Republic of China",
+    "domicile_candidates": [
+      "China",
+      "Abu Dhabi Global Market (ADGM)",
+      "Abu Dhabi"
+    ]
+  },
+  "ont plc": {
+    "domicile": "United Kingdom",
+    "domicile_source": "31-12-2019 ONT Accounts.pdf (legal doc, candidate - confirm; alt: England and Wales)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated in the United Kingdom",
+    "domicile_candidates": [
+      "United Kingdom",
+      "England and Wales",
+      "Table",
+      "Japan",
+      "Singapore"
+    ]
+  },
+  "espace": {
+    "domicile": "Delaware",
+    "domicile_source": "2023.09.25 B1 and B2 Purchase and Sale Agreement.pdf (legal doc, candidate - confirm)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "registered office of the Corporation in the State of Delaware",
+    "domicile_candidates": [
+      "Delaware"
+    ]
+  },
+  "sinovation disrupt fund, l.p.": {
+    "domicile": "Cayman Islands",
+    "domicile_source": "Amended and Restated LPA 12.pdf (legal doc, candidate - confirm; alt: Hong Kong)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "registered office of the Partnership in the Cayman Islands",
+    "domicile_candidates": [
+      "Cayman Islands",
+      "Hong Kong"
+    ]
+  },
+  "esyasoft holding": {
+    "domicile": "Dubai International Financial Centre (DIFC)",
+    "domicile_source": "G42 Esyasoft Due Diligence Report 2 4 20.docx (legal doc, candidate - confirm; alt: India)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated under the laws of Dubai International Financial Centre",
+    "domicile_candidates": [
+      "Dubai International Financial Centre (DIFC)",
+      "India",
+      "Abu Dhabi Global Market (ADGM)",
+      "Dubai Silicon Oasis"
+    ]
+  },
+  "instadeep limited": {
+    "domicile": "England and Wales",
+    "domicile_source": "2. UK - 2019 FINAL_full_accts_ye_311219 (11) (1).pdf (legal doc, candidate - confirm; alt: United Kingdom)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "registered in England and Wales",
+    "domicile_candidates": [
+      "England and Wales",
+      "United Kingdom",
+      "France",
+      "United Arab Emirates",
+      "Nigeria"
+    ]
+  },
+  "jysan technologies": {
+    "domicile": "England and Wales",
+    "domicile_source": "2. JYSAN - Shareholders' Agreement - Executed Version.pdf (legal doc, candidate - confirm; alt: Kazakhstan)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated and registered in England and Wales",
+    "domicile_candidates": [
+      "England and Wales",
+      "Kazakhstan",
+      "Abu Dhabi Global Market (ADGM)",
+      "Abu Dhabi",
+      "Nevada"
+    ]
+  },
+  "mena mobile inc": {
+    "domicile": "Cayman Islands",
+    "domicile_source": "Mena Mobile - Due Diligence Report (final).pdf (legal doc, candidate - confirm; alt: China)",
+    "domicile_status": "candidate",
+    "domicile_phrase": "incorporated in the Cayman Islands",
+    "domicile_candidates": [
+      "Cayman Islands",
+      "China",
+      "British Virgin Islands",
+      "Hong Kong",
+      "Abu Dhabi"
+    ]
+  }
+}

@@ -1,0 +1,195 @@
+filename,original_path,doc_kind,extraction_status,proposed_bucket,reason
+April 2021 captable.pdf,1. Cap Table\April 2021 captable.pdf,cap_table,extracted_text,05_Capitalization_and_Securities,name:'captable'
+Cap Table.xlsx,1. Cap Table\Cap Table.xlsx,cap_table,extracted_text,05_Capitalization_and_Securities,name:'cap table'
+December 2020 captable.pdf,1. Cap Table\December 2020 captable.pdf,cap_table,extracted_text,05_Capitalization_and_Securities,name:'captable'
+June 2021 captable.pdf,1. Cap Table\June 2021 captable.pdf,cap_table,extracted_text,05_Capitalization_and_Securities,name:'captable'
+November2020captable.pdf,1. Cap Table\November2020captable.pdf,cap_table,extracted_text,05_Capitalization_and_Securities,name:'captable'
+RE_ G42 Investments.msg,1. Cap Table\RE_ G42 Investments.msg,cap_table,extracted_text,05_Capitalization_and_Securities,kind:cap_table
+3.2 - ONT Articles 9th June 2021.pdf,1. Due Diligence Documents\3.2 - ONT Articles 9th June 2021.pdf,constitutional_document,extracted_text,04_Legal_and_Closing,name:'articles'
+Copy of ONT - EXTERNAL (G42) Investor Model March 2020 vF.xlsx,1. Due Diligence Documents\Copy of ONT - EXTERNAL (G42) Investor Model March 2020 vF.xlsx,due_diligence,extracted_text,02_Due_Diligence,kind:due_diligence
+Evolution of Forecast for G42 vF.pdf,1. Due Diligence Documents\Evolution of Forecast for G42 vF.pdf,due_diligence,extracted_text,02_Due_Diligence,kind:due_diligence
+KPMG Report - Project NGS (Volume I - Financial and Tax DD).pdf,1. Due Diligence Documents\KPMG Report - Project NGS (Volume I - Financial and Tax DD).pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT DD revised Val & cashflow v01.xlsx,1. Due Diligence Documents\ONT DD revised Val & cashflow v01.xlsx,financial_model,extracted_text,07_Monitoring_and_Financials,kind:financial_model
+ONT Valuation for G42 4 Apr 2020vF.pdf,1. Due Diligence Documents\ONT Valuation for G42 4 Apr 2020vF.pdf,valuation_support,extracted_text,08_Valuation,name:'valuation'
+ONT Valuation report Overview -v2.pptx,1. Due Diligence Documents\ONT Valuation report Overview -v2.pptx,valuation_support,extracted_text,08_Valuation,name:'valuation'
+Nominee Direction letter_MOZN_Innovation_G42 investments.pdf,1. Nominee Shareholder Letter\Nominee Direction letter_MOZN_Innovation_G42 investments.pdf,shareholder_document,extracted_text,05_Capitalization_and_Securities,name:'nominee'
+Nominee Shareholder Letter.pdf,1. Nominee Shareholder Letter\Nominee Shareholder Letter.pdf,shareholder_document,extracted_text,05_Capitalization_and_Securities,name:'nominee'
+ONT G42 Investment & JV TS 20 11 19.doc,2. Transaction Closure Documents\1. Term Sheet\ONT G42 Investment & JV TS 20 11 19.doc,term_sheet,extracted_text,04_Legal_and_Closing,kind:term_sheet
+G42 - 4 June offer application letter 4836-6703-4048 1 (002).pdf,2. Transaction Closure Documents\2. Pre-emptive Offer\G42 - 4 June offer application letter 4836-6703-4048 1 (002).pdf,unclassified_document,extracted_text,04_Legal_and_Closing,folder-hint:'transaction closure'
+ONT - Tender Letter 3 Nov 2020.pdf,2. Transaction Closure Documents\2. Pre-emptive Offer\ONT - Tender Letter 3 Nov 2020.pdf,unclassified_document,extracted_text,04_Legal_and_Closing,folder-hint:'transaction closure'
+G42 allocation in Pre-Emptive Placing.pdf,2. Transaction Closure Documents\2. Pre-emptive offer April 2021\G42 allocation in Pre-Emptive Placing.pdf,unclassified_document,extracted_text,04_Legal_and_Closing,folder-hint:'transaction closure'
+ONT Articles of Association 30 Jun 20 ONT20G42.pdf,"2. Transaction Closure Documents\3. SPA, Subscription, AoA\ONT Articles of Association 30 Jun 20 ONT20G42.pdf",subscription_agreement,extracted_text,04_Legal_and_Closing,name:'articles'
+Oxford - G42 Purchase and Sale Agreement_08Dec2019_FE.pdf,"2. Transaction Closure Documents\3. SPA, Subscription, AoA\Oxford - G42 Purchase and Sale Agreement_08Dec2019_FE.pdf",subscription_agreement,extracted_text,04_Legal_and_Closing,name:'agreement'
+Oxford - G42 Research Collaboration Agreement_08Dec2019_FE.pdf,2. Transaction Closure Documents\4. Collaboration Agreement\Oxford - G42 Research Collaboration Agreement_08Dec2019_FE.pdf,unclassified_document,extracted_text,04_Legal_and_Closing,name:'agreement'
+FW_ G42 Investments.msg,2. Transaction Closure Documents\Fund Transfer Instructions - From Caline\FW_ G42 Investments.msg,unclassified_document,extracted_text,04_Legal_and_Closing,folder-hint:'transaction closure'
+FW_ ONT pre-emption offer 11th June 2020 - G42.msg,2. Transaction Closure Documents\Fund Transfer Instructions - From Caline\FW_ ONT pre-emption offer 11th June 2020 - G42.msg,unclassified_document,extracted_text,10_Exit_and_Public_Markets,name:'pre-emption'
+FW_ ONT pre-emption offer 4th June 2020 - G42.msg,2. Transaction Closure Documents\Fund Transfer Instructions - From Caline\FW_ ONT pre-emption offer 4th June 2020 - G42.msg,unclassified_document,extracted_text,10_Exit_and_Public_Markets,name:'pre-emption'
+FW_ ONT pre-emptive offer.msg,2. Transaction Closure Documents\Fund Transfer Instructions - From Caline\FW_ ONT pre-emptive offer.msg,unclassified_document,extracted_text,04_Legal_and_Closing,folder-hint:'transaction closure'
+ONT pre-emptive offer 15th July 2020 ONT20G42.pdf,2. Transaction Closure Documents\Fund Transfer Instructions - From Caline\ONT pre-emptive offer 15th July 2020 ONT20G42.pdf,unclassified_document,extracted_text,04_Legal_and_Closing,folder-hint:'transaction closure'
+Oxford Nanopore - Investment Summary (Sep 2020) 4814-2336-4042 2.docx,2. Transaction Closure Documents\Oxford Nanopore - Investment Summary (Sep 2020) 4814-2336-4042 2.docx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'investment summary'
+"Oxford Nanopore - Investment Summary (Sep 2020) 4814-2336-4042, 2.docx","2. Transaction Closure Documents\Oxford Nanopore - Investment Summary (Sep 2020) 4814-2336-4042, 2.docx",unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'investment summary'
+31-12-2019 ONT Accounts.pdf,3. Monitoring\1. Financials\31-12-2019 ONT Accounts.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+COVID-19 update for investors  29 September 2020.pdf,3. Monitoring\1. Financials\COVID-19 update for investors  29 September 2020.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Investor Revenue Forecast 11 Feb 2021 Oxford Nanopore Confidential.pdf,3. Monitoring\1. Financials\Investor Revenue Forecast 11 Feb 2021 Oxford Nanopore Confidential.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Management Accounts Full Year 2020 (unaudited).pdf,3. Monitoring\1. Financials\Management Accounts Full Year 2020 (unaudited).pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore Q3 2020 accounts CONFIDENTIAL.pdf,3. Monitoring\1. Financials\Oxford Nanopore Q3 2020 accounts CONFIDENTIAL.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore investor presentation 16 September 2020.pdf,3. Monitoring\1. Financials\Oxford Nanopore investor presentation 16 September 2020.pdf,financial_statement,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+Oxford Nanopore investor report Q1 2018 PUBLIC INFO ONLY.pdf,3. Monitoring\1. Financials\Oxford Nanopore investor report Q1 2018 PUBLIC INFO ONLY.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore investor report Q1 2021 Contains information not in the public domain.pdf,3. Monitoring\1. Financials\Oxford Nanopore investor report Q1 2021 Contains information not in the public domain.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore investor report Q3 2020 PUBLIC INFO ONLY.pdf,3. Monitoring\1. Financials\Oxford Nanopore investor report Q3 2020 PUBLIC INFO ONLY.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore published accounts 2014.pdf,3. Monitoring\1. Financials\Oxford Nanopore published accounts 2014.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore published accounts 2015.pdf,3. Monitoring\1. Financials\Oxford Nanopore published accounts 2015.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore published accounts 2016.pdf,3. Monitoring\1. Financials\Oxford Nanopore published accounts 2016.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore published accounts 2017.pdf,3. Monitoring\1. Financials\Oxford Nanopore published accounts 2017.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore published accounts 2018.pdf,3. Monitoring\1. Financials\Oxford Nanopore published accounts 2018.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore published accounts 31 Dec 2020 - audited.pdf,3. Monitoring\1. Financials\Oxford Nanopore published accounts 31 Dec 2020 - audited.pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210303 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210303 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210304 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210304 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210308 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210308 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210310 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210310 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210325 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210325 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210326 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210326 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210331 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210331 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210505 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210505 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210508 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210508 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210523 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210523 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210526 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210526 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210706 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210706 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210801 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210801 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210808 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210808 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210809 ONT Financials.xlsx,3. Monitoring\2. Analysis\20210809 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+20210810 Note on reveue.docx,3. Monitoring\2. Analysis\20210810 Note on reveue.docx,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+20210810 ONT Note on reveue.docx,3. Monitoring\2. Analysis\20210810 ONT Note on reveue.docx,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+20211002 ONT Financials.xlsx,3. Monitoring\2. Analysis\20211002 ONT Financials.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT_Share certificate 46.pdf,3. Monitoring\2. Analysis\20Jan2022 Update\ONT_Share certificate 46.pdf,unclassified_document,extracted_text,05_Capitalization_and_Securities,name:'share certificate'
+Share Price.xlsx,3. Monitoring\2. Analysis\20Jan2022 Update\Share Price.xlsx,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+_INTERNAL_ FW_ ONT shares and dematerialization _#159325_.msg,3. Monitoring\2. Analysis\20Jan2022 Update\_INTERNAL_ FW_ ONT shares and dematerialization _#159325_.msg,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+3.2_ONT Articles 10July2020.pdf,3. Monitoring\2. Analysis\22 Jan 2021 13 hours DUMP\3_General docs and background\3.2_ONT Articles 10July2020.pdf,constitutional_document,extracted_text,04_Legal_and_Closing,name:'articles'
+4.1_November2020captable.pdf,3. Monitoring\2. Analysis\22 Jan 2021 13 hours DUMP\4_Cap table\4.1_November2020captable.pdf,cap_table,extracted_text,05_Capitalization_and_Securities,name:'captable'
+ONT Pre-Emption Rights.pdf,3. Monitoring\2. Analysis\31 Mar 2021 Pre-emption rights\ONT Pre-Emption Rights.pdf,unclassified_document,extracted_text,10_Exit_and_Public_Markets,name:'pre-emption'
+ONT Pre-Emption Rights.pptx,3. Monitoring\2. Analysis\31 Mar 2021 Pre-emption rights\ONT Pre-Emption Rights.pptx,unclassified_document,extracted_text,10_Exit_and_Public_Markets,name:'pre-emption'
+Amendments to existing share plans.pdf,3. Monitoring\2. Analysis\31 Mar 2021 Pre-emption rights\Source email\Amendments to existing share plans.pdf,amendment,extracted_text,04_Legal_and_Closing,kind:amendment
+ONT Share Option Scheme Rules 2018.pdf,3. Monitoring\2. Analysis\31 Mar 2021 Pre-emption rights\Source email\ONT Share Option Scheme Rules 2018.pdf,unclassified_document,extracted_text,10_Exit_and_Public_Markets,folder-hint:'pre-emption'
+ONT Share Option Scheme Rules.pdf,3. Monitoring\2. Analysis\31 Mar 2021 Pre-emption rights\Source email\ONT Share Option Scheme Rules.pdf,unclassified_document,extracted_text,10_Exit_and_Public_Markets,folder-hint:'pre-emption'
+May 2021 LAT shares and LTIP Analysis.pdf,3. Monitoring\2. Analysis\May 2021 LAT shares and LTIP Analysis.pdf,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+20210505 M&G makes £35m investment in Oxford Nanopore Technologies.pdf,3. Monitoring\2. Analysis\News\20210505 M&G makes £35m investment in Oxford Nanopore Technologies.pdf,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+ONT Valuation.pptx,3. Monitoring\2. Analysis\ONT Valuation.pptx,valuation_support,extracted_empty,08_Valuation,name:'valuation'
+Notes v1.xlsx,3. Monitoring\2. Analysis\Others\Notes v1.xlsx,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+Notes v2.xlsx,3. Monitoring\2. Analysis\Others\Notes v2.xlsx,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+ONT - IR Dec'20 v2.pdf,3. Monitoring\2. Analysis\Others\ONT - IR Dec'20 v2.pdf,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'ir'
+ONT Articles 10July2020.pdf,3. Monitoring\2. Analysis\Others\ONT Articles 10July2020.pdf,constitutional_document,extracted_text,04_Legal_and_Closing,name:'articles'
+Oxford Nanopore investor presentation 16 September 2020 Slide 21.pdf,3. Monitoring\2. Analysis\Others\Oxford Nanopore investor presentation 16 September 2020 Slide 21.pdf,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+ONT Financials v1 Divyesh.xlsx,3. Monitoring\2. Analysis\Others\Presentation and Financials\ONT Financials v1 Divyesh.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT Financials v2.xlsx,3. Monitoring\2. Analysis\Others\Presentation and Financials\ONT Financials v2.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT Financials v3.xlsx,3. Monitoring\2. Analysis\Others\Presentation and Financials\ONT Financials v3.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT Financials v4.xlsx,3. Monitoring\2. Analysis\Others\Presentation and Financials\ONT Financials v4.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT Financials v5.xlsx,3. Monitoring\2. Analysis\Others\Presentation and Financials\ONT Financials v5.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT Financials v6.xlsx,3. Monitoring\2. Analysis\Others\Presentation and Financials\ONT Financials v6.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT Financials v7.xlsx,3. Monitoring\2. Analysis\Others\Presentation and Financials\ONT Financials v7.xlsx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT v1 Divyesh.pptx,3. Monitoring\2. Analysis\Others\Presentation and Financials\ONT v1 Divyesh.pptx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT v2.pptx,3. Monitoring\2. Analysis\Others\Presentation and Financials\ONT v2.pptx,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT HY23 PRESENTATION.pdf,3. Monitoring\H1 2023\ONT HY23 PRESENTATION.pdf,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+Oxford-Nanopore-HY23-Results-Report-6-Sep-2023.pdf,3. Monitoring\H1 2023\Oxford-Nanopore-HY23-Results-Report-6-Sep-2023.pdf,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+ONT - Annual Results for the year ended 31 December 2022.pdf,3. Monitoring\ONT - Annual Results for the year ended 31 December 2022.pdf,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+Oxford Nanopore Technologies plc (ONTTF...pdf,3. Monitoring\Q3 2022\Oxford Nanopore Technologies plc (ONTTF...pdf,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+Oxford Nanopore Technologies plc Interim Results filed on 9_13_2022 10_00 AM.pdf,3. Monitoring\Q3 2022\Oxford Nanopore Technologies plc Interim Results filed on 9_13_2022 10_00 AM.pdf,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+Oxford Nanopore Technologies plc LSE ONT Financials Annual.xls,3. Monitoring\Q3 2022\Oxford Nanopore Technologies plc LSE ONT Financials Annual.xls,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore Technologies plc LSE ONT Financials Quarterly..xls,3. Monitoring\Q3 2022\Oxford Nanopore Technologies plc LSE ONT Financials Quarterly..xls,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+Oxford Nanopore Technologies plc Transcript 13 Sep.docx,3. Monitoring\Q3 2022\Oxford Nanopore Technologies plc Transcript 13 Sep.docx,unclassified_document,extracted_text,07_Monitoring_and_Financials,folder-hint:'monitoring'
+Shareholder Resolutions May 2021 G42.msg,3. Monitoring\Shareholder Resolutions May 2021 G42.msg,shareholder_document,extracted_text,03_Board_and_IC,name:'resolution'
+Exec Shareholding.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Exec Shareholding.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+01.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\01.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+02.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\02.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+03.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\03.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+04.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\04.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+05.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\05.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+06.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\06.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+07.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\07.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+08.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\08.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+09.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\09.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+10.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\10.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+11.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\11.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+12.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\12.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+13.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\13.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+14.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\14.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+15.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\15.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+16.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\16.bmp,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+Mercer Report.pdf,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\Mercer Report.pdf,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+Mercer.docx,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\Mercer.docx,shareholder_document,manual_review_required,03_Board_and_IC,kind:shareholder_document
+New Bitmap Image.bmp,4. Resolutions\20210526 Shareholder Resolutions LAT LTIP\Mercer Report\New Bitmap Image.bmp,shareholder_document,ocr_required,03_Board_and_IC,kind:shareholder_document
+20210603 LAT LTIP Resolutions.pdf,4. Resolutions\20210603 LAT LTIP Resolutions.pdf,resolution,extracted_text,03_Board_and_IC,name:'resolution'
+1. Appendix 1 - listed plc articles.pdf,4. Resolutions\20210804 Shareholder Resolutions Pre-listing\1. Appendix 1 - listed plc articles.pdf,shareholder_document,extracted_text,04_Legal_and_Closing,name:'articles'
+1. Appendix 2 - summary of plc share plans.pdf,4. Resolutions\20210804 Shareholder Resolutions Pre-listing\1. Appendix 2 - summary of plc share plans.pdf,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+1. Appendix to Annex 3 - draft interim plc articles.pdf,4. Resolutions\20210804 Shareholder Resolutions Pre-listing\1. Appendix to Annex 3 - draft interim plc articles.pdf,shareholder_document,extracted_text,04_Legal_and_Closing,name:'articles'
+1. Shareholder resolutions - G42 Investments AI Holding RSC Limited.pdf,4. Resolutions\20210804 Shareholder Resolutions Pre-listing\1. Shareholder resolutions - G42 Investments AI Holding RSC Limited.pdf,shareholder_document,extracted_text,03_Board_and_IC,name:'resolution'
+1.1 CEF Template.docx,4. Resolutions\20210804 Shareholder Resolutions Pre-listing\1.1 CEF Template.docx,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+2. Annex 2 - form of lockup deed.pdf,4. Resolutions\20210804 Shareholder Resolutions Pre-listing\2. Annex 2 - form of lockup deed.pdf,shareholder_document,extracted_text,10_Exit_and_Public_Markets,name:'lockup'
+Amendments to existing share plans.pdf,4. Resolutions\Amendments to existing share plans.pdf,resolution,extracted_text,03_Board_and_IC,kind:resolution
+ONT Share Option Scheme Rules 2018.pdf,4. Resolutions\ONT Share Option Scheme Rules 2018.pdf,resolution,extracted_text,03_Board_and_IC,kind:resolution
+ONT Share Option Scheme Rules.pdf,4. Resolutions\ONT Share Option Scheme Rules.pdf,resolution,extracted_text,03_Board_and_IC,kind:resolution
+ONT shareholder letter 29Mar21 G42 Investments AI Holding RSC Limited.pdf,4. Resolutions\ONT shareholder letter 29Mar21 G42 Investments AI Holding RSC Limited.pdf,shareholder_document,extracted_text,03_Board_and_IC,kind:shareholder_document
+ONT AGM Notice.pdf,6. AGM - Jun2022\ONT AGM Notice.pdf,unclassified_document,extracted_text,09_Corporate_Actions_and_AGM,name:'agm'
+ONT Annual Report and Accounts 2021.pdf,6. AGM - Jun2022\ONT Annual Report and Accounts 2021.pdf,unclassified_document,extracted_text,07_Monitoring_and_Financials,name:'annual report'
+ONT Form of Proxy 2022.pdf,6. AGM - Jun2022\ONT Form of Proxy 2022.pdf,unclassified_document,extracted_text,09_Corporate_Actions_and_AGM,folder-hint:'agm'
+ONT Remuneration Report.pdf,6. AGM - Jun2022\ONT Remuneration Report.pdf,unclassified_document,extracted_text,09_Corporate_Actions_and_AGM,folder-hint:'agm'
+Oxford Nanopore - Investment Summary (October 2021).docx,6. AGM - Jun2022\Oxford Nanopore - Investment Summary (October 2021).docx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'investment summary'
+Final AGM Notice.pdf,7. AGM - Jun 2023\Final AGM Notice.pdf,unclassified_document,extracted_text,09_Corporate_Actions_and_AGM,name:'agm'
+Final Annual Report.pdf,7. AGM - Jun 2023\Final Annual Report.pdf,unclassified_document,extracted_text,07_Monitoring_and_Financials,name:'annual report'
+Vote Confirmation 06Jun23.pdf,7. AGM - Jun 2023\Vote Confirmation 06Jun23.pdf,unclassified_document,extracted_text,09_Corporate_Actions_and_AGM,folder-hint:'agm'
+ont-ar24-nom-25-04-23-final.pdf,8. AGM - Jun 2024\ont-ar24-nom-25-04-23-final.pdf,unclassified_document,extracted_text,09_Corporate_Actions_and_AGM,folder-hint:'agm'
+BofA - Oxford Nanopore Technologies.pdf,BofA - Oxford Nanopore Technologies.pdf,unclassified_document,extracted_text,11_Correspondence_and_Other,default
+1.1_Company Overview presentation 12 March 2021.pdf,Data Room Downloads\Investor Relations\1.1_Company Overview presentation 12 March 2021.pdf,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+10.1_Cap table.pdf,Data Room Downloads\Investor Relations\10.1_Cap table.pdf,cap_table,extracted_text,05_Capitalization_and_Securities,name:'cap table'
+31-12-2019 ONT Accounts.pdf,Data Room Downloads\Investor Relations\31-12-2019 ONT Accounts.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+4.2_ONT Corporate Structure March 2021.pdf,Data Room Downloads\Investor Relations\4.2_ONT Corporate Structure March 2021.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+9.2.1_Management Accounts Full Year 2020 (unaudited).pdf,Data Room Downloads\Investor Relations\9.2.1_Management Accounts Full Year 2020 (unaudited).pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+9.3.1_ONT - Investor Revenue Forecast 8 March 2021 vF confidential.xlsx,Data Room Downloads\Investor Relations\9.3.1_ONT - Investor Revenue Forecast 8 March 2021 vF confidential.xlsx,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+9.3.3_Revenue 2018 - 2023F.xlsx,Data Room Downloads\Investor Relations\9.3.3_Revenue 2018 - 2023F.xlsx,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+COVID-19 update for investors  29 September 2020.pdf,Data Room Downloads\Investor Relations\COVID-19 update for investors  29 September 2020.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+Oxford Nanopore Q3 2020 accounts CONFIDENTIAL.pdf,Data Room Downloads\Investor Relations\Oxford Nanopore Q3 2020 accounts CONFIDENTIAL.pdf,unclassified_document,extracted_text,05_Capitalization_and_Securities,content:'fully diluted'
+Oxford Nanopore investor presentation 16 September 2020.pdf,Data Room Downloads\Investor Relations\Oxford Nanopore investor presentation 16 September 2020.pdf,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+Oxford Nanopore investor report Q1 2018 PUBLIC INFO ONLY.pdf,Data Room Downloads\Investor Relations\Oxford Nanopore investor report Q1 2018 PUBLIC INFO ONLY.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+Oxford Nanopore investor report Q3 2020 PUBLIC INFO ONLY.pdf,Data Room Downloads\Investor Relations\Oxford Nanopore investor report Q3 2020 PUBLIC INFO ONLY.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+Oxford Nanopore published accounts 2014.pdf,Data Room Downloads\Investor Relations\Oxford Nanopore published accounts 2014.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+Oxford Nanopore published accounts 2015.pdf,Data Room Downloads\Investor Relations\Oxford Nanopore published accounts 2015.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+Oxford Nanopore published accounts 2016.pdf,Data Room Downloads\Investor Relations\Oxford Nanopore published accounts 2016.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+Oxford Nanopore published accounts 2017.pdf,Data Room Downloads\Investor Relations\Oxford Nanopore published accounts 2017.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+Oxford Nanopore published accounts 2018.pdf,Data Room Downloads\Investor Relations\Oxford Nanopore published accounts 2018.pdf,unclassified_document,extracted_text,02_Due_Diligence,folder-hint:'data room'
+November2020captable.pdf,Documents from Steven (framework agreement)\November2020captable.pdf,cap_table,extracted_text,05_Capitalization_and_Securities,name:'captable'
+ONT - G42 Framework Agreement 23.04.2020vFINAL.docx,Documents from Steven (framework agreement)\ONT - G42 Framework Agreement 23.04.2020vFINAL.docx,unclassified_document,extracted_text,04_Legal_and_Closing,name:'framework agreement'
+ONT - G42 Term Sheet 23.04.2020vFINAL.pdf,Documents from Steven (framework agreement)\ONT - G42 Term Sheet 23.04.2020vFINAL.pdf,term_sheet,extracted_text,04_Legal_and_Closing,name:'term sheet'
+"Oxford Nanopore - Investment Summary (Sep 2020) 4814-2336-4042, 2.docx","Documents from Steven (framework agreement)\Oxford Nanopore - Investment Summary (Sep 2020) 4814-2336-4042, 2.docx",unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'investment summary'
+G42 Healthcare Outlook Of ONT-v21.pptx,G42 ONT Presentation - Sep 21\Backups\G42 Healthcare Outlook Of ONT-v21.pptx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,folder-hint:'presentation'
+G42- ONT Presentation Sep 21 v1.pptx,G42 ONT Presentation - Sep 21\Backups\G42- ONT Presentation Sep 21 v1.pptx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+G42- ONT Presentation Sep 21 v2.pdf,G42 ONT Presentation - Sep 21\Backups\G42- ONT Presentation Sep 21 v2.pdf,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+G42- ONT Presentation Sep 21 v2.pptx,G42 ONT Presentation - Sep 21\Backups\G42- ONT Presentation Sep 21 v2.pptx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+G42- ONT Presentation Sep 21 v3.pptx,G42 ONT Presentation - Sep 21\Backups\G42- ONT Presentation Sep 21 v3.pptx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+G42- ONT Presentation Sep 21.pptx,G42 ONT Presentation - Sep 21\Backups\G42- ONT Presentation Sep 21.pptx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'presentation'
+ONT - IR Dec'20 v2.pdf,G42 ONT Presentation - Sep 21\ONT - IR Dec'20 v2.pdf,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'ir'
+ONT Sep21.pdf,G42 ONT Presentation - Sep 21\ONT Sep21.pdf,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,folder-hint:'presentation'
+ONT.pdf,G42 ONT Presentation - Sep 21\ONT.pdf,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,folder-hint:'presentation'
+ONT.pptx,G42 ONT Presentation - Sep 21\ONT.pptx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,folder-hint:'presentation'
+Peers.xlsx,G42 ONT Presentation - Sep 21\Peers.xlsx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,folder-hint:'presentation'
+G42confirmationDec20.pdf,G42confirmationDec20.pdf,unclassified_document,extracted_text,11_Correspondence_and_Other,default
+Illumina Sues Oxford Nanopore Technologies Over Composition of Nanopores.mhtml,Important Articles\Illumina Sues Oxford Nanopore Technologies Over Composition of Nanopores.mhtml,constitutional_document,extracted_text,04_Legal_and_Closing,kind:constitutional_document
+Omics! Omics!_ Digging into the Illumina Lawsuit vs. Oxford Nanopore.html,Important Articles\Omics! Omics!_ Digging into the Illumina Lawsuit vs. Oxford Nanopore.html,constitutional_document,extracted_text,04_Legal_and_Closing,kind:constitutional_document
+"PacBio, Oxford Nanopore Settle Patent Dispute in Europe _ GenomeWeb.html","Important Articles\PacBio, Oxford Nanopore Settle Patent Dispute in Europe _ GenomeWeb.html",constitutional_document,extracted_text,04_Legal_and_Closing,kind:constitutional_document
+IHC Q3-2022 Financials (EN).pdf,ONT & Tencent (25-Jan)\IHC Q3-2022 Financials (EN).pdf,financial_statement,extracted_text,07_Monitoring_and_Financials,kind:financial_statement
+ONT IPO Prospectus.pdf,ONT & Tencent (25-Jan)\ONT IPO Prospectus.pdf,public_filing,extracted_text,10_Exit_and_Public_Markets,name:'prospectus'
+Oxford Nanopore Technologies plc LSE ONT UK Share Register Detailed (1).pdf,ONT & Tencent (25-Jan)\Oxford Nanopore Technologies plc LSE ONT UK Share Register Detailed (1).pdf,unclassified_document,extracted_text,11_Correspondence_and_Other,default
+Oxford Nanopore Technologies plc LSE ONT UK Share Register Detailed (1).xls,ONT & Tencent (25-Jan)\Oxford Nanopore Technologies plc LSE ONT UK Share Register Detailed (1).xls,unclassified_document,extracted_text,11_Correspondence_and_Other,default
+Tencent - Annual Report FY-21.PDF,ONT & Tencent (25-Jan)\Tencent - Annual Report FY-21.PDF,unclassified_document,extracted_text,07_Monitoring_and_Financials,name:'annual report'
+Tencent - Interim Report FY-22.PDF,ONT & Tencent (25-Jan)\Tencent - Interim Report FY-22.PDF,unclassified_document,extracted_text,07_Monitoring_and_Financials,name:'interim report'
+ONT - IR Dec'20 v2.pptx,ONT - IR Dec'20 v2.pptx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'ir'
+ONT - items.xlsx,ONT - items.xlsx,unclassified_document,extracted_text,11_Correspondence_and_Other,default
+ONT - return analysis.xlsx,ONT - return analysis.xlsx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'return analysis'
+ONT October2020captable (1).pdf,ONT October2020captable (1).pdf,cap_table,extracted_text,05_Capitalization_and_Securities,name:'captable'
+ONT Pre-Emption Rights.pdf,ONT Pre-Emption Rights.pdf,unclassified_document,extracted_text,10_Exit_and_Public_Markets,name:'pre-emption'
+ONT Pre-Emption Rights.pptx,ONT Pre-Emption Rights.pptx,unclassified_document,extracted_text,10_Exit_and_Public_Markets,name:'pre-emption'
+ONT-2019F Pic1.PNG,ONT-2019F Pic1.PNG,unclassified_document,extracted_text,11_Correspondence_and_Other,default
+ONT_Share certificate 46.pdf,ONT_Share certificate 46.pdf,unclassified_document,extracted_text,05_Capitalization_and_Securities,name:'share certificate'
+Payment Direction Letter(25608589_1) (002).pdf,Payment Direction Letter(25608589_1) (002).pdf,payment_instruction,extracted_text,06_Cashflows_and_Funding,name:'payment direction'
+ONT - IR Dec'20 v1 [Autosaved].pptx,backups\ONT - IR Dec'20 v1 [Autosaved].pptx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'ir'
+ONT - IR Dec'20 v1.pptx,backups\ONT - IR Dec'20 v1.pptx,unclassified_document,extracted_text,01_Investment_Thesis_and_Memos,name:'ir'
+Oxford Nanopore Technologies plc (ONTTF...pdf,backups\Pitch Book Summaries\Oxford Nanopore Technologies plc (ONTTF...pdf,unclassified_document,extracted_text,11_Correspondence_and_Other,default
+backup - beyond limits IR.pptx,backups\backup - beyond limits IR.pptx,unclassified_document,extracted_text,11_Correspondence_and_Other,default

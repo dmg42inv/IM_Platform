@@ -8,6 +8,7 @@ source-of-truth split (tracker owns cash flow/valuation reporting views).
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -215,6 +216,9 @@ def _parse_tab(raw: pd.DataFrame, tab_label: str) -> list[dict]:
     c_investing_entity = col("investing entity")
     c_vintage = next((v for k, v in col_map.items() if k.startswith("vintage")), None)
     c_instrument = col("instrument")
+    c_geography = next((v for k, v in col_map.items() if k.startswith("geograph")), None)
+    c_sector = col("sector")
+    c_type = col("type")
     c_committed = col("committed")
     c_invested = col("invested")
     c_remaining = col("remaining commitment")
@@ -251,6 +255,9 @@ def _parse_tab(raw: pd.DataFrame, tab_label: str) -> list[dict]:
                 "investing_entity_raw": investing_entity,
                 "vintage": _norm(row[c_vintage]) if c_vintage is not None else "",
                 "instrument": _norm(row[c_instrument]) if c_instrument is not None else "",
+                "geography": _norm(row[c_geography]) if c_geography is not None else "",
+                "sector": _norm(row[c_sector]) if c_sector is not None else "",
+                "deal_type": _norm(row[c_type]) if c_type is not None else "",
                 "committed": pd.to_numeric(row[c_committed], errors="coerce") if c_committed is not None else None,
                 "invested": pd.to_numeric(row[c_invested], errors="coerce") if c_invested is not None else None,
                 "remaining_commitment": pd.to_numeric(row[c_remaining], errors="coerce") if c_remaining is not None else None,
@@ -275,6 +282,62 @@ def extract_live_exited_sections(path: Path) -> pd.DataFrame:
     all_rows.extend(_parse_tab(xl.parse("1. Live", header=None), "Live"))
     all_rows.extend(_parse_tab(xl.parse("2. Exited", header=None), "Exited"))
     return pd.DataFrame(all_rows)
+
+
+# Legacy monthly trackers (pre-2025) have no '1. Live'/'2. Exited' tabs; their
+# deal grid lives on one or more 'S | 0x' / 'Summary | 0x' sheets, with Live vs
+# Exited implied by the Status column rather than the sheet.
+_LEGACY_SUMMARY_RE = re.compile(r"^\s*(?:s|summary)\s*\|\s*0\d", re.IGNORECASE)
+
+
+def _tab_from_status(status) -> str:
+    """Map a legacy Status value to Live/Exited. Order matters: 'Unrealized'
+    contains the substring 'realized', so it must be checked first."""
+    st = str(status or "").strip().lower()
+    if not st:
+        return "Live"
+    if "unrealiz" in st or "unrealis" in st:
+        return "Live"
+    if "partial" in st or st.startswith("to be") or "default" in st:
+        return "Live"
+    if any(m in st for m in ("written", "write-off", "realized", "realised",
+                             "exited", "sold", "liquidation")):
+        return "Exited"
+    return "Live"
+
+
+def extract_positions(path: Path) -> pd.DataFrame:
+    """Format-agnostic monthly positions. Uses the current '1. Live'/'2. Exited'
+    tabs when present, else falls back to the legacy 'S | 0x' summary sheets
+    (deriving Live/Exited from each row's Status). Same output shape either way.
+    """
+    xl = pd.ExcelFile(path)
+    if "1. Live" in xl.sheet_names and "2. Exited" in xl.sheet_names:
+        rows = _parse_tab(xl.parse("1. Live", header=None), "Live")
+        rows += _parse_tab(xl.parse("2. Exited", header=None), "Exited")
+        return pd.DataFrame(rows)
+
+    rows = []
+    for sheet in xl.sheet_names:
+        if not _LEGACY_SUMMARY_RE.match(str(sheet)):
+            continue
+        try:
+            rows.extend(_parse_tab(xl.parse(sheet, header=None), "Live"))
+        except ValueError:
+            continue  # a summary-numbered sheet without the deal grid
+    for r in rows:
+        r["tab"] = _tab_from_status(r.get("status"))
+    df = pd.DataFrame(rows)
+    if len(df):
+        # Legacy 'S | 0x' sheets sometimes repeat the same deal across sheets
+        # (not always disjoint), so collapse to one row per deal, keeping the
+        # row with the largest carrying value to avoid double/triple-counting.
+        df["_cv"] = pd.to_numeric(df["carrying_value"], errors="coerce").fillna(-1.0)
+        df = (df.sort_values("_cv", ascending=False)
+                .drop_duplicates(subset=["deal_name"], keep="first")
+                .drop(columns="_cv")
+                .reset_index(drop=True))
+    return df
 
 
 def recompute_deal_financials(

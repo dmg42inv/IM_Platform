@@ -1,10 +1,61 @@
 # Session Handoff - read this first at the start of the next session
 
-Last updated: 2026-08-19 (evening). This file is meant to be overwritten at
+Last updated: 2026-08-20. This file is meant to be overwritten at
 the end of each working session - it is the single "where did we leave off"
 reference, complementing (not duplicating) the durable policy already
 captured in `docs/prd/PRD_v1.md`, `docs/prd/PRD_CHANGELOG.md`, and repo
 memory (`/memories/repo/architecture-policy.md`).
+
+## What was done this session (2026-08-20)
+
+1. **Monthly snapshot + month-over-month diff feature built**:
+   - New adapter: `src/backend/im_platform/adapters/monthly_snapshot.py`.
+   - `generate-tracker-dashboard` now persists a cumulative
+     `data/source_of_truth/Portfolio_Snapshot_History.xlsx` workbook with
+     one row per deal per snapshot month, using the final post-recomputed
+     dashboard figures (not the tracker's raw Live/Exited report outputs).
+   - Same command also writes
+     `data/outputs/Portfolio_Monthly_Diff.xlsx`, comparing the latest two
+     snapshot months and classifying changes as New / Exited / Changed /
+     Removed with per-metric deltas.
+   - New dashboard tab: **Monthly Diff**, backed by the same latest diff
+     DataFrame and downloadable as CSV.
+   - Same-month reruns replace that month's rows rather than duplicating
+     them, so regenerated/corrected monthly numbers stay canonical.
+   - Added `backfill-monthly-snapshot` CLI command for deliberate
+     historical month backfills from one or more tracker workbooks.
+   - Backfilled June 2026 from the highest-version June workbook; history
+     now contains `2026-06` and `2026-07` (78 rows total), and latest diff
+     contains 12 June-to-July changed rows.
+2. Ran the standing document update scan on 2026-08-20: no new company or
+   fund folders, no modified/deleted/renamed files, but 5 added files were
+   detected and the manifest/report were refreshed.
+3. Regenerated `data/outputs/Tracker_Style_Dashboard.html` successfully.
+  Current generated snapshot history contains 39 rows each for `2026-06`
+  and `2026-07`; Monthly Diff is populated for June-to-July.
+4. **Local Streamlit app built and smoke-tested**:
+  - Entry point: `src/frontend/streamlit_app.py`.
+  - Browser login via `st.secrets` or `IM_PLATFORM_APP_USER` /
+    `IM_PLATFORM_APP_PASSWORD` environment variables.
+  - Snapshot mode: month dropdown + All/Live/Exited filter + KPI row +
+    downloadable table.
+  - Monthly diff mode: latest comparison cards + downloadable diff table.
+  - Running locally at `http://localhost:8501` in this session with
+    temporary demo credentials (`demo` / `demo`) only.
+5. Validation run:
+   - `pytest tests/unit/test_monthly_snapshot.py -q` -> 2 passed.
+   - `pytest tests/unit -q` -> 3 passed.
+
+## Next up / not yet done
+
+- **Replace demo localhost credentials** before any real use beyond this
+  coding session. Use `.streamlit/secrets.toml` (ignored by Git) or local
+  environment variables.
+- New Space Capital GP Com SCSp's Carrying Value ($3,858,379) still
+  doesn't reconcile to either EUR NAV figure found in the fund's own NAV
+  calc PDF - not resolved, source of that number not traced. Revisit if
+  the user raises Carrying Value for this deal again (see repo memory for
+  full detail).
 
 ## What was done this session (2026-08-19)
 
@@ -54,25 +105,6 @@ memory (`/memories/repo/architecture-policy.md`).
 9. Updated `docs/prd/PRD_CHANGELOG.md` (v1.12.0) and
    `docs/architecture/System_Architecture.md` (section 9) with this
    session's structural learnings, generic per the no-deal-names policy.
-
-## Next up / not yet done
-
-- **Monthly snapshot + period-diff feature** (architecture agreed, not
-  built): persist a per-deal-per-month snapshot workbook so a "what
-  changed since last month" view/tab can be computed without re-deriving
-  everything. Design: cumulative `Portfolio_Snapshot_History` (one row
-  per deal per month, post-correction figures), auto-appended by
-  `generate-tracker-dashboard`, new diff step classifying deals
-  New/Exited/Changed with notable-change flags, presented as both a
-  dashboard tab and a standalone file. Two open design questions the user
-  hasn't given a final answer on: (a) per-deal snapshot only, or also a
-  portfolio-level rollup row? (b) permanent dashboard tab, standalone
-  file, or both? Ask before building.
-- New Space Capital GP Com SCSp's Carrying Value ($3,858,379) still
-  doesn't reconcile to either EUR NAV figure found in the fund's own NAV
-  calc PDF - not resolved, source of that number not traced. Revisit if
-  the user raises Carrying Value for this deal again (see repo memory for
-  full detail).
 
 ## Known standing gaps (not new, still open)
 

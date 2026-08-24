@@ -1,5 +1,112 @@
 # PRD Change Log
 
+## 2026-08-24 - v1.17.0
+
+- **Established the dashboard presentation standard (Style & Formatting Guide).**
+  Captured the agreed conventions for the Investments Portfolio dashboard in
+  `docs/implementation/Dashboard_Style_Guide.md` so they apply uniformly across
+  all tabs: (1) every on-screen figure must be grounded in the monthly Portfolio
+  Summary and data-driven, with estimates visibly flagged; (2) an SEC / IB
+  writing register — on-screen copy must not use internal shorthand
+  ("tracker", "grounded", "auto-generated", "tracked names") and must instead
+  say "the monthly Portfolio Summary" / "sourced from"; (3) layout rules — page
+  title with entity-scope tabs bottom-aligned beside it, nav as binder tabs,
+  each section wrapped in a 3D bordered container addressed via the stable
+  `data-testid="stVerticalBlockBorderWrapper"` selector; (4) KPI conventions —
+  equal-width metric boxes in one bordered box, a right-aligned "as of" date at
+  the top, non-truncating metric-value font; (5) precise metric definitions,
+  notably **Gross MOIC labelled "(TVPI)"** because it includes distributions;
+  (6) chart and table standards (green palette, EB Garamond via config,
+  `_bar_h` / `_html_table` helpers, formatted `$` tooltips, centre-aligned
+  tables, USD-millions units) and the LaTeX-`$` escaping gotcha.
+- **Applied the standard to the Overview tab and swept terminology dashboard-wide.**
+  Reworded the live/exited grounding note to IB standard; relocated the scope
+  summary to a right-aligned "Fair value as of {month}" timestamp; renamed
+  "What stands out" to "Key observations"; replaced "tracker"/"grounded" copy
+  across Overview, Analytics, Company Profiles, Historical, Current-month and
+  Misc captions with Portfolio-Summary / sourced-from phrasing.
+
+## 2026-08-23 - v1.16.0
+
+- **Hardened the grounded domicile-extraction requirement.** Domicile/jurisdiction
+  must be sourced from the original legal documents (charter/articles/agreement
+  recitals), never the tracker, and must be tagged `candidate` until an analyst
+  confirms it. Extraction must (1) key on genuine incorporation language
+  (incorporated/organized/formed/domiciled/registered) and must NOT treat
+  governing-law clauses ("governed by the laws of X"), securities-law references
+  ("registered under the US Securities Act"), negations ("formed outside X"), or
+  street addresses as domicile; (2) rank a verbatim incorporation statement
+  (strong) above bare adjective/demonym/address mentions (weak); (3) carry its
+  citation and alternative candidates. Where a deal folder describes a holding/
+  acquisition vehicle (e.g. an ADGM SPV) rather than the operating company, the
+  platform must surface the alternates and fall back to the tracker value rather
+  than silently assert the vehicle's jurisdiction as the company's.
+- **Added the portfolio time-series ingestion requirement.** All historical
+  monthly portfolio-tracker workbooks (across dated/FY-archive folders, with
+  heterogeneous naming) must be ingested into a queryable time-series store
+  (one row per deal per month) so portfolio metrics — NAV/carrying value,
+  invested, distributions, gain — can be analysed as an evolving series
+  independently of the source workbooks. Ingestion must be idempotent and record
+  per-month source file, version, and parse status for auditability.
+- **Added the Company Profiles view requirement.** The dashboard must provide a
+  per-company profile view segmented by structure (Equity vs Funds, with fund
+  families grouped), showing source-labeled descriptive facts, grounded/cited
+  domicile, and NAV and signed-cashflow history, with every field carrying its
+  source and unconfirmed values shown as pending.
+
+## 2026-08-22 - v1.15.0
+
+- **Added the answer verification and numerical grounding middleware requirement (PRD 19.7).**
+  The platform must run a mandatory, hidden middleware step between retrieval
+  and final rendering that (1) scans the primary clause node and graph-traversed
+  context for overriding/conditional legal language and elevates any governing
+  clause, (2) grounds every number, percentage, and date to a verbatim source
+  token (or an explicit calculation from proven figures) and suppresses any
+  `[UNVERIFIED_NUMBER]`, and (3) emits a machine-parseable validation state
+  (`PASSED` / `OVERRIDDEN` / `FAILED_UNVERIFIED_DATA`) that hard-gates whether
+  the answer is safe to render. Governing clauses and grounded figures are
+  recorded with the answer for auditability. This makes cite-only,
+  exception-aware, numerically grounded answers a product requirement.
+
+## 2026-08-20 - v1.14.0
+
+- **Added document-intelligence and evidence-graph requirements from sandbox pilots.**
+  The PRD now explicitly requires a source-document intelligence layer that
+  preserves original/curated file lineage, semantic evidence nodes,
+  machine-extracted candidates, analyst-confirmed facts, human review
+  queues, graph relationships, and source-grounded answer generation with
+  provenance. This captures the structural pattern proven in sandbox work
+  without recording deal-specific names or figures in the PRD.
+- **Codified candidate-vs-confirmed separation as a retrieval requirement.**
+  Search/vector retrieval is now specified as an access layer rather than an
+  authority layer: retrieval and answer generation must respect source-of-
+  truth role, review state, relationships, and caveats, and must not treat
+  unconfirmed machine candidates as analyst-confirmed facts.
+- **Added a standing reconciliation-gap requirement.**
+  When legal documents, registers/workbooks, cashflow rows, valuation rows,
+  or output packs disagree, the platform must preserve the conflict as a
+  reviewable evidence gap instead of silently selecting one figure.
+
+## 2026-08-20 - v1.13.0
+
+- **Built the monthly snapshot + period-over-period diff capability.**
+  Dashboard generation now persists a cumulative per-deal monthly snapshot
+  using the platform's final corrected figures after register/cash-flow/
+  NAV recomputation, not the tracker's raw report-tab outputs. The latest
+  two snapshot months are compared automatically to classify New, Exited,
+  Changed, and Removed positions with per-metric deltas.
+- **Added a permanent Monthly Diff dashboard view and standalone workbook.**
+  The same diff table is available in the HTML dashboard and as a
+  regenerable output workbook, so month-end review can happen either in
+  the dashboard or in Excel. Same-month reruns replace the existing rows
+  for that month rather than duplicating them, preserving one canonical
+  corrected snapshot per reporting month.
+- **Added a localhost portfolio snapshot app and historical backfill path.**
+  The local app supports browser login, month selection, portfolio snapshot
+  viewing, and latest month-over-month diff review from persisted workbooks.
+  Historical months are added through a CLI backfill command that reuses
+  the corrected computation path, not through manual workbook edits.
+
 ## 2026-08-19 - v1.12.0
 
 - **Refined the non-USD conversion policy from v1.11.0**: a fixed
