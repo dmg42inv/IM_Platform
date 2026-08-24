@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT_HISTORY_PATH = ROOT / "data" / "source_of_truth" / "Portfolio_Snapshot_History.xlsx"
 MONTHLY_DIFF_PATH = ROOT / "data" / "outputs" / "Portfolio_Monthly_Diff.xlsx"
 PORTFOLIO_DB_PATH = ROOT / "data" / "portfolio" / "portfolio.sqlite"
+ACCOUNTS_ATTRS_PATH = ROOT / "data" / "outputs" / "accounts_team" / "accounts_attributes.json"
 SNAPSHOT_SHEET = "Portfolio_Snapshot_History"
 MONTHLY_DIFF_SHEET = "Latest_Diff"
 APP_TITLE = "Investments Portfolio"
@@ -360,6 +361,47 @@ def _load_portfolio_positions(path: str, mtime_ns: int) -> pd.DataFrame:
                     "distributions", "carrying_value", "gain", "tvpi"):
             df[col] = pd.to_numeric(df[col], errors="coerce")
     return df
+
+
+@st.cache_data(show_spinner=False)
+def _load_accounts_attrs(mtime_ns: int) -> list[dict]:
+    """Accounts-team per-holding attributes (IFRS class, valuation method, etc.),
+    parsed from their Pack. Their remit; adopted as classification only."""
+    del mtime_ns
+    if not ACCOUNTS_ATTRS_PATH.exists():
+        return []
+    return json.loads(ACCOUNTS_ATTRS_PATH.read_text(encoding="utf-8"))
+
+
+def _norm_key(s: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(s).lower())
+
+
+@st.cache_data(show_spinner=False)
+def _accounts_by_key(mtime_ns: int) -> dict:
+    attrs = _load_accounts_attrs(mtime_ns)
+    return {_norm_key(r.get("name", "")): r for r in attrs}
+
+
+def _lookup_accounts(name: str) -> dict:
+    by_key = _accounts_by_key(_path_mtime(ACCOUNTS_ATTRS_PATH))
+    k = _norm_key(name)
+    hit = by_key.get(k)
+    if not hit and k:
+        hit = next((v for kk, v in by_key.items() if k in kk or kk in k), None)
+    return hit or {}
+
+
+def _attach_accounts_attrs(live: pd.DataFrame) -> pd.DataFrame:
+    """Add the accounts team's classification attributes to each live holding,
+    matched by normalised name. Unmatched holdings show 'Pending'."""
+    lc = live.copy()
+    recs = [_lookup_accounts(n) for n in lc["deal_name"]]
+    lc["ifrs_class"] = [(r.get("IFRS classification") or "Pending") for r in recs]
+    lc["valuation_method"] = [(r.get("Valuation method") or "Pending") for r in recs]
+    lc["fv_hierarchy"] = [(r.get("Fair value hierarchy") or "Pending") for r in recs]
+    lc["valuation_basis"] = [(r.get("Valuation basis") or "Pending") for r in recs]
+    return lc
 
 
 def _render_app(history: pd.DataFrame, monthly_diff: pd.DataFrame,
@@ -998,6 +1040,394 @@ def _render_ov_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> 
             # Escape $ so Streamlit doesn't read paired amounts as LaTeX math.
             st.markdown("\n".join(f"- {o.replace('$', chr(92) + '$')}" for o in obs))
             st.caption("Auto-generated from the tracker's own grounded figures for the current scope.")
+
+
+_BOR_VIEWS = ["Executive Overview", "Investment Register", "Value Creation",
+              "Portfolio Evolution", "Geography", "Sector", "Concentration Risk",
+              "IFRS & Audit Trail", "Change Log", "Portfolio (operational)"]
+
+
+def _render_book_of_record(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
+    """Tracker 2 — Portfolio Book of Record. Reproduces the accounts pack's views on
+    our own data, in our house style. Built view by view."""
+    st.markdown("<h1 class='g42-serif' style='margin:0'>Portfolio Book of Record</h1>",
+                unsafe_allow_html=True)
+    st.caption("Full portfolio reporting on our own data, in our house style — built to "
+               "parity with the accounts pack, one view at a time.")
+    view = st.segmented_control(
+        "Book of Record view", _BOR_VIEWS, default="Executive Overview",
+        key="bor_view", label_visibility="collapsed") or "Executive Overview"
+    if months_df.empty or positions_df.empty:
+        st.info("No portfolio database yet.")
+        return
+    if view == "Executive Overview":
+        _render_bor_overview(months_df, positions_df)
+    elif view == "Investment Register":
+        _render_bor_register(months_df, positions_df)
+    elif view == "Value Creation":
+        _render_value_creation(months_df, positions_df)
+    elif view == "Portfolio Evolution":
+        _render_portfolio_growth(months_df, positions_df)
+    elif view == "Geography":
+        _render_geography(months_df, positions_df)
+    elif view == "Sector":
+        _render_sector(months_df, positions_df)
+    elif view == "Concentration Risk":
+        _render_concentration(months_df, positions_df)
+    elif view == "IFRS & Audit Trail":
+        _render_bor_ifrs(months_df, positions_df)
+    elif view == "Change Log":
+        _render_bor_changelog()
+    elif view == "Portfolio (operational)":
+        _render_current_month()
+    else:
+        st.info(f"**{view}** — planned.")
+
+
+def _render_bor_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
+    m = _latest_month(months_df)
+    lbl = dict(zip(months_df["month_id"], months_df["label"])).get(m, m)
+    month_pos = positions_df[positions_df["month_id"] == m]
+    live = month_pos[month_pos["tab"] == "Live"]
+    exited = month_pos[month_pos["tab"] == "Exited"]
+    if live.empty:
+        st.info("No live holdings in this scope.")
+        return
+    live = _attach_accounts_attrs(live)
+    inv = live["invested"].sum()
+    carry = live["carrying_value"].sum()
+    dist = live["distributions"].sum()
+    gain = live["gain"].sum()
+    moic = (dist + carry) / inv if inv else None
+    ms = months_df.sort_values("month_id")
+    first_carry = float(ms["live_carrying"].iloc[0]) if len(ms) else 0.0
+    growth = (carry / first_carry - 1) * 100 if first_carry else 0.0
+    prev_carry = float(ms["live_carrying"].iloc[-2]) if len(ms) > 1 else carry
+    movement = carry - prev_carry
+    measures, score, cshare, _tot = _concentration_measures(live)
+    top10 = float(cshare.head(10).sum()) * 100
+    band, _bc = _risk_band(score)
+    indep_mask = (~live["valuation_method"].str.startswith("Not covered", na=False)) & \
+                 (live["valuation_method"] != "Pending")
+    indep_pct = live.loc[indep_mask, "carrying_value"].sum() / carry * 100 if carry else 0.0
+
+    # At a glance.
+    with st.container(border=True):
+        st.markdown(f"<div style='text-align:right;font-size:12px;opacity:.6;margin:-2px 0 6px'>"
+                    f"As of {lbl}</div>", unsafe_allow_html=True)
+        r1 = st.columns(5)
+        r1[0].metric("Current fair value", _fmt_money(carry), border=True)
+        r1[1].metric("Capital deployed", _fmt_money(inv), border=True)
+        r1[2].metric("Value created", _fmt_money(gain),
+                     delta=(f"{moic:.2f}x" if moic else None), delta_color="off", border=True)
+        r1[3].metric("Live investments", f"{len(live):,}", border=True)
+        r1[4].metric("Growth since inception", f"{growth:+.0f}%", border=True)
+        r2 = st.columns(4)
+        r2[0].metric("Movement in period", _fmt_money(movement), border=True)
+        r2[1].metric("Top-10 concentration", f"{top10:.0f}%", border=True)
+        r2[2].metric("Independently valued", f"{indep_pct:.0f}%", border=True)
+        r2[3].metric("Concentration risk", f"{score * 100:.1f}%",
+                     delta=band, delta_color="off", border=True)
+        st.caption(f"{len(exited)} investments realised or written off and excluded. Amounts in "
+                   "USD millions, sourced from the monthly Portfolio Summary. IFRS classification "
+                   "and valuation method are the accounts team's (Ardent / Project Matrix), "
+                   "adopted as their classification; all economics are our own figures.")
+
+    with st.container(border=True):
+        st.subheader("The portfolio since inception")
+        _render_nav_since_inception(months_df, positions_df)
+
+    with st.container(border=True):
+        st.subheader("Does it tie back?")
+        section_tot = float(live.groupby("section")["carrying_value"].sum().sum())
+        tie = abs(section_tot - float(carry)) < 0.5
+        _html_table(pd.DataFrame([
+            {"check": "Sum of the holdings' fair value", "value": float(carry)},
+            {"check": "Sum of the entity subtotals", "value": section_tot},
+        ]), {"check": "Check", "value": "USD m"},
+            fmts={"value": lambda v: f"${v:,.1f}"})
+        st.caption(("Ties." if tie else "Does not tie — investigate.") + " Reconciliation to the "
+                   "signed statements and board deck is built in the IFRS & Audit Trail view.")
+
+    with st.container(border=True):
+        st.subheader("What the portfolio is made of")
+        cc = st.columns(2)
+        with cc[0]:
+            st.caption("By IFRS classification")
+            ifrs = (live.groupby("ifrs_class", as_index=False)["carrying_value"].sum()
+                    .sort_values("carrying_value", ascending=False))
+            _bar_h(ifrs, "ifrs_class", "carrying_value", height=200)
+            st.caption("By valuation method")
+            vm = (live.groupby("valuation_method", as_index=False)["carrying_value"].sum()
+                  .sort_values("carrying_value", ascending=False))
+            _bar_h(vm, "valuation_method", "carrying_value", height=240)
+        with cc[1]:
+            st.caption("By sector")
+            sec = (live[live["sector"] != ""].groupby("sector", as_index=False)["carrying_value"]
+                   .sum().sort_values("carrying_value", ascending=False))
+            _bar_h(sec, "sector", "carrying_value", height=200)
+            st.caption("By holding type")
+            lv = live.copy()
+            lv["bucket"] = [_instrument_bucket(dt, ins, s)
+                           for dt, ins, s in zip(lv["deal_type"], lv["instrument"], lv["sector"])]
+            bt = (lv.groupby("bucket", as_index=False)["carrying_value"].sum()
+                  .sort_values("carrying_value", ascending=False))
+            _bar_h(bt, "bucket", "carrying_value", height=240)
+        st.caption("IFRS classification and valuation method are the accounts team's, adopted as "
+                   "their classification; all values are our own.")
+
+    with st.container(border=True):
+        st.subheader("Where the value sits — ten largest holdings")
+        by_co = live.assign(company=live["deal_name"].map(_consolidate_name))
+        top = (by_co.groupby("company", as_index=False)[["invested", "carrying_value", "gain"]]
+               .sum().sort_values("carrying_value", ascending=False).head(10))
+        top["weight"] = top["carrying_value"] / carry if carry else 0
+        ifrs_by_co = by_co.groupby("company")["ifrs_class"].first()
+        top["ifrs"] = top["company"].map(ifrs_by_co)
+        _html_table(top[["company", "ifrs", "invested", "carrying_value", "gain", "weight"]], {
+            "company": "Investment", "ifrs": "IFRS", "invested": "Capital deployed",
+            "carrying_value": "Fair value", "gain": "Value created", "weight": "Weight",
+        }, fmts={
+            "invested": lambda v: f"${v:,.1f}", "carrying_value": lambda v: f"${v:,.1f}",
+            "gain": lambda v: f"${v:,.1f}", "weight": lambda v: f"{v * 100:.1f}%",
+        })
+
+    with st.container(border=True):
+        st.subheader("How concentrated is it")
+        st.markdown(
+            "<div style='position:relative;height:16px;border-radius:8px;overflow:hidden;"
+            "background:linear-gradient(90deg,#2F6B45 0 35%,#C9862B 35% 55%,"
+            "#D2691E 55% 70%,#b3253a 70% 100%);'>"
+            f"<div style='position:absolute;left:calc({min(score, 1.0) * 100:.1f}% - 1px);top:-3px;"
+            "width:3px;height:22px;background:#22302A;'></div></div>"
+            "<div style='display:flex;justify-content:space-between;font-size:11px;"
+            "color:#6b746a;margin-top:3px'><span>0% low</span><span>moderate</span>"
+            "<span>elevated</span><span>high 100%</span></div>", unsafe_allow_html=True)
+        mdf = pd.DataFrame([{"Measure": n, "Reading": f"{r * 100:.1f}%", "Weight": f"{w * 100:.0f}%"}
+                            for n, r, w, _ in measures])
+        _html_table(mdf, {"Measure": "Measure", "Reading": "Reading", "Weight": "Weight"})
+        st.caption(f"Weighted composite risk score {score * 100:.1f}% — {band}. "
+                   "A presentation aid, not a regulatory capital measure.")
+
+    obs = _exec_observations(live)
+    if obs:
+        with st.container(border=True):
+            st.subheader("What stands out")
+            st.markdown("\n".join(f"- {o.replace('$', chr(92) + '$')}" for o in obs))
+            st.caption("Derived from the underlying portfolio figures for the selected scope.")
+
+
+def _render_bor_register(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
+    m = _latest_month(months_df)
+    live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
+    if live.empty:
+        st.info("No live holdings in this scope.")
+        return
+    live = _attach_accounts_attrs(live)
+    by_co = live.assign(company=live["deal_name"].map(_consolidate_name))
+    reg = (by_co.groupby("company", as_index=False)
+           .agg(ifrs=("ifrs_class", "first"), valuation=("valuation_method", "first"),
+                sector=("sector", "first"), geography=("geography", "first"),
+                status=("status", "first"), invested=("invested", "sum"),
+                carrying_value=("carrying_value", "sum"), gain=("gain", "sum")))
+    reg["multiple"] = reg["carrying_value"] / reg["invested"].where(reg["invested"] != 0)
+    tot = reg["carrying_value"].sum()
+    reg["weight"] = reg["carrying_value"] / tot if tot else 0
+    reg = reg.sort_values("carrying_value", ascending=False)
+
+    with st.container(border=True):
+        st.subheader("Complete investment register")
+        st.dataframe(reg, hide_index=True, width="stretch", column_config={
+            "company": st.column_config.TextColumn("Investment"),
+            "ifrs": st.column_config.TextColumn("IFRS"),
+            "valuation": st.column_config.TextColumn("Valuation method"),
+            "sector": st.column_config.TextColumn("Sector"),
+            "geography": st.column_config.TextColumn("Geography"),
+            "status": st.column_config.TextColumn("Status"),
+            "invested": st.column_config.NumberColumn("Capital deployed", format="$%.1f"),
+            "carrying_value": st.column_config.NumberColumn("Fair value", format="$%.1f"),
+            "gain": st.column_config.NumberColumn("Value created", format="$%.1f"),
+            "multiple": st.column_config.NumberColumn("Multiple", format="%.2fx"),
+            "weight": st.column_config.NumberColumn("Weight", format="percent"),
+        })
+        st.caption("Every live holding in scope. Economics (capital deployed, fair value, value "
+                   "created) are our own figures; IFRS classification and valuation method are the "
+                   "accounts team's. USD millions.")
+
+    with st.container(border=True):
+        st.subheader("Investment fact sheet")
+        pick = st.selectbox("Investment", reg["company"].tolist(), key="bor_reg_pick")
+        _render_bor_factsheet(pick, by_co, positions_df)
+
+
+def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.DataFrame) -> None:
+    sub = by_co[by_co["company"] == company]
+    if sub.empty:
+        st.info("No data for this holding.")
+        return
+    attrs = _lookup_accounts(company)
+    inv = float(sub["invested"].sum())
+    fv = float(sub["carrying_value"].sum())
+    gain = float(sub["gain"].sum())
+    mult = fv / inv if inv else None
+    weight = fv / float(by_co["carrying_value"].sum()) if by_co["carrying_value"].sum() else 0
+
+    def _dl(keys: list[str]) -> str:
+        lines = []
+        for k in keys:
+            v = attrs.get(k) or "Pending"
+            lines.append(f"**{k}:** {v}")
+        return "  \n".join(lines)
+
+    cc = st.columns(2)
+    with cc[0]:
+        st.markdown("**Identity and provenance**")
+        st.markdown(_dl(["Legal entity", "Sub-group", "Holding type", "Sector", "Instrument",
+                         "Listed status", "Jurisdiction", "Region", "First recognised", "Source"]))
+    with cc[1]:
+        st.markdown("**Measurement**")
+        mc = st.columns(2)
+        mc[0].metric("Fair value", _fmt_money(fv), border=True)
+        mc[1].metric("Capital deployed", _fmt_money(inv), border=True)
+        mc[0].metric("Value created", _fmt_money(gain), border=True)
+        mc[1].metric("Multiple", (f"{mult:.2f}x" if mult else "n/a"), border=True)
+        st.markdown(_dl(["IFRS classification", "Valuation method", "Fair value hierarchy",
+                         "Valuation basis", "Influence band", "Holding"]))
+    st.caption("Identity and classification fields are the accounts team's (adopted); fair value, "
+               "capital deployed and value created are our own figures. "
+               f"Weight in portfolio {weight * 100:.1f}%.")
+
+    allp = positions_df.assign(company=positions_df["deal_name"].map(_consolidate_name))
+    hist = (allp[allp["company"] == company].groupby("as_of_date")["carrying_value"].sum()
+            .rename("Fair value"))
+    if len(hist) > 1:
+        with st.container(border=True):
+            st.markdown("**Value-creation timeline**")
+            st.line_chart(hist, height=220, x_label="Month", y_label="Fair value, USD m")
+
+    cf = _load_cashflows(str(PORTFOLIO_DB_PATH), _path_mtime(PORTFOLIO_DB_PATH))
+    if len(cf):
+        cf = cf.copy()
+        cf["company"] = cf["deal_name"].map(_consolidate_name)
+        cfc = cf[cf["company"] == company].sort_values("flow_date")
+        if len(cfc):
+            with st.container(border=True):
+                st.markdown("**Cash movements on record** — cited to source cell")
+                view = cfc[["flow_date", "accounting_entity", "contribution", "distribution",
+                            "currency", "sheet", "excel_row", "filename"]].copy()
+                view["cell"] = view["sheet"].astype(str) + "!row" + view["excel_row"].astype(str)
+                view = view.drop(columns=["sheet", "excel_row"])
+                st.dataframe(view, hide_index=True, width="stretch", column_config={
+                    "flow_date": st.column_config.TextColumn("Date"),
+                    "accounting_entity": st.column_config.TextColumn("Entity"),
+                    "contribution": st.column_config.NumberColumn("Contribution", format="%.2f"),
+                    "distribution": st.column_config.NumberColumn("Distribution", format="%.2f"),
+                    "cell": st.column_config.TextColumn("Source cell"),
+                    "filename": st.column_config.TextColumn("Source file"),
+                })
+
+
+def _render_bor_ifrs(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
+    m = _latest_month(months_df)
+    live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
+    if live.empty:
+        st.info("No live holdings in this scope.")
+        return
+    live = _attach_accounts_attrs(live)
+    by_co = live.assign(company=live["deal_name"].map(_consolidate_name))
+    sched = (by_co.groupby("company", as_index=False)
+             .agg(ifrs=("ifrs_class", "first"), valuation=("valuation_method", "first"),
+                  fvh=("fv_hierarchy", "first"), vbasis=("valuation_basis", "first"),
+                  carrying_value=("carrying_value", "sum")))
+    tot = sched["carrying_value"].sum()
+    sched["weight"] = sched["carrying_value"] / tot if tot else 0
+    sched = sched.sort_values(["ifrs", "carrying_value"], ascending=[True, False])
+
+    with st.container(border=True):
+        st.subheader("The reporting view — classification schedule")
+        st.dataframe(sched, hide_index=True, width="stretch", column_config={
+            "company": st.column_config.TextColumn("Investment"),
+            "ifrs": st.column_config.TextColumn("IFRS classification"),
+            "valuation": st.column_config.TextColumn("Valuation method"),
+            "fvh": st.column_config.TextColumn("Fair value hierarchy"),
+            "vbasis": st.column_config.TextColumn("Valuation basis"),
+            "carrying_value": st.column_config.NumberColumn("Fair value", format="$%.1f"),
+            "weight": st.column_config.NumberColumn("Weight", format="percent"),
+        })
+        st.caption("IFRS classification, valuation method, fair-value hierarchy and valuation basis "
+                   "are the accounts team's (Ardent / Project Matrix), adopted as their "
+                   "classification. Fair value and weight are our own figures.")
+
+    with st.container(border=True):
+        st.subheader("How the book is classified")
+        gc = st.columns(2)
+        with gc[0]:
+            st.caption("By IFRS classification")
+            grp = (live.groupby("ifrs_class", as_index=False)["carrying_value"].sum()
+                   .sort_values("carrying_value", ascending=False))
+            _bar_h(grp, "ifrs_class", "carrying_value", height=220)
+        with gc[1]:
+            st.caption("By fair-value hierarchy")
+            grp2 = (live.groupby("fv_hierarchy", as_index=False)["carrying_value"].sum()
+                    .sort_values("carrying_value", ascending=False))
+            _bar_h(grp2, "fv_hierarchy", "carrying_value", height=220)
+
+    with st.container(border=True):
+        st.subheader("Reconciliation")
+        section_tot = float(live.groupby("section")["carrying_value"].sum().sum())
+        tie = abs(section_tot - float(tot)) < 0.5
+        _html_table(pd.DataFrame([
+            {"check": "Sum of the holdings' fair value", "value": float(tot)},
+            {"check": "Sum of the entity subtotals", "value": section_tot},
+        ]), {"check": "Check", "value": "USD m"}, fmts={"value": lambda v: f"${v:,.1f}"})
+        st.caption(("Internal figures tie. " if tie else "Internal figures do not tie — investigate. ")
+                   + "Reconciliation to the signed statutory statements and the board deck is not "
+                   "yet wired into our data — flagged as an open item, not estimated.")
+
+    with st.container(border=True):
+        st.subheader("Basis of preparation")
+        st.markdown(
+            "- Amounts in USD millions unless stated otherwise.\n"
+            "- Economics (capital deployed, fair value, value created) are our own figures from "
+            "the monthly Portfolio Summary, on the live report-tab basis.\n"
+            "- IFRS classification and valuation method are adopted from the accounts team "
+            "(Ardent Advisory / Project Matrix) and treated as their classification.\n"
+            "- Prior-year (FY2020\u2013FY2021) portfolio values are estimated, pending our own "
+            "historical NAVs, and are shown as such.\n"
+            "- This book presents our 26 live holdings; accounts-pack lines we do not track are "
+            "out of scope rather than omitted in error.")
+
+    src = _load_sources(str(PORTFOLIO_DB_PATH), _path_mtime(PORTFOLIO_DB_PATH))
+    with st.container(border=True):
+        st.subheader("Audit trail — source registry")
+        if len(src):
+            st.dataframe(src, hide_index=True, width="stretch")
+        else:
+            st.caption("Source registry not available in this build.")
+
+
+def _render_bor_changelog() -> None:
+    with st.container(border=True):
+        st.subheader("Open items")
+        st.markdown(
+            "- **FY2020\u2013FY2021** portfolio value on the since-inception charts is a temporary "
+            "estimate, pending our own historical NAVs.\n"
+            "- **Independently-valued %** is derived from the accounts team's Ardent coverage flag "
+            "(June basis); to be confirmed against the latest independent valuation.\n"
+            "- **Statutory reconciliation** to the signed financial statements and board deck is "
+            "not yet wired into our data \u2014 planned for the IFRS & Audit Trail view.\n"
+            "- **Scope**: this book shows our 26 live holdings; accounts-pack lines we do not track "
+            "(MGX look-through, warrant splits, Presight / Space42) are out of scope, not errors.")
+    with st.container(border=True):
+        st.subheader("Version history")
+        st.markdown(
+            "- **v0.1** \u2014 Portfolio Book of Record established as its own application "
+            "(codename Tracker 2), reusing the shared engine and house style.\n"
+            "- Views live: Executive Overview, Investment Register (with per-holding fact sheets), "
+            "Value Creation, Portfolio Evolution, Geography, Sector, Concentration Risk, "
+            "IFRS & Audit Trail, Change Log, and the operational Portfolio view.\n"
+            "- IFRS classification and valuation method adopted from the accounts team; 26/26 "
+            "holdings matched.")
 
 
 def _render_ov_analytics(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
