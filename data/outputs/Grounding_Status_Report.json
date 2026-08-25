@@ -1,10 +1,10 @@
 {
   "generated": "2026-08-25",
   "tally": {
-    "grounded": 13,
-    "adopted": 347,
+    "grounded": 18,
+    "adopted": 343,
     "web": 5,
-    "gap": 240
+    "gap": 239
   },
   "companies": {
     "Acies Investments Fund I, L.P": {
@@ -41,9 +41,9 @@
         },
         {
           "field": "Jurisdiction",
-          "value": "United States",
-          "status": "adopted",
-          "source": "accounts pack"
+          "value": "Delaware",
+          "status": "grounded",
+          "source": "Acies -- Anchor Summary of Terms (execution version).DOCX (legal doc, candidate - confirm)"
         },
         {
           "field": "IFRS classification",
@@ -112,12 +112,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "United States",
-          "status": "adopted",
-          "source": "accounts pack"
         },
         {
           "field": "IFRS classification",
@@ -5711,9 +5705,9 @@
         },
         {
           "field": "Listed status",
-          "value": "Listed",
-          "status": "adopted",
-          "source": "accounts pack"
+          "value": "Listed (London Stock Exchange)",
+          "status": "grounded",
+          "source": "Accounts pack values it at a listed share price (USD 1.73) on the LSE; descriptive facts note LSE listing. Primary-filing (TR-1/annual report) confirmation still pending per Listed_Entity_IR_Check_Log.md."
         },
         {
           "field": "Jurisdiction",
@@ -5786,12 +5780,6 @@
         {
           "field": "Instrument",
           "value": "Ordinary Shares",
-          "status": "adopted",
-          "source": "accounts pack"
-        },
-        {
-          "field": "Listed status",
-          "value": "Listed",
           "status": "adopted",
           "source": "accounts pack"
         },
@@ -6174,8 +6162,8 @@
         {
           "field": "Jurisdiction",
           "value": "Cayman Islands",
-          "status": "adopted",
-          "source": "accounts pack"
+          "status": "grounded",
+          "source": "Amended and Restated LPA 12.pdf (legal doc, candidate - confirm; alt: Hong Kong)"
         },
         {
           "field": "IFRS classification",
@@ -6244,12 +6232,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Cayman Islands",
-          "status": "adopted",
-          "source": "accounts pack"
         },
         {
           "field": "IFRS classification",
@@ -6917,9 +6899,9 @@
         },
         {
           "field": "Listed status",
-          "value": "Not disclosed",
-          "status": "gap",
-          "source": ""
+          "value": "Listed (Cboe Canada)",
+          "status": "grounded",
+          "source": "Accounts pack values it at a listed share price (USD 1.90) and states Listed on CBOE Canada since June 2022. NB the pack Listed-status field read Not disclosed - inconsistent with its own listed-price valuation; resolved to Listed. Ticker/primary filing to confirm."
         },
         {
           "field": "Jurisdiction",
@@ -6988,12 +6970,6 @@
           "value": "Convertible Debenture",
           "status": "adopted",
           "source": "accounts pack"
-        },
-        {
-          "field": "Listed status",
-          "value": "Not disclosed",
-          "status": "gap",
-          "source": ""
         },
         {
           "field": "Jurisdiction",
@@ -7067,15 +7043,15 @@
         },
         {
           "field": "Listed status",
-          "value": "Listed",
-          "status": "adopted",
-          "source": "accounts pack"
+          "value": "Listed (Nasdaq: VTVT)",
+          "status": "grounded",
+          "source": "Accounts pack values it at a listed share price (USD 40.00) and states Listed on NASDAQ since July 2015; SEC FY2025 Form 10-K confirms (Listed_Entity_IR_Check_Log.md 2026-08-17). Ticker VTVT."
         },
         {
           "field": "Jurisdiction",
-          "value": "United States",
+          "value": "Delaware",
           "status": "adopted",
-          "source": "accounts pack"
+          "source": "candidate: AGM Notice May 2025.pdf (legal doc, candidate - confirm; alt: New York)"
         },
         {
           "field": "IFRS classification",
@@ -7140,16 +7116,10 @@
           "source": "accounts pack"
         },
         {
-          "field": "Listed status",
-          "value": "Listed",
-          "status": "adopted",
-          "source": "accounts pack"
-        },
-        {
           "field": "Jurisdiction",
-          "value": "United States",
+          "value": "Delaware",
           "status": "adopted",
-          "source": "accounts pack"
+          "source": "candidate: AGM Notice May 2025.pdf (legal doc, candidate - confirm; alt: New York)"
         },
         {
           "field": "IFRS classification",

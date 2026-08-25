@@ -57,7 +57,10 @@
     "domicile_candidates": [
       "California",
       "Wyoming"
-    ]
+    ],
+    "listed_status": "Listed (Cboe Canada)",
+    "listed_status_source": "Accounts pack values it at a listed share price (USD 1.90) and states Listed on CBOE Canada since June 2022. NB the pack Listed-status field read Not disclosed - inconsistent with its own listed-price valuation; resolved to Listed. Ticker/primary filing to confirm.",
+    "listed_status_grounded": true
   },
   "acies investments fund i, l.p.": {
     "domicile": "Delaware",
@@ -131,7 +134,10 @@
       "New York",
       "Abu Dhabi Global Market (ADGM)",
       "Abu Dhabi"
-    ]
+    ],
+    "listed_status": "Listed (Nasdaq: VTVT)",
+    "listed_status_source": "Accounts pack values it at a listed share price (USD 40.00) and states Listed on NASDAQ since July 2015; SEC FY2025 Form 10-K confirms (Listed_Entity_IR_Check_Log.md 2026-08-17). Ticker VTVT.",
+    "listed_status_grounded": true
   },
   "mgx 1 strategic co-invest": {
     "domicile": "Abu Dhabi Global Market (ADGM)",
@@ -284,7 +290,10 @@
       "Singapore"
     ],
     "domicile_evidence": "General Information Oxford Nanopore Technologies Limited is a company incorporated in the United Kingdom under the Companies Act 2006 and is registered in England and Wales.",
-    "domicile_evidence_source": "31-12-2019 ONT Accounts.pdf (legal_kb.sqlite; manual review)"
+    "domicile_evidence_source": "31-12-2019 ONT Accounts.pdf (legal_kb.sqlite; manual review)",
+    "listed_status": "Listed (London Stock Exchange)",
+    "listed_status_source": "Accounts pack values it at a listed share price (USD 1.73) on the LSE; descriptive facts note LSE listing. Primary-filing (TR-1/annual report) confirmation still pending per Listed_Entity_IR_Check_Log.md.",
+    "listed_status_grounded": true
   },
   "espace": {
     "domicile": "Delaware",

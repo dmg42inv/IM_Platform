@@ -5,10 +5,10 @@ Generated 2026-08-25. Read-only audit of Company-details identity / classificati
 ## Summary
 
 - **605** identity/classification datapoints audited across **50** companies.
-- **grounded** (cited to our own documents): **13**
-- **adopted** (accounts pack, unverified): **347**
+- **grounded** (cited to our own documents): **18**
+- **adopted** (accounts pack, unverified): **343**
 - **web** (internet-sourced, pending confirmation): **5**
-- **gap** (placeholder / missing): **240**
+- **gap** (placeholder / missing): **239**
 
 Tiers: grounded = traceable to a cited document; adopted = taken from the accounts pack as-is; web = from the internet; gap = "Not disclosed" / "Not assessed" / "TBC" and similar.
 
@@ -488,23 +488,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 14.0% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
-### Acies Investments Fund I, L.P  — 12 to verify (3 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | G42 Investments AI Holdings RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Venture & Growth Funds Technology venture fund | adopted | accounts pack |
-| Instrument | LP | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | United States | adopted | accounts pack |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Not covered by the Ardent report | gap |  |
-| Fair value hierarchy | Not assessed | gap |  |
-| Influence band | Significant influence (20-50%) | adopted | accounts pack |
-| Holding | 33.3% | adopted | accounts pack |
-| First recognised | 23 Dec 2021 | adopted | accounts pack |
-
 ### Momentum Group Holding RSC Ltd  — 12 to verify (3 gaps)
 
 | Field | Current value | Tier | Note |
@@ -573,7 +556,7 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 99.5% | adopted | accounts pack |
 | First recognised | 06 Jan 2020 | adopted | accounts pack |
 
-### Sinovation Disrupt Fund, L.P  — 12 to verify (3 gaps)
+### Acies Investments Fund I, L.P  — 11 to verify (3 gaps)
 
 | Field | Current value | Tier | Note |
 |---|---|---|---|
@@ -582,7 +565,22 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Sector | Venture & Growth Funds Technology venture fund | adopted | accounts pack |
 | Instrument | LP | adopted | accounts pack |
 | Listed status | Not disclosed | gap |  |
-| Jurisdiction | Cayman Islands | adopted | accounts pack |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Not covered by the Ardent report | gap |  |
+| Fair value hierarchy | Not assessed | gap |  |
+| Influence band | Significant influence (20-50%) | adopted | accounts pack |
+| Holding | 33.3% | adopted | accounts pack |
+| First recognised | 23 Dec 2021 | adopted | accounts pack |
+
+### Sinovation Disrupt Fund, L.P  — 11 to verify (3 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | G42 Investments AI Holdings RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Venture & Growth Funds Technology venture fund | adopted | accounts pack |
+| Instrument | LP | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
 | IFRS classification | FVOCI | adopted | accounts pack |
 | Valuation method | Not covered by the Ardent report | gap |  |
 | Fair value hierarchy | Not assessed | gap |  |
@@ -709,23 +707,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 0.6% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
-### Verses AI Inc  — 12 to verify (2 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Expansion Project Technologies Holding 9 SPV RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Applied AI & Software Cognitive computing | adopted | accounts pack |
-| Instrument | Convertible Debenture | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | California | adopted | candidate: Verses Technologies USA Inc & Subs - FYE 3.31.22 CA Return.pdf (legal doc, candidate - confirm; alt: Wyoming) |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Listed share price | adopted | accounts pack |
-| Fair value hierarchy | Level 1 | adopted | accounts pack |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 3.6% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-
 ### Applied AI Corporation Limited  — 11 to verify (2 gaps)
 
 | Field | Current value | Tier | Note |
@@ -806,40 +787,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 2.6% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
-### ONT plc  — 12 to verify (1 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Healthcare & Life Sciences Genomic sequencing | adopted | accounts pack |
-| Instrument | Ordinary Shares | adopted | accounts pack |
-| Listed status | Listed | adopted | accounts pack |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Listed share price | adopted | accounts pack |
-| Fair value hierarchy | Level 1 | adopted | accounts pack |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 4.6% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-| Description/website | https://nanoporetech.com | web | Wikipedia (fetched 2026-08-23) |
-
-### vTv Therapeutics Inc  — 12 to verify (1 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | G42 Investments AI Holdings RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Healthcare & Life Sciences Clinical stage pharmaceuticals | adopted | accounts pack |
-| Instrument | Ordinary Shares | adopted | accounts pack |
-| Listed status | Listed | adopted | accounts pack |
-| Jurisdiction | United States | adopted | accounts pack |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Listed share price | adopted | accounts pack |
-| Fair value hierarchy | Level 1 | adopted | accounts pack |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 2.1% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-
 ### Cerebras Systems Inc  — 11 to verify (1 gaps)
 
 | Field | Current value | Tier | Note |
@@ -855,3 +802,51 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 1.6% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 | Description/website | https://cerebras.ai | web | Wikipedia (fetched 2026-08-23) |
+
+### ONT plc  — 11 to verify (1 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Healthcare & Life Sciences Genomic sequencing | adopted | accounts pack |
+| Instrument | Ordinary Shares | adopted | accounts pack |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Listed share price | adopted | accounts pack |
+| Fair value hierarchy | Level 1 | adopted | accounts pack |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 4.6% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |
+| Description/website | https://nanoporetech.com | web | Wikipedia (fetched 2026-08-23) |
+
+### Verses AI Inc  — 11 to verify (1 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Expansion Project Technologies Holding 9 SPV RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Applied AI & Software Cognitive computing | adopted | accounts pack |
+| Instrument | Convertible Debenture | adopted | accounts pack |
+| Jurisdiction | California | adopted | candidate: Verses Technologies USA Inc & Subs - FYE 3.31.22 CA Return.pdf (legal doc, candidate - confirm; alt: Wyoming) |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Listed share price | adopted | accounts pack |
+| Fair value hierarchy | Level 1 | adopted | accounts pack |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 3.6% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |
+
+### vTv Therapeutics Inc  — 11 to verify (1 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | G42 Investments AI Holdings RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Healthcare & Life Sciences Clinical stage pharmaceuticals | adopted | accounts pack |
+| Instrument | Ordinary Shares | adopted | accounts pack |
+| Jurisdiction | Delaware | adopted | candidate: AGM Notice May 2025.pdf (legal doc, candidate - confirm; alt: New York) |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Listed share price | adopted | accounts pack |
+| Fair value hierarchy | Level 1 | adopted | accounts pack |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 2.1% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |

@@ -97,8 +97,10 @@ def audit() -> dict:
     for key in sorted(groups.keys()):
         row = groups[key]["row"]
         display_name = groups[key]["name"]
-        dom = domicile.get(key, {})
-        fct = facts.get(key, {})
+        # Domicile/facts keys are mostly period-stripped, but a few keep a
+        # trailing period (e.g. "vtv therapeutics inc."), so try both.
+        dom = domicile.get(key) or domicile.get(key + ".") or {}
+        fct = facts.get(key) or facts.get(key + ".") or {}
         fields: list[dict] = []
 
         for field in IDENTITY_FIELDS:
