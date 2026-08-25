@@ -22,17 +22,6 @@
     "n_candidates": 3
   },
   {
-    "company": "drivenets",
-    "domicile": "Israel",
-    "source_file": "DriveNets - Series D - SPA [Meitar April 16, 2026](14938774.23).docx",
-    "phrase": "existing under the laws of the State of Israel",
-    "status": "phrase_verified",
-    "evidence": "ualification. The Company is a corporation duly organized and validly existing under the laws of the State of Israel and has all requisite corporate power and authority to own, lease and",
-    "evidence_quality": "context_unclear",
-    "confidence": "medium",
-    "n_candidates": 1
-  },
-  {
     "company": "e-line ventures llc",
     "domicile": "Delaware",
     "source_file": "Round 1, Endless Studios Limited Liability Company Agreement.pdf",
@@ -42,39 +31,6 @@
     "evidence_quality": "context_unclear",
     "confidence": "medium",
     "n_candidates": 2
-  },
-  {
-    "company": "endless studios llc",
-    "domicile": "Delaware",
-    "source_file": "Round 1, Endless Studios Limited Liability Company Agreement.pdf",
-    "phrase": "organized as a Delaware",
-    "status": "phrase_verified",
-    "evidence": "2.1. Formation. The Company has been organized as a Delaware limited liability company by the filing of a certificate of formation",
-    "evidence_quality": "context_unclear",
-    "confidence": "medium",
-    "n_candidates": 2
-  },
-  {
-    "company": "esyasoft holding",
-    "domicile": "Dubai International Financial Centre (DIFC)",
-    "source_file": "G42 Esyasoft Due Diligence Report 2 4 20.docx",
-    "phrase": "incorporated under the laws of Dubai International Financial Centre",
-    "status": "phrase_verified",
-    "evidence": "aSoft \" or the \"Company\"), is a private company limited by shares and incorporated under the laws of Dubai International Financial Centre, having its address at Unit 1006, Level 10, Liberty House, Dubai Inte",
-    "evidence_quality": "context_unclear",
-    "confidence": "medium",
-    "n_candidates": 4
-  },
-  {
-    "company": "instadeep limited",
-    "domicile": "England and Wales",
-    "source_file": "2. UK - 2019 FINAL_full_accts_ye_311219 (11) (1).pdf",
-    "phrase": "registered in England and Wales",
-    "status": "phrase_verified",
-    "evidence": "neral information The company is a private company limited by shares, registered in England and Wales. The address of the registered office is 2 Eastbourne Terrace, London",
-    "evidence_quality": "context_unclear",
-    "confidence": "medium",
-    "n_candidates": 5
   },
   {
     "company": "inveniam ltd",
@@ -88,39 +44,6 @@
     "n_candidates": 5
   },
   {
-    "company": "liquid ai",
-    "domicile": "Delaware",
-    "source_file": "Liquid AI, Inc. - Series A - Secretary's Certificate [EXECUTED].pdf",
-    "phrase": "registered office in the State of Delaware",
-    "status": "phrase_verified",
-    "evidence": "oposed to be taken is delivered to the Corporation by delivery to its registered office in the State of Delaware, its principal office, or an officer or agent of the Corporation havi",
-    "evidence_quality": "context_unclear",
-    "confidence": "medium",
-    "n_candidates": 3
-  },
-  {
-    "company": "mena mobile inc",
-    "domicile": "Cayman Islands",
-    "source_file": "Mena Mobile - Due Diligence Report (final).pdf",
-    "phrase": "incorporated in the Cayman Islands",
-    "status": "phrase_verified",
-    "evidence": "nd of financing if the registration is completed then. The Target was incorporated in the Cayman Islands on August 22, 2016. The share capital of the Target is US$50,000 divi",
-    "evidence_quality": "context_unclear",
-    "confidence": "medium",
-    "n_candidates": 5
-  },
-  {
-    "company": "neuralink",
-    "domicile": "Nevada",
-    "source_file": "Neuralink Investment Summary .docx",
-    "phrase": "incorporated in Nevada",
-    "status": "phrase_verified",
-    "evidence": "Agreement (the \"SPA\"). Company Snapshot The Company is a corporation incorporated in Nevada. The principal executive office of the Company is located in Fremont,",
-    "evidence_quality": "context_unclear",
-    "confidence": "medium",
-    "n_candidates": 2
-  },
-  {
     "company": "north summit capital fund",
     "domicile": "China",
     "source_file": "1. North Summit Capital Fund - Amended and.PDF",
@@ -130,28 +53,6 @@
     "evidence_quality": "context_unclear",
     "confidence": "medium",
     "n_candidates": 5
-  },
-  {
-    "company": "ont plc",
-    "domicile": "United Kingdom",
-    "source_file": "31-12-2019 ONT Accounts.pdf",
-    "phrase": "incorporated in the United Kingdom",
-    "status": "phrase_verified",
-    "evidence": "General Information Oxford Nanopore Technologies Limited is a company incorporated in the United Kingdom under the Companies Act 2006 and is registered in England and Wales.",
-    "evidence_quality": "context_unclear",
-    "confidence": "medium",
-    "n_candidates": 5
-  },
-  {
-    "company": "sinovation disrupt fund, l.p.",
-    "domicile": "Cayman Islands",
-    "source_file": "Amended and Restated LPA 12.pdf",
-    "phrase": "registered office of the Partnership in the Cayman Islands",
-    "status": "phrase_verified",
-    "evidence": "ip Interests. The General Partner shall cause to be maintained at the registered office of the Partnership in the Cayman Islands or such other place as the General Partner may determine from time to",
-    "evidence_quality": "context_unclear",
-    "confidence": "medium",
-    "n_candidates": 2
   },
   {
     "company": "verses ai inc",
@@ -174,17 +75,6 @@
     "evidence_quality": "context_unclear",
     "confidence": "medium",
     "n_candidates": 1
-  },
-  {
-    "company": "jysan technologies",
-    "domicile": "England and Wales",
-    "source_file": "2. JYSAN - Shareholders' Agreement - Executed Version.pdf",
-    "phrase": "incorporated and registered in England and Wales",
-    "status": "phrase_verified",
-    "evidence": "f adherence This deed is dated [DATE] Parties (1) [FULL COMPANY NAME] incorporated and registered in England and Wales with company number [NUMBER] whose registered office is at [REGISTERE",
-    "evidence_quality": "template_placeholder",
-    "confidence": "low",
-    "n_candidates": 5
   },
   {
     "company": "mgx 1 strategic co-invest",
@@ -229,38 +119,5 @@
     "evidence_quality": "third_party_context",
     "confidence": "low",
     "n_candidates": 5
-  },
-  {
-    "company": "new space capital fund i",
-    "domicile": "Luxembourg",
-    "source_file": "Passport certified copy KARAVAEV.pdf",
-    "phrase": "Registered with the Luxembourg",
-    "status": "phrase_verified",
-    "evidence": "0M2409102200581<241 L<<<42 Arendt & Medernach SA L-2082 Luxembourg Registered with the Luxembourg Bar RCS Luxembourg B 186371 I VAT Lu2eaRa704 YZ True copy Luxembour",
-    "evidence_quality": "third_party_context",
-    "confidence": "low",
-    "n_candidates": 5
-  },
-  {
-    "company": "new space capital gp com scsp",
-    "domicile": "Luxembourg",
-    "source_file": "Passport certified copy KARAVAEV.pdf",
-    "phrase": "Registered with the Luxembourg",
-    "status": "phrase_verified",
-    "evidence": "0M2409102200581<241 L<<<42 Arendt & Medernach SA L-2082 Luxembourg Registered with the Luxembourg Bar RCS Luxembourg B 186371 I VAT Lu2eaRa704 YZ True copy Luxembour",
-    "evidence_quality": "third_party_context",
-    "confidence": "low",
-    "n_candidates": 5
-  },
-  {
-    "company": "vtv therapeutics inc.",
-    "domicile": "Delaware",
-    "source_file": "AGM Notice May 2025.pdf",
-    "phrase": "Incorporated, a Delaware",
-    "status": "phrase_verified",
-    "evidence": "18, a New York trust (the \"ROP Revocable Trust\"), MacAndrews & Forbes Incorporated, a Delaware corporation (\"MacAndrews & Forbes\"), MacAndrews & Forbes LLC, a Delaw",
-    "evidence_quality": "third_party_context",
-    "confidence": "low",
-    "n_candidates": 4
   }
 ]

@@ -87,7 +87,7 @@
   "new space capital fund i": {
     "domicile": "Luxembourg",
     "domicile_source": "Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "Registered with the Luxembourg",
     "domicile_candidates": [
       "Luxembourg",
@@ -95,12 +95,14 @@
       "United Arab Emirates",
       "UAE",
       "Japan"
-    ]
+    ],
+    "domicile_evidence": "NewSpace Capital Fund SCA, SICAV-RAIF (the Fund), RCS Luxembourg; managed by New Space Capital GP SA.",
+    "domicile_evidence_source": "Corporate structure and governance 07.12.2020 (legal_kb.sqlite; re-sourced). Vehicle-name nuance: doc names SCA / GP SA vs held Fund I / GP Com SCSp."
   },
   "new space capital gp com scsp": {
     "domicile": "Luxembourg",
     "domicile_source": "Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "Registered with the Luxembourg",
     "domicile_candidates": [
       "Luxembourg",
@@ -108,7 +110,9 @@
       "United Arab Emirates",
       "UAE",
       "Japan"
-    ]
+    ],
+    "domicile_evidence": "New Space Capital GP SA (Luxembourg); NewSpace Capital Fund SCA, SICAV-RAIF, RCS Luxembourg.",
+    "domicile_evidence_source": "Corporate structure and governance 07.12.2020 (legal_kb.sqlite; re-sourced). Vehicle-name nuance as above."
   },
   "north summit capital fund": {
     "domicile": "China",
@@ -127,7 +131,7 @@
   "vtv therapeutics inc.": {
     "domicile": "Delaware",
     "domicile_source": "AGM Notice May 2025.pdf (legal doc, candidate - confirm; alt: New York)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "Incorporated, a Delaware",
     "domicile_candidates": [
       "Delaware",
@@ -137,7 +141,9 @@
     ],
     "listed_status": "Listed (Nasdaq: VTVT)",
     "listed_status_source": "Accounts pack values it at a listed share price (USD 40.00) and states Listed on NASDAQ since July 2015; SEC FY2025 Form 10-K confirms (Listed_Entity_IR_Check_Log.md 2026-08-17). Ticker VTVT.",
-    "listed_status_grounded": true
+    "listed_status_grounded": true,
+    "domicile_evidence": "vTv Therapeutics Inc. 2019 Annual Report, Exhibit 21.1: subsidiaries Jurisdiction of Incorporation = Delaware (e.g. vTv Therapeutics LLC, Delaware); Nasdaq-listed Delaware corporation (FY2025 10-K per IR log).",
+    "domicile_evidence_source": "Financials - 2019 Annual Report.pdf (legal_kb.sqlite; re-sourced). Direct parent line not captured; corroborated by 10-K."
   },
   "mgx 1 strategic co-invest": {
     "domicile": "Abu Dhabi Global Market (ADGM)",
@@ -150,7 +156,8 @@
       "Abu Dhabi",
       "Delaware",
       "New York"
-    ]
+    ],
+    "domicile_review_note": "Only the auditor line (PwC ADGM) matched; the LP's own registration is not cleanly stated in the KB. Highly likely ADGM (GX Investments/PwC ADGM) but needs the LP formation doc."
   },
   "mgx group holding 1 ltd (gp)": {
     "domicile": "Abu Dhabi Global Market (ADGM)",
@@ -163,7 +170,8 @@
       "Abu Dhabi",
       "Delaware",
       "New York"
-    ]
+    ],
+    "domicile_review_note": "Only the auditor line (PwC ADGM) matched; the LP's own registration is not cleanly stated in the KB. Highly likely ADGM (GX Investments/PwC ADGM) but needs the LP formation doc."
   },
   "mgx i denali holding lp": {
     "domicile": "Abu Dhabi Global Market (ADGM)",
@@ -176,7 +184,8 @@
       "Abu Dhabi",
       "Delaware",
       "New York"
-    ]
+    ],
+    "domicile_review_note": "Only the auditor line (PwC ADGM) matched; the LP's own registration is not cleanly stated in the KB. Highly likely ADGM (GX Investments/PwC ADGM) but needs the LP formation doc."
   },
   "mgx i lp": {
     "domicile": "Abu Dhabi Global Market (ADGM)",
@@ -189,7 +198,8 @@
       "Abu Dhabi",
       "Delaware",
       "New York"
-    ]
+    ],
+    "domicile_review_note": "Only the auditor line (PwC ADGM) matched; the LP's own registration is not cleanly stated in the KB. Highly likely ADGM (GX Investments/PwC ADGM) but needs the LP formation doc."
   },
   "applied ai corporation limited": {
     "domicile": "Abu Dhabi Global Market (ADGM)",
@@ -348,9 +358,9 @@
     "domicile_evidence_source": "2. UK - 2019 FINAL_full_accts_ye_311219 (11) (1).pdf (legal_kb.sqlite; manual review)"
   },
   "jysan technologies": {
-    "domicile": "England and Wales",
+    "domicile": "United Kingdom",
     "domicile_source": "2. JYSAN - Shareholders' Agreement - Executed Version.pdf (legal doc, candidate - confirm; alt: Kazakhstan)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "incorporated and registered in England and Wales",
     "domicile_candidates": [
       "England and Wales",
@@ -358,7 +368,9 @@
       "Abu Dhabi Global Market (ADGM)",
       "Abu Dhabi",
       "Nevada"
-    ]
+    ],
+    "domicile_evidence": "the Group established a subsidiary Jysan Technologies Ltd. ... The country of registration and location of Jysan Technologies Ltd. is the United Kingdom.",
+    "domicile_evidence_source": "CONSO (ENG) Pioneer _2019_signed.pdf (legal_kb.sqlite; re-sourced 2026-08-25)"
   },
   "mena mobile inc": {
     "domicile": "Cayman Islands",

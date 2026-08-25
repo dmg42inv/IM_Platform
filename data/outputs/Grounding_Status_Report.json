@@ -1,8 +1,8 @@
 {
   "generated": "2026-08-25",
   "tally": {
-    "grounded": 18,
-    "adopted": 343,
+    "grounded": 22,
+    "adopted": 339,
     "web": 5,
     "gap": 239
   },
@@ -3167,9 +3167,9 @@
         },
         {
           "field": "Jurisdiction",
-          "value": "England and Wales",
-          "status": "adopted",
-          "source": "candidate: 2. JYSAN - Shareholders' Agreement - Executed Version.pdf (legal doc, candidate - confirm; alt: Kazakhstan)"
+          "value": "United Kingdom",
+          "status": "grounded",
+          "source": "2. JYSAN - Shareholders' Agreement - Executed Version.pdf (legal doc, candidate - confirm; alt: Kazakhstan)"
         },
         {
           "field": "IFRS classification",
@@ -3238,12 +3238,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "England and Wales",
-          "status": "adopted",
-          "source": "candidate: 2. JYSAN - Shareholders' Agreement - Executed Version.pdf (legal doc, candidate - confirm; alt: Kazakhstan)"
         },
         {
           "field": "IFRS classification",
@@ -5262,8 +5256,8 @@
         {
           "field": "Jurisdiction",
           "value": "Luxembourg",
-          "status": "adopted",
-          "source": "candidate: Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)"
+          "status": "grounded",
+          "source": "Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)"
         },
         {
           "field": "IFRS classification",
@@ -5332,12 +5326,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Luxembourg",
-          "status": "adopted",
-          "source": "candidate: Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)"
         },
         {
           "field": "IFRS classification",
@@ -5412,8 +5400,8 @@
         {
           "field": "Jurisdiction",
           "value": "Luxembourg",
-          "status": "adopted",
-          "source": "candidate: Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)"
+          "status": "grounded",
+          "source": "Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)"
         },
         {
           "field": "IFRS classification",
@@ -5482,12 +5470,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Luxembourg",
-          "status": "adopted",
-          "source": "candidate: Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland)"
         },
         {
           "field": "IFRS classification",
@@ -7050,8 +7032,8 @@
         {
           "field": "Jurisdiction",
           "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: AGM Notice May 2025.pdf (legal doc, candidate - confirm; alt: New York)"
+          "status": "grounded",
+          "source": "AGM Notice May 2025.pdf (legal doc, candidate - confirm; alt: New York)"
         },
         {
           "field": "IFRS classification",
@@ -7114,12 +7096,6 @@
           "value": "Ordinary Shares",
           "status": "adopted",
           "source": "accounts pack"
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: AGM Notice May 2025.pdf (legal doc, candidate - confirm; alt: New York)"
         },
         {
           "field": "IFRS classification",

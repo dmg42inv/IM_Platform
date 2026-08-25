@@ -5,8 +5,8 @@ Generated 2026-08-25. Read-only audit of Company-details identity / classificati
 ## Summary
 
 - **605** identity/classification datapoints audited across **50** companies.
-- **grounded** (cited to our own documents): **18**
-- **adopted** (accounts pack, unverified): **343**
+- **grounded** (cited to our own documents): **22**
+- **adopted** (accounts pack, unverified): **339**
 - **web** (internet-sourced, pending confirmation): **5**
 - **gap** (placeholder / missing): **239**
 
@@ -421,23 +421,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 5.7% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
-### Jysan Technologies  — 12 to verify (4 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | QAZ42 Investment SPV RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Financial Technology Digital banking | adopted | accounts pack |
-| Instrument | A (Ordinary Shares) | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | England and Wales | adopted | candidate: 2. JYSAN - Shareholders' Agreement - Executed Version.pdf (legal doc, candidate - confirm; alt: Kazakhstan) |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Not covered by the Ardent report | gap |  |
-| Fair value hierarchy | Not assessed | gap |  |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 3.0% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-
 ### MGX I LP  — 12 to verify (4 gaps)
 
 | Field | Current value | Tier | Note |
@@ -470,6 +453,22 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Fair value hierarchy | Not assessed | gap |  |
 | Influence band | Significant influence (20-50%) | adopted | accounts pack |
 | Holding | 25.0% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |
+
+### Jysan Technologies  — 11 to verify (4 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | QAZ42 Investment SPV RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Financial Technology Digital banking | adopted | accounts pack |
+| Instrument | A (Ordinary Shares) | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Not covered by the Ardent report | gap |  |
+| Fair value hierarchy | Not assessed | gap |  |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 3.0% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
 ### Mena Mobile Inc  — 11 to verify (4 gaps)
@@ -505,40 +504,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 35.0% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
-### New Space Capital Fund I  — 12 to verify (3 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | G42 Investments AI Holdings RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Space & Geospatial Space technology fund | adopted | accounts pack |
-| Instrument | LP | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | Luxembourg | adopted | candidate: Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland) |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Not covered by the Ardent report | gap |  |
-| Fair value hierarchy | Not assessed | gap |  |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 17.8% | adopted | accounts pack |
-| First recognised | 13 Sep 2020 | adopted | accounts pack |
-
-### New Space Capital GP Com SCSp  — 12 to verify (3 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | G42 Investments AI Holdings RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Space & Geospatial Space technology fund | adopted | accounts pack |
-| Instrument | GP | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | Luxembourg | adopted | candidate: Passport certified copy KARAVAEV.pdf (legal doc, candidate - confirm; alt: Finland) |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Not covered by the Ardent report | gap |  |
-| Fair value hierarchy | Not assessed | gap |  |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 1.6% | adopted | accounts pack |
-| First recognised | 13 Sep 2020 | adopted | accounts pack |
-
 ### North Summit Capital Fund  — 12 to verify (3 gaps)
 
 | Field | Current value | Tier | Note |
@@ -571,6 +536,38 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Influence band | Significant influence (20-50%) | adopted | accounts pack |
 | Holding | 33.3% | adopted | accounts pack |
 | First recognised | 23 Dec 2021 | adopted | accounts pack |
+
+### New Space Capital Fund I  — 11 to verify (3 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | G42 Investments AI Holdings RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Space & Geospatial Space technology fund | adopted | accounts pack |
+| Instrument | LP | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Not covered by the Ardent report | gap |  |
+| Fair value hierarchy | Not assessed | gap |  |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 17.8% | adopted | accounts pack |
+| First recognised | 13 Sep 2020 | adopted | accounts pack |
+
+### New Space Capital GP Com SCSp  — 11 to verify (3 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | G42 Investments AI Holdings RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Space & Geospatial Space technology fund | adopted | accounts pack |
+| Instrument | GP | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Not covered by the Ardent report | gap |  |
+| Fair value hierarchy | Not assessed | gap |  |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 1.6% | adopted | accounts pack |
+| First recognised | 13 Sep 2020 | adopted | accounts pack |
 
 ### Sinovation Disrupt Fund, L.P  — 11 to verify (3 gaps)
 
@@ -835,7 +832,7 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 3.6% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
-### vTv Therapeutics Inc  — 11 to verify (1 gaps)
+### vTv Therapeutics Inc  — 10 to verify (1 gaps)
 
 | Field | Current value | Tier | Note |
 |---|---|---|---|
@@ -843,7 +840,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding type | Corporate | adopted | accounts pack |
 | Sector | Healthcare & Life Sciences Clinical stage pharmaceuticals | adopted | accounts pack |
 | Instrument | Ordinary Shares | adopted | accounts pack |
-| Jurisdiction | Delaware | adopted | candidate: AGM Notice May 2025.pdf (legal doc, candidate - confirm; alt: New York) |
 | IFRS classification | FVOCI | adopted | accounts pack |
 | Valuation method | Listed share price | adopted | accounts pack |
 | Fair value hierarchy | Level 1 | adopted | accounts pack |
