@@ -34,7 +34,8 @@
     .table-filter-bar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 0 0 10px; }
     .table-filter-bar .row-count { color: var(--muted); font-size: 12px; }
     th .th-label { display: block; margin-bottom: 5px; cursor: pointer; user-select: none; }
-    th .th-label .unit { display: block; font-style: italic; color: var(--muted); font-size: 10px; font-weight: 400; margin-top: 1px; }
+    tr.unit-row td { padding: 0 7px 5px; font-style: italic; color: var(--muted); font-size: 10px; font-weight: 400; text-align: right; border: none; background: var(--bg); }
+    tr.unit-row td.left { text-align: left; }
     th .th-label[data-sort-dir="asc"]::after { content: " \25B2"; font-size: 9px; color: var(--accent); }
     th .th-label[data-sort-dir="desc"]::after { content: " \25BC"; font-size: 9px; color: var(--accent); }
     th .column-filter { display: none; width: 100%; min-width: 72px; background: #FFFFFF; border: 1px solid var(--border); color: var(--text); border-radius: 5px; padding: 4px 6px; font-size: 11px; }
@@ -487,14 +488,28 @@ function setupTableSort() {
 
 setupTableSort();
 
-// Move the "($m)" unit onto a small italic second line in money headers.
-function formatUnitHeaders() {
-    document.querySelectorAll(".th-label").forEach(lbl => {
-        const m = lbl.textContent.trim().match(/^(.*?)\s*\(\$m\)$/);
-        if (m) lbl.innerHTML = m[1] + '<span class="unit">$m</span>';
+// Drop the inline "($m)" from money headers and place the unit on a dedicated
+// creme sub-row, so every header label stays on the same baseline.
+function unitSubheaders() {
+    document.querySelectorAll(".panel table").forEach(table => {
+        const thead = table.querySelector("thead");
+        if (!thead || thead.querySelector(".unit-row")) return;
+        const headRow = thead.querySelector("tr");
+        const unitRow = document.createElement("tr");
+        unitRow.className = "unit-row";
+        let any = false;
+        [...headRow.children].forEach(th => {
+            const lbl = th.querySelector(".th-label") || th;
+            const td = document.createElement("td");
+            const m = lbl.textContent.trim().match(/^(.*?)\s*\(\$m\)$/);
+            if (m) { lbl.textContent = m[1]; td.textContent = "$m"; any = true; }
+            if (th.classList.contains("left")) td.classList.add("left");
+            unitRow.appendChild(td);
+        });
+        if (any) thead.appendChild(unitRow);
     });
 }
-formatUnitHeaders();
+unitSubheaders();
 
 function downloadCSV(tableId, filename) {
   const table = document.getElementById(tableId);
