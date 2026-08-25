@@ -695,14 +695,17 @@ def _load_domicile_legal() -> dict:
 def _line_usd(df: pd.DataFrame, xcol: str, ycol: str, y_title: str = "USD, millions") -> None:
     d = df[[xcol, ycol]].dropna().copy()
     d.columns = ["date", "value"]
-    chart = (alt.Chart(d).mark_area(
-                color="#2F6B45", opacity=0.16,
-                line={"color": "#2F6B45", "strokeWidth": 2})
-             .encode(
-                x=alt.X("date:T", axis=alt.Axis(title=None, format="%b '%y", labelAngle=-40)),
-                y=alt.Y("value:Q", axis=alt.Axis(title=y_title)))
-             .properties(height=280))
-    st.altair_chart(chart, width="stretch")
+    d["date_lbl"] = pd.to_datetime(d["date"]).dt.strftime("%b '%y")
+    d["value_lbl"] = d["value"].map(lambda v: f"${v:,.1f}m")
+    base = alt.Chart(d).encode(
+        x=alt.X("date:T", axis=alt.Axis(title=None, format="%b '%y", labelAngle=-40)),
+        y=alt.Y("value:Q", axis=alt.Axis(title=y_title)))
+    area = base.mark_area(color="#2F6B45", opacity=0.16,
+                          line={"color": "#2F6B45", "strokeWidth": 2})
+    pts = base.mark_circle(color="#2F6B45", opacity=0).encode(
+        tooltip=[alt.Tooltip("value_lbl:N", title="Value"),
+                 alt.Tooltip("date_lbl:N", title="As of")])
+    st.altair_chart((area + pts).properties(height=280), width="stretch")
 
 
 # TEMP (2026-08-24, user-approved): FY2020/FY2021 have no tracker data yet. Until
@@ -1621,18 +1624,12 @@ def _render_value_creation(months_df: pd.DataFrame, positions_df: pd.DataFrame) 
                     y=alt.Y("company:N", sort="-x", axis=alt.Axis(title=None)),
                     color=alt.condition(alt.datum.gain >= 0, alt.value("#2F6B45"),
                                         alt.value("#b3253a")),
-                    tooltip=["company", "invested", "carrying_value", "gain"])
+                    tooltip=[alt.Tooltip("company:N", title="Company"),
+                             alt.Tooltip("invested:Q", title="Capital deployed", format="$,.1f"),
+                             alt.Tooltip("carrying_value:Q", title="Fair value", format="$,.1f"),
+                             alt.Tooltip("gain:Q", title="Value created", format="$,.1f")])
                .properties(height=max(280, 22 * len(ranked))))
         st.altair_chart(bar, width="stretch")
-
-    with st.container(border=True):
-        st.subheader("Capital deployed against fair value")
-        tbl = by_co.sort_values("carrying_value", ascending=False)
-        _html_table(tbl[["company", "invested", "carrying_value", "gain", "multiple"]], {
-            "company": "Company", "invested": "Capital deployed", "carrying_value": "Fair value",
-            "gain": "Value created", "multiple": "Multiple"}, fmts={
-            "invested": lambda v: f"${v:,.1f}", "carrying_value": lambda v: f"${v:,.1f}",
-            "gain": lambda v: f"${v:,.1f}", "multiple": lambda v: f"{v:.2f}x"})
 
     # Waterfall: exact identity carrying = invested + gain - distributions.
     dist = float(live["distributions"].sum())
@@ -1728,12 +1725,10 @@ def _render_geography(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> No
         st.subheader("Where the money is \u2014 by country")
         geo = _exposure_table(live, "geography")
         _bar_h(geo.rename(columns={"geography": "country"}), "country", "fair_value")
-        st.dataframe(geo, hide_index=True, width="stretch", column_config={
-            "geography": st.column_config.TextColumn("Geography"),
-            "fair_value": st.column_config.NumberColumn("Fair value", format="$%.1f"),
-            "holdings": st.column_config.NumberColumn("Holdings"),
-            "weight": st.column_config.NumberColumn("Weight", format="percent"),
-        })
+        _html_table(geo, {"geography": "Geography", "fair_value": "Fair value",
+                          "holdings": "Holdings", "weight": "Weight"}, fmts={
+            "fair_value": lambda v: f"${v:,.1f}", "holdings": lambda v: f"{int(v)}",
+            "weight": lambda v: f"{v * 100:.1f}%"})
 
     live["region"] = live["geography"].map(_region_of)
     live["sector_n"] = live["sector"].map(_norm_sector)
@@ -1744,12 +1739,10 @@ def _render_geography(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> No
         with cc[0]:
             _bar_h(reg, "region", "fair_value")
         with cc[1]:
-            st.dataframe(reg, hide_index=True, width="stretch", column_config={
-                "region": st.column_config.TextColumn("Region"),
-                "fair_value": st.column_config.NumberColumn("Fair value", format="$%.1f"),
-                "holdings": st.column_config.NumberColumn("Holdings"),
-                "weight": st.column_config.NumberColumn("Weight", format="percent"),
-            })
+            _html_table(reg, {"region": "Region", "fair_value": "Fair value",
+                              "holdings": "Holdings", "weight": "Weight"}, fmts={
+                "fair_value": lambda v: f"${v:,.1f}", "holdings": lambda v: f"{int(v)}",
+                "weight": lambda v: f"{v * 100:.1f}%"})
 
     with st.container(border=True):
         st.subheader("Region \u00d7 sector")
@@ -1759,7 +1752,9 @@ def _render_geography(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> No
                     y=alt.Y("region:N", axis=alt.Axis(title=None)),
                     color=alt.Color("carrying_value:Q", scale=alt.Scale(scheme="greens"),
                                     legend=alt.Legend(title="Fair value, $m")),
-                    tooltip=["region", "sector_n", alt.Tooltip("carrying_value:Q", format=",.1f")])
+                    tooltip=[alt.Tooltip("region:N", title="Region"),
+                             alt.Tooltip("sector_n:N", title="Sector"),
+                             alt.Tooltip("carrying_value:Q", title="Fair value", format="$,.1f")])
                 .properties(height=220))
         st.altair_chart(heat, width="stretch")
     st.caption("Sourced from the Portfolio Summary's Geography field. Regions are a simple grouping "
@@ -1778,12 +1773,10 @@ def _render_sector(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
         sec = (_exposure_table(live.rename(columns={"sector_n": "_s"}), "_s")
                .rename(columns={"_s": "sector"}))
         _bar_h(sec, "sector", "fair_value")
-        st.dataframe(sec, hide_index=True, width="stretch", column_config={
-            "sector": st.column_config.TextColumn("Sector"),
-            "fair_value": st.column_config.NumberColumn("Fair value", format="$%.1f"),
-            "holdings": st.column_config.NumberColumn("Holdings"),
-            "weight": st.column_config.NumberColumn("Weight", format="percent"),
-        })
+        _html_table(sec, {"sector": "Sector", "fair_value": "Fair value",
+                          "holdings": "Holdings", "weight": "Weight"}, fmts={
+            "fair_value": lambda v: f"${v:,.1f}", "holdings": lambda v: f"{int(v)}",
+            "weight": lambda v: f"{v * 100:.1f}%"})
 
     with st.container(border=True):
         st.subheader("Contribution to value creation")
@@ -1794,7 +1787,8 @@ def _render_sector(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
                     y=alt.Y("sector:N", sort="-x", axis=alt.Axis(title=None)),
                     color=alt.condition(alt.datum.gain >= 0, alt.value("#2F6B45"),
                                         alt.value("#b3253a")),
-                    tooltip=["sector", alt.Tooltip("gain:Q", format=",.1f")])
+                    tooltip=[alt.Tooltip("sector:N", title="Sector"),
+                             alt.Tooltip("gain:Q", title="Value created", format="$,.1f")])
                .properties(height=max(220, 26 * len(vc))))
         st.altair_chart(bar, width="stretch")
     st.caption("Sector splits are sourced from the latest Portfolio Summary. Sector growth **over "
@@ -1919,10 +1913,13 @@ def _render_portfolio_growth(months_df: pd.DataFrame, positions_df: pd.DataFrame
     first = mser.iloc[0]
     with st.container(horizontal=True):
         st.metric("Fair value now", _fmt_money(latest["live_carrying"]),
-                  delta=f"from {_fmt_money(first['live_carrying'])} at {first['label']}", border=True)
+                  delta=f"from {_fmt_money(first['live_carrying'])} at {first['label']}",
+                  delta_color="off", border=True)
         st.metric("Live holdings now", f"{int(latest['live_count']):,}",
-                  delta=f"from {int(first['live_count'])} at {first['label']}", border=True)
-        st.metric("Months tracked", f"{len(mser):,}", border=True)
+                  delta=f"from {int(first['live_count'])} at {first['label']}",
+                  delta_color="off", border=True)
+        st.metric("Months tracked", f"{len(mser):,}",
+                  delta=f"since {first['label']}", delta_color="off", border=True)
     with st.container(border=True):
         st.subheader("Fair value since inception")
         _render_nav_since_inception(months_df, positions_df)
