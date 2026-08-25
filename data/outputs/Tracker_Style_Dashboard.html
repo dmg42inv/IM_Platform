@@ -33,9 +33,13 @@
   .panel h2 { font-size: 13px; margin: 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
     .table-filter-bar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 0 0 10px; }
     .table-filter-bar .row-count { color: var(--muted); font-size: 12px; }
-    th .th-label { display: block; margin-bottom: 5px; }
-    th .column-filter { width: 100%; min-width: 72px; background: #FFFFFF; border: 1px solid var(--border); color: var(--text); border-radius: 5px; padding: 4px 6px; font-size: 11px; }
+    th .th-label { display: block; margin-bottom: 5px; cursor: pointer; user-select: none; }
+    th .th-label[data-sort-dir="asc"]::after { content: " \25B2"; font-size: 9px; color: var(--accent); }
+    th .th-label[data-sort-dir="desc"]::after { content: " \25BC"; font-size: 9px; color: var(--accent); }
+    th .column-filter { display: none; width: 100%; min-width: 72px; background: #FFFFFF; border: 1px solid var(--border); color: var(--text); border-radius: 5px; padding: 4px 6px; font-size: 11px; }
+    table.filters-on th .column-filter { display: block; }
     th .column-filter:focus { outline: none; border-color: var(--accent); }
+    .filter-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .dl-btn { background: var(--sub-bg); border: 1px solid var(--border); color: var(--accent); border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; }
   .dl-btn:hover { background: var(--border); }
   table { width: 100%; min-width: 1100px; border-collapse: collapse; font-size: 12.5px; }
@@ -302,20 +306,36 @@ function setupTableFilters() {
         clearButton.type = "button";
         clearButton.className = "dl-btn";
         clearButton.textContent = "Clear filters";
+        clearButton.style.display = "none";
+
+        const toggleButton = document.createElement("button");
+        toggleButton.type = "button";
+        toggleButton.className = "dl-btn filter-toggle";
+        toggleButton.textContent = "Filters";
 
         const rowCount = document.createElement("span");
         rowCount.className = "row-count";
+        rowCount.style.display = "none";
 
         const panelHead = tableWrap.closest(".panel") ? tableWrap.closest(".panel").querySelector(".panel-head") : null;
         const dlBtn = panelHead ? panelHead.querySelector(".dl-btn") : null;
         if (panelHead) {
-            rowCount.style.marginLeft = "auto";
+            toggleButton.style.marginLeft = "auto";
+            panelHead.insertBefore(toggleButton, dlBtn);
             panelHead.insertBefore(rowCount, dlBtn);
             panelHead.insertBefore(clearButton, dlBtn);
         } else {
-            filterBar.append(clearButton, rowCount);
+            filterBar.append(toggleButton, clearButton, rowCount);
             tableWrap.parentNode.insertBefore(filterBar, tableWrap);
         }
+
+        toggleButton.addEventListener("click", () => {
+            const on = table.classList.toggle("filters-on");
+            toggleButton.classList.toggle("active", on);
+            clearButton.style.display = on ? "" : "none";
+            rowCount.style.display = on ? "" : "none";
+            if (!on) { filterSelects.forEach(select => { select.value = ""; }); applyFilter(); }
+        });
 
         const filterSelects = headerCells.map((th, index) => {
             const label = th.innerText.trim();
@@ -383,6 +403,68 @@ function setupTableFilters() {
 }
 
 setupTableFilters();
+
+// Click a column header to sort. Sorts data rows WITHIN each section block so
+// section-header / subtotal / grand-total rows stay anchored where they are.
+function setupTableSort() {
+    document.querySelectorAll(".panel table").forEach(table => {
+        if (table.dataset.sortReady === "true") return;
+        const tbody = table.querySelector("tbody");
+        if (!tbody) return;
+        table.dataset.sortReady = "true";
+        const headerCells = [...table.querySelectorAll("thead th")];
+
+        function parseNum(text) {
+            const residue = text.replace(/[0-9.,$%()\s-]/g, "");
+            if (residue.length > 0 || !/\d/.test(text)) return null;
+            const neg = /^\s*\(.*\)\s*$/.test(text) || /^\s*-/.test(text);
+            const n = parseFloat(text.replace(/[^0-9.]/g, ""));
+            return isNaN(n) ? null : (neg ? -n : n);
+        }
+
+        function sortBy(colIndex, dir) {
+            const out = [];
+            let buffer = [];
+            const flush = () => {
+                buffer.sort((a, b) => {
+                    const av = (a.children[colIndex]?.innerText || "").trim();
+                    const bv = (b.children[colIndex]?.innerText || "").trim();
+                    const an = parseNum(av), bn = parseNum(bv);
+                    const cmp = (an !== null && bn !== null)
+                        ? an - bn
+                        : av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" });
+                    return dir * cmp;
+                });
+                out.push(...buffer);
+                buffer = [];
+            };
+            [...tbody.children].forEach(row => {
+                if (row.classList.contains("section-header") || row.classList.contains("subtotal") || row.classList.contains("grand-total")) {
+                    flush();
+                    out.push(row);
+                } else {
+                    buffer.push(row);
+                }
+            });
+            flush();
+            out.forEach(row => tbody.appendChild(row));
+        }
+
+        headerCells.forEach((th, index) => {
+            const label = th.querySelector(".th-label") || th;
+            if (!label.textContent.trim()) return;
+            label.dataset.sortDir = "";
+            label.addEventListener("click", () => {
+                const next = label.dataset.sortDir === "asc" ? "desc" : "asc";
+                headerCells.forEach(h => { const l = h.querySelector(".th-label") || h; if (l !== label) l.dataset.sortDir = ""; });
+                label.dataset.sortDir = next;
+                sortBy(index, next === "asc" ? 1 : -1);
+            });
+        });
+    });
+}
+
+setupTableSort();
 
 function downloadCSV(tableId, filename) {
   const table = document.getElementById(tableId);
