@@ -15,7 +15,6 @@ import streamlit.components.v1 as components
 from streamlit_app import (
     PORTFOLIO_DB_PATH,
     _BOR_VIEWS,
-    _SCOPE_OPTIONS,
     _configured_credentials,
     _init_state,
     _inject_theme,
@@ -24,11 +23,9 @@ from streamlit_app import (
     _path_mtime,
     _render_book_of_record,
     _render_login,
-    _scoped_months,
-    _scoped_positions,
 )
 
-BOR_TITLE = "Portfolio Book of Record"
+BOR_TITLE = "Investments Portfolio"
 
 
 def main() -> None:
@@ -53,7 +50,7 @@ def main() -> None:
     with top[0]:
         st.markdown(
             "<div class='g42-brand'><span class='g42-mark'>G42</span>"
-            "<span class='g42-title'>Portfolio Book of Record</span>"
+            "<span class='g42-title'>Investments Portfolio</span>"
             "<span class='conf-badge'>Confidential</span></div>", unsafe_allow_html=True)
     with top[1]:
         if st.button("Theme", key="hdr_theme", icon=":material/brightness_6:"):
@@ -70,24 +67,16 @@ def main() -> None:
             "ls.setItem(k,JSON.stringify(c==='Dark'?'Light':'Dark'));"
             "window.parent.location.reload();</script>", height=0)
 
-    # View band on top (binder/folder tabs), entity-scope band below it.
+    # View band (binder/folder tabs). Entity scope is now per-view (Company details
+    # carries its own filter); Overview / Analytics show the whole portfolio.
     view = st.segmented_control(
         "Book of Record view", _BOR_VIEWS, default="Overview",
         key="bor_view", label_visibility="collapsed") or "Overview"
-    # The operational Portfolio view already segments by investing entity, so it
-    # carries its own sub-tabs (Live / Exited / Vintage / …) and needs no scope band.
-    if view == "Portfolio":
-        scope = "Consolidated"
-    else:
-        scope = st.segmented_control(
-            "Entity scope", _SCOPE_OPTIONS, default="Consolidated",
-            key="scope_sel", label_visibility="collapsed") or "Consolidated"
+    if view != "Portfolio":
         st.markdown("<hr style='margin:8px 0 16px;border-top:2px solid #2F6B45'>",
                     unsafe_allow_html=True)
 
-    s_months = _scoped_months(months_df, positions_df, scope)
-    s_positions = _scoped_positions(positions_df, scope)
-    _render_book_of_record(view, s_months, s_positions)
+    _render_book_of_record(view, months_df, positions_df)
 
 
 if __name__ == "__main__":

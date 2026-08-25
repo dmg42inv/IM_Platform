@@ -1397,10 +1397,11 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   }}
   * {{ box-sizing: border-box; }}
   body {{ margin: 0; font-family: "EB Garamond", Garamond, Georgia, "Times New Roman", serif; background: var(--bg); color: var(--text); }}
-  header {{ padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }}
-  header .report-asof {{ font-size: 15px; color: var(--text); }}
-  header .report-asof .gen {{ color: var(--muted); font-size: 12px; font-weight: 400; font-style: italic; }}
-  nav {{ display: flex; gap: 6px; padding: 10px 18px; border-bottom: 1px solid var(--border); overflow-x: auto; }}
+  header {{ display: none; }}
+  .report-asof {{ font-size: 14px; color: var(--text); }}
+  .report-asof .gen {{ color: var(--muted); font-size: 12px; font-weight: 400; font-style: italic; }}
+  .nav-right {{ margin-left: auto; display: flex; align-items: center; gap: 12px; white-space: nowrap; }}
+  nav {{ display: flex; gap: 6px; padding: 10px 18px; border-bottom: 1px solid var(--border); overflow-x: auto; align-items: center; }}
   nav button {{ background: rgba(47,107,69,0.06); border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; cursor: pointer; font-size: 13px; border-radius: 8px; white-space: nowrap; }}
   nav button.active {{ background: var(--accent); color: #ffffff; border-color: var(--accent); }}
   main {{ padding: 18px 14px; }}
@@ -1474,14 +1475,11 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   <button class="tab-btn" data-tab="ownership">Ownership &amp; Domiciliation</button>
   <button class="tab-btn" data-tab="log">Log</button>
   <button class="tab-btn" data-tab="glossary">Glossary</button>
-</nav>
-
-<header>
-  <div class="report-asof"><strong>As of {as_of_short}</strong><span class="gen"> &middot; generated {gen_short}</span></div>
-  <div class="top-actions">
-    <button id="btnUpdate">Update</button>
+  <div class="nav-right">
+    <span class="report-asof"><strong>As of {as_of_short}</strong><span class="gen"> &middot; generated {gen_short}</span></span>
+    <div class="top-actions"><button id="btnUpdate">Update</button></div>
   </div>
-</header>
+</nav>
 
 <main>
 

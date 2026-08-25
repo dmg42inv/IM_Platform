@@ -1254,13 +1254,34 @@ def _render_bor_register(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
         st.info("No live holdings in this scope.")
         return
     live = _attach_accounts_attrs(live)
-    by_co = live.assign(company=live["deal_name"].map(_consolidate_name))
-    order = (by_co.groupby("company", as_index=False)["carrying_value"].sum()
-             .sort_values("carrying_value", ascending=False)["company"].tolist())
-    if st.session_state.get("bor_reg_pick") not in order:
-        st.session_state["bor_reg_pick"] = order[0]
     with st.container(border=True):
-        st.subheader("Company details")
+        hc = st.columns([1.4, 5], vertical_alignment="bottom")
+        with hc[0]:
+            st.subheader("Company details")
+        with hc[1]:
+            filt = st.segmented_control(
+                "Shortlist", ["Consolidated", "G42", "MOZN", "Funds"], default="Consolidated",
+                key="bor_cd_filter", label_visibility="collapsed") or "Consolidated"
+        flive = live.copy()
+        flive["_bucket"] = [_instrument_bucket(dt, ins, s)
+                            for dt, ins, s in zip(flive["deal_type"], flive["instrument"],
+                                                  flive["sector"])]
+        if filt in ("G42", "MOZN"):
+            flive = flive[_scope_mask(flive, filt)]
+        elif filt == "Funds":
+            flive = flive[flive["_bucket"] == "Funds"]
+        by_co = flive.assign(company=flive["deal_name"].map(_consolidate_name))
+        agg = (by_co.groupby("company", as_index=False)
+               .agg(carrying_value=("carrying_value", "sum"), bucket=("_bucket", "first")))
+        border = {"Equity / equity-like": 0, "Loans / debt-like": 1, "Funds": 2}
+        agg["b"] = agg["bucket"].map(border).fillna(3)
+        agg = agg.sort_values(["b", "carrying_value"], ascending=[True, False])
+        order = agg["company"].tolist()
+        if not order:
+            st.info("No companies match this shortlist.")
+            return
+        if st.session_state.get("bor_reg_pick") not in order:
+            st.session_state["bor_reg_pick"] = order[0]
         lc, rc = st.columns([1, 3.2])
         with lc:
             for name in order:
@@ -1351,13 +1372,33 @@ def _render_bor_parked(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> N
     st.caption("Holding area for sections taken out of other views — nothing is deleted; "
                "we will place these where they belong later.")
     sub = st.segmented_control(
-        "Parked view", ["Complete investment register", "IFRS & Audit Trail"],
+        "Parked view", ["Complete investment register", "IFRS & Audit Trail",
+                        "Visual one-pagers"],
         default="Complete investment register", key="bor_parked_view",
         label_visibility="collapsed") or "Complete investment register"
     if sub == "IFRS & Audit Trail":
         _render_bor_ifrs(months_df, positions_df)
         return
+    if sub == "Visual one-pagers":
+        _render_bor_onepagers()
+        return
     _render_bor_parked_register(months_df, positions_df)
+
+
+def _render_bor_onepagers() -> None:
+    st.caption("Company Profiles — PitchBook-style one-pagers, retained from Tracker 1 for "
+               "reference (financials/domicile/ownership are ours; website, logo, description and "
+               "key people are pending until sourced).")
+    html_path = ROOT / "data" / "outputs" / "Tracker_Style_Dashboard.html"
+    if not html_path.exists():
+        st.info("Reference dashboard not generated yet.")
+        return
+    html = html_path.read_text(encoding="utf-8")
+    # Isolate the company one-pagers: hide the nav/header and every other tab section.
+    inject = ("<style>nav,header{display:none !important;}.tab{display:none !important;}"
+              "#companies{display:block !important;}main{padding-top:4px !important;}</style>")
+    html = html.replace("</head>", inject + "</head>", 1)
+    components.html(html, height=1600, scrolling=True)
 
 
 def _render_bor_parked_register(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
@@ -1515,27 +1556,8 @@ def _render_bor_ifrs(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> Non
 
 
 def _render_bor_changelog() -> None:
-    with st.container(border=True):
-        st.subheader("Open items")
-        st.markdown(
-            "- **FY2020\u2013FY2021** portfolio value on the since-inception charts is a temporary "
-            "estimate, pending our own historical NAVs.\n"
-            "- **Independently-valued %** is derived from the accounts team's Ardent coverage flag "
-            "(June basis); to be confirmed against the latest independent valuation.\n"
-            "- **Statutory reconciliation** to the signed financial statements and board deck is "
-            "not yet wired into our data \u2014 planned for the IFRS & Audit Trail view.\n"
-            "- **Scope**: this book shows our 26 live holdings; accounts-pack lines we do not track "
-            "(MGX look-through, warrant splits, Presight / Space42) are out of scope, not errors.")
-    with st.container(border=True):
-        st.subheader("Version history")
-        st.markdown(
-            "- **v0.1** \u2014 Portfolio Book of Record established as its own application "
-            "(codename Tracker 2), reusing the shared engine and house style.\n"
-            "- Views live: Executive Overview, Investment Register (with per-holding fact sheets), "
-            "Value Creation, Portfolio Evolution, Geography, Sector, Concentration Risk, "
-            "IFRS & Audit Trail, Change Log, and the operational Portfolio view.\n"
-            "- IFRS classification and valuation method adopted from the accounts team; 26/26 "
-            "holdings matched.")
+    st.markdown("<h1 class='g42-serif' style='margin:0'>Change log</h1>", unsafe_allow_html=True)
+    st.info("Cleared for now — the change log will be rebuilt.")
 
 
 def _render_ov_analytics(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
@@ -1606,13 +1628,11 @@ def _render_value_creation(months_df: pd.DataFrame, positions_df: pd.DataFrame) 
     with st.container(border=True):
         st.subheader("Capital deployed against fair value")
         tbl = by_co.sort_values("carrying_value", ascending=False)
-        st.dataframe(tbl, hide_index=True, width="stretch", column_config={
-            "company": st.column_config.TextColumn("Company"),
-            "invested": st.column_config.NumberColumn("Capital deployed", format="$%.1f"),
-            "carrying_value": st.column_config.NumberColumn("Fair value", format="$%.1f"),
-            "gain": st.column_config.NumberColumn("Value created", format="$%.1f"),
-            "multiple": st.column_config.NumberColumn("Multiple", format="%.2fx"),
-        })
+        _html_table(tbl[["company", "invested", "carrying_value", "gain", "multiple"]], {
+            "company": "Company", "invested": "Capital deployed", "carrying_value": "Fair value",
+            "gain": "Value created", "multiple": "Multiple"}, fmts={
+            "invested": lambda v: f"${v:,.1f}", "carrying_value": lambda v: f"${v:,.1f}",
+            "gain": lambda v: f"${v:,.1f}", "multiple": lambda v: f"{v:.2f}x"})
 
     # Waterfall: exact identity carrying = invested + gain - distributions.
     dist = float(live["distributions"].sum())
@@ -1652,13 +1672,12 @@ def _render_value_creation(months_df: pd.DataFrame, positions_df: pd.DataFrame) 
     with st.container(border=True):
         st.subheader("Year-on-year movement")
         show = yr[["label", "live_invested", "live_carrying", "value_created", "yoy_fair_value"]]
-        st.dataframe(show, hide_index=True, width="stretch", column_config={
-            "label": st.column_config.TextColumn("Year-end (last tracker month)"),
-            "live_invested": st.column_config.NumberColumn("Capital deployed", format="$%.1f"),
-            "live_carrying": st.column_config.NumberColumn("Fair value", format="$%.1f"),
-            "value_created": st.column_config.NumberColumn("Value created", format="$%.1f"),
-            "yoy_fair_value": st.column_config.NumberColumn("YoY \u0394 fair value", format="$%.1f"),
-        })
+        _html_table(show, {
+            "label": "Year-end", "live_invested": "Capital deployed",
+            "live_carrying": "Fair value", "value_created": "Value created",
+            "yoy_fair_value": "YoY \u0394 fair value"}, fmts={
+            "live_invested": lambda v: f"${v:,.1f}", "live_carrying": lambda v: f"${v:,.1f}",
+            "value_created": lambda v: f"${v:,.1f}", "yoy_fair_value": lambda v: f"${v:,.1f}"})
         yb = yr.dropna(subset=["yoy_fair_value"])
         if len(yb):
             chart = (alt.Chart(yb).mark_bar().encode(
