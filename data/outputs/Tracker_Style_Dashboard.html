@@ -42,12 +42,12 @@
     .filter-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .dl-btn { background: var(--sub-bg); border: 1px solid var(--border); color: var(--accent); border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; }
   .dl-btn:hover { background: var(--border); }
-  table { width: 100%; min-width: 1100px; border-collapse: collapse; font-size: 12.5px; }
-  table.deal-table { table-layout: fixed; }
-  th, td { padding: 6px 9px; text-align: right; vertical-align: middle; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table { width: 100%; min-width: 1400px; border-collapse: collapse; font-size: 12.5px; }
+  table.deal-table { table-layout: auto; }
+  th, td { padding: 7px 13px; text-align: right; vertical-align: middle; border-bottom: 1px solid var(--border); white-space: nowrap; }
   table.deal-table tbody tr:not(.section-header):not(.subtotal):not(.grand-total) td { background: #FBFAF4; }
   table.deal-table tbody tr:not(.section-header):not(.subtotal):not(.grand-total):nth-child(even) td { background: #ECE7D8; }
-  table.deal-table th, table.deal-table td { overflow: hidden; text-overflow: ellipsis; }
+  table.deal-table th, table.deal-table td { overflow: visible; text-overflow: clip; }
   th.left, td.left { text-align: left; white-space: nowrap; min-width: 220px; }
   td.wrap { white-space: normal; max-width: 420px; min-width: 260px; vertical-align: middle; }
   th { color: var(--muted); font-weight: 500; vertical-align: middle; }
