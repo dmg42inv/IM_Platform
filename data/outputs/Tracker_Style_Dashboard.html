@@ -117,7 +117,7 @@
     </div>
     <div class="panel">
       <h2>Notes</h2>
-      <ul><li>Tools for Humanity Corporation (Live) and WLD Tokens (Exited) reflect the same underlying relationship (TFH - Worldcoin) shown as two separate lines: the Series C equity position remains Live, while the WLD token holding&#x27;s $100M exchange into Inveniam&#x27;s SAR is reported as a fully realized, Exited outcome - each carries its own Invested/Distributions figures.</li><li>Cerebras Systems Inc appears as two lines by instrument: the original Series F Preferred position ($40M, 2021) and two subsequent Warrant exercises (~$0.035M combined, 2026) - each shown with its own Committed/Invested rather than a single combined figure.</li><li>HeyGears&#x27; vintage year is 2020: while the Equity Subscription Agreement is dated 30 Sep 2019, the transaction&#x27;s Closing Date is 9 Jan 2020 per the closing binder, and the $60M funding was wired on 1 Dec 2020.</li><li>Beyond Limits&#x27; Committed figure is shown equal to Invested ($90M), with no Remaining Commitment: the Note Purchase and Investment Agreement scheduled a final ~$10M Series C tranche, which has been cancelled - no further capital is intended for this position.</li><li>Flyr&#x27;s vintage year is 2019: a $5M convertible note was funded in April 2019, ahead of the Series B round it converted into in 2020 - the two closings together total the full $10M position.</li><li>ONT plc&#x27;s Committed figure is shown equal to Invested ($141.5M), with no Remaining Commitment: the co-investment JV structure originally contemplated alongside this position did not proceed, and the full committed capital has been deployed. One tranche (a GBP 61,632,106 Pre-Emptive Rights purchase) is carried in GBP and not separately converted to USD in this total.</li><li>Liquid AI&#x27;s Committed figure ($60.8M) is net of a $5.78M credit due back from Core42 (a G42 affiliate) under the compute Service Order tied to this transaction - the gross round size before that credit is $66.6M.</li><li>School Hack&#x27;s Committed figure ($2.75M) includes a $250,000 cloud-compute services credit the company is entitled to under the Subscription Agreement, in addition to the $2.5M cash equity subscription.</li><li>vTv Therapeutics Inc.&#x27;s Committed figure is shown equal to Invested (~$24.5M): against an original commitment of approximately $25M, the subscription was ultimately taken up at a discount, so somewhat less capital was deployed &mdash; the tracker records the discounted amount as both Committed and Invested.</li></ul>
+      <ul><li>All investments shown here are <strong>Unrealized</strong>; DriveNets is the only partially-realized position.</li><li>Tools for Humanity Corporation (Live) and WLD Tokens (Exited) reflect the same underlying relationship (TFH - Worldcoin) shown as two separate lines: the Series C equity position remains Live, while the WLD token holding&#x27;s $100M exchange into Inveniam&#x27;s SAR is reported as a fully realized, Exited outcome - each carries its own Invested/Distributions figures.</li><li>Cerebras Systems Inc appears as two lines by instrument: the original Series F Preferred position ($40M, 2021) and two subsequent Warrant exercises (~$0.035M combined, 2026) - each shown with its own Committed/Invested rather than a single combined figure.</li><li>HeyGears&#x27; vintage year is 2020: while the Equity Subscription Agreement is dated 30 Sep 2019, the transaction&#x27;s Closing Date is 9 Jan 2020 per the closing binder, and the $60M funding was wired on 1 Dec 2020.</li><li>Beyond Limits&#x27; Committed figure is shown equal to Invested ($90M), with no Remaining Commitment: the Note Purchase and Investment Agreement scheduled a final ~$10M Series C tranche, which has been cancelled - no further capital is intended for this position.</li><li>Flyr&#x27;s vintage year is 2019: a $5M convertible note was funded in April 2019, ahead of the Series B round it converted into in 2020 - the two closings together total the full $10M position.</li><li>ONT plc&#x27;s Committed figure is shown equal to Invested ($141.5M), with no Remaining Commitment: the co-investment JV structure originally contemplated alongside this position did not proceed, and the full committed capital has been deployed. One tranche (a GBP 61,632,106 Pre-Emptive Rights purchase) is carried in GBP and not separately converted to USD in this total.</li><li>Liquid AI&#x27;s Committed figure ($60.8M) is net of a $5.78M credit due back from Core42 (a G42 affiliate) under the compute Service Order tied to this transaction - the gross round size before that credit is $66.6M.</li><li>School Hack&#x27;s Committed figure ($2.75M) includes a $250,000 cloud-compute services credit the company is entitled to under the Subscription Agreement, in addition to the $2.5M cash equity subscription.</li><li>vTv Therapeutics Inc.&#x27;s Committed figure is shown equal to Invested (~$24.5M): against an original commitment of approximately $25M, the subscription was ultimately taken up at a discount, so somewhat less capital was deployed &mdash; the tracker records the discounted amount as both Committed and Invested.</li></ul>
     </div>
   </section>
 
@@ -401,6 +401,26 @@ function setupTableFilters() {
         applyFilter();
     });
 }
+
+// Remove redundant columns from the Live table (this section is all-live and is
+// already grouped by investing entity) before filters/sort are wired.
+function removeColumns(tableId, indices) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    const desc = [...indices].sort((a, b) => b - a);
+    const cols = table.querySelectorAll("colgroup col");
+    desc.forEach(i => { if (cols[i]) cols[i].remove(); });
+    table.querySelectorAll("tr").forEach(tr => {
+        const cells = tr.children;
+        if (cells.length === 1 && cells[0].hasAttribute("colspan")) {
+            const cs = parseInt(cells[0].getAttribute("colspan"), 10) || 1;
+            cells[0].setAttribute("colspan", Math.max(1, cs - indices.length));
+            return;
+        }
+        desc.forEach(i => { if (cells[i]) cells[i].remove(); });
+    });
+}
+removeColumns("table-live", [1, 2]);
 
 setupTableFilters();
 
