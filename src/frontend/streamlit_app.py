@@ -2157,7 +2157,9 @@ def _render_current_month() -> None:
                 "`im_platform generate-tracker-dashboard` to build it.")
         return
     html = html_path.read_text(encoding="utf-8")
-    components.html(html, height=1600, scrolling=True)
+    # Contained height so the table scrolls INSIDE the iframe and the sticky nav
+    # band stays pinned (a taller iframe would scroll the whole panel out of view).
+    components.html(html, height=800, scrolling=True)
 
 
 def _render_nav_evolution(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
