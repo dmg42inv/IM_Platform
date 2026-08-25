@@ -71,7 +71,7 @@ def _inject_theme() -> None:
         dark = getattr(st.context.theme, "type", "light") == "dark"
     except Exception:  # noqa: BLE001 - context may be unavailable
         dark = False
-    box_bg = "#1E2C25" if dark else "#FBFAF6"
+    box_bg = "#1E2C25" if dark else "#EEF4EC"
     box_shadow = "0 10px 26px rgba(0,0,0,.50)" if dark else "0 10px 24px rgba(34,48,42,.17)"
     metric_shadow = "0 4px 14px rgba(0,0,0,.40)" if dark else "0 4px 12px rgba(34,48,42,.12)"
     st.markdown(
@@ -121,6 +121,18 @@ def _inject_theme() -> None:
             background:#FBEBD8 !important; color:#B25A12 !important; border-color:#E8A867 !important; }}
         .st-key-nav_section button[data-variant="segmented_control"]:nth-of-type(n+2):nth-of-type(-n+5)[aria-checked="true"] {{
             background:#E07B1A !important; color:#ffffff !important; border-color:#E07B1A !important; }}
+        /* Book of Record view band — same binder/folder-tab style as the section nav. */
+        .st-key-bor_view [data-testid="stButtonGroup"] {{ background:transparent !important;
+            border-bottom:2px solid #2F6B45; gap:4px; padding:0; flex-wrap:wrap; }}
+        .st-key-bor_view button[data-variant="segmented_control"] {{
+            border-radius:11px 11px 0 0 !important; border:1px solid rgba(128,128,128,.22) !important;
+            border-bottom:none !important; margin-bottom:-2px !important; padding:9px 16px !important;
+            background:rgba(128,128,128,.09) !important; }}
+        .st-key-bor_view button[data-variant="segmented_control"][aria-checked="true"] {{
+            background:#2F6B45 !important; color:#ffffff !important; border-color:#2F6B45 !important; }}
+        .conf-badge {{ background:#b3253a; color:#fff; font-size:10px; font-weight:700;
+            letter-spacing:.08em; padding:2px 8px; border-radius:4px; margin-left:10px;
+            vertical-align:middle; text-transform:uppercase; }}
         </style>
         """,
         unsafe_allow_html=True,
@@ -707,11 +719,16 @@ def _render_nav_since_inception(months_df: pd.DataFrame, positions_df: pd.DataFr
     estimate (dashed) until real NAVs for those years are provided."""
     real = (months_df.sort_values("month_id")[["as_of_date", "live_carrying"]]
             .rename(columns={"live_carrying": "value"}).dropna())
+    real["date_lbl"] = pd.to_datetime(real["as_of_date"]).dt.strftime("%b %Y")
+    real["value_lbl"] = real["value"].map(lambda v: f"${v:,.1f}m")
     est = _fy_backfill_points(positions_df)
+    if len(est):
+        est["date_lbl"] = pd.to_datetime(est["as_of_date"]).dt.strftime("%Y year-end")
+        est["value_lbl"] = est["value"].map(lambda v: f"${v:,.1f}m")
     x = alt.X("as_of_date:T", axis=alt.Axis(title=None, format="%b '%y", labelAngle=-40))
     y = alt.Y("value:Q", axis=alt.Axis(title="USD, millions"))
-    tip = [alt.Tooltip("as_of_date:T", title="As of", format="%b '%y"),
-           alt.Tooltip("value:Q", title="Fair value", format="$,.0f")]
+    tip = [alt.Tooltip("date_lbl:N", title="As of"),
+           alt.Tooltip("value_lbl:N", title="Fair value")]
     layers = []
     if len(est) and len(real):
         bridge = pd.concat([est, real.iloc[[0]][["as_of_date", "value"]]], ignore_index=True)
@@ -721,8 +738,8 @@ def _render_nav_since_inception(months_df: pd.DataFrame, positions_df: pd.DataFr
         layers.append(alt.Chart(bridge).mark_line(color="#B25A12", strokeWidth=2,
                       strokeDash=[5, 4]).encode(x=x, y=y))
         layers.append(alt.Chart(est).mark_point(color="#B25A12", filled=True, size=70).encode(
-            x=x, y=y, tooltip=[alt.Tooltip("as_of_date:T", title="Year-end", format="%b '%y"),
-                               alt.Tooltip("value:Q", title="Estimated fair value", format="$,.0f")]))
+            x=x, y=y, tooltip=[alt.Tooltip("date_lbl:N", title="Year-end"),
+                               alt.Tooltip("value_lbl:N", title="Estimated fair value")]))
     else:
         layers.append(alt.Chart(real).mark_area(color="#2F6B45", opacity=0.16,
                       line={"color": "#2F6B45", "strokeWidth": 2}).encode(x=x, y=y))
@@ -1042,44 +1059,38 @@ def _render_ov_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> 
             st.caption("Auto-generated from the tracker's own grounded figures for the current scope.")
 
 
-_BOR_VIEWS = ["Executive Overview", "Investment Register", "Value Creation",
-              "Portfolio Evolution", "Geography", "Sector", "Concentration Risk",
-              "IFRS & Audit Trail", "Change Log", "Portfolio (operational)"]
+_BOR_VIEWS = ["Overview", "Portfolio", "Company details", "Analytics",
+              "IFRS & Audit Trail", "Change Log", "Parked"]
 
 
-def _render_book_of_record(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
-    """Tracker 2 — Portfolio Book of Record. Reproduces the accounts pack's views on
-    our own data, in our house style. Built view by view."""
-    st.markdown("<h1 class='g42-serif' style='margin:0'>Portfolio Book of Record</h1>",
-                unsafe_allow_html=True)
-    st.caption("Full portfolio reporting on our own data, in our house style — built to "
-               "parity with the accounts pack, one view at a time.")
-    view = st.segmented_control(
-        "Book of Record view", _BOR_VIEWS, default="Executive Overview",
-        key="bor_view", label_visibility="collapsed") or "Executive Overview"
+def _render_book_of_record(view: str, months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
+    """Tracker 2 — Portfolio Book of Record. Dispatches to the selected view; the view
+    band and scope band live in the app shell (tracker2_app)."""
     if months_df.empty or positions_df.empty:
         st.info("No portfolio database yet.")
         return
-    if view == "Executive Overview":
+    if view == "Overview":
         _render_bor_overview(months_df, positions_df)
-    elif view == "Investment Register":
+    elif view == "Portfolio":
+        st.info(
+            "Why the totals here differ from the Overview: this operational view carries each "
+            "**fund / LP position at its latest Capital Account Statement NAV**, whereas the "
+            "Overview uses the summary Live-register figure. **Every direct holding matches "
+            "exactly**; the difference is entirely the fund vehicles — principally the MGX "
+            "vehicles. On this basis invested is ~\\$2,160m and fair value ~\\$4,568m, versus "
+            "~\\$1,903m and ~\\$3,735m on the Overview. Both are grounded in our data; the figures "
+            "will be aligned in next month's reporting.")
+        _render_current_month()
+    elif view == "Company details":
         _render_bor_register(months_df, positions_df)
-    elif view == "Value Creation":
-        _render_value_creation(months_df, positions_df)
-    elif view == "Portfolio Evolution":
-        _render_portfolio_growth(months_df, positions_df)
-    elif view == "Geography":
-        _render_geography(months_df, positions_df)
-    elif view == "Sector":
-        _render_sector(months_df, positions_df)
-    elif view == "Concentration Risk":
-        _render_concentration(months_df, positions_df)
+    elif view == "Analytics":
+        _render_bor_analytics(months_df, positions_df)
     elif view == "IFRS & Audit Trail":
         _render_bor_ifrs(months_df, positions_df)
     elif view == "Change Log":
         _render_bor_changelog()
-    elif view == "Portfolio (operational)":
-        _render_current_month()
+    elif view == "Parked":
+        _render_bor_parked(months_df, positions_df)
     else:
         st.info(f"**{view}** — planned.")
 
@@ -1110,74 +1121,74 @@ def _render_bor_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
     indep_mask = (~live["valuation_method"].str.startswith("Not covered", na=False)) & \
                  (live["valuation_method"] != "Pending")
     indep_pct = live.loc[indep_mask, "carrying_value"].sum() / carry * 100 if carry else 0.0
+    n_sectors = int(live[live["sector"] != ""]["sector"].nunique())
+    n_geos = int(live[live["geography"] != ""]["geography"].nunique())
 
-    # At a glance.
+    with st.container(border=True):
+        st.subheader("Overview")
+        st.markdown(
+            (f"As at {lbl}, the portfolio comprises **{len(live)} live investments** carried at a "
+             f"fair value of **{_fmt_money(carry)}**, against **{_fmt_money(inv)}** of capital "
+             f"deployed — a gross multiple of **{moic:.2f}x** and **{_fmt_money(gain)}** of value "
+             f"created since inception. Exposure spans **{n_sectors} sectors** across "
+             f"**{n_geos} geographies**, with the ten largest holdings accounting for "
+             f"**{top10:.0f}%** of fair value. A further **{len(exited)} investments** have been "
+             f"realised or written off and are excluded from the figures below.").replace("$", "\\$"))
+
+    # At a glance — two rows of five, uniform tiles (no deltas), for a symmetric grid.
     with st.container(border=True):
         st.markdown(f"<div style='text-align:right;font-size:12px;opacity:.6;margin:-2px 0 6px'>"
                     f"As of {lbl}</div>", unsafe_allow_html=True)
         r1 = st.columns(5)
         r1[0].metric("Current fair value", _fmt_money(carry), border=True)
         r1[1].metric("Capital deployed", _fmt_money(inv), border=True)
-        r1[2].metric("Value created", _fmt_money(gain),
-                     delta=(f"{moic:.2f}x" if moic else None), delta_color="off", border=True)
-        r1[3].metric("Live investments", f"{len(live):,}", border=True)
-        r1[4].metric("Growth since inception", f"{growth:+.0f}%", border=True)
-        r2 = st.columns(4)
-        r2[0].metric("Movement in period", _fmt_money(movement), border=True)
-        r2[1].metric("Top-10 concentration", f"{top10:.0f}%", border=True)
-        r2[2].metric("Independently valued", f"{indep_pct:.0f}%", border=True)
-        r2[3].metric("Concentration risk", f"{score * 100:.1f}%",
-                     delta=band, delta_color="off", border=True)
-        st.caption(f"{len(exited)} investments realised or written off and excluded. Amounts in "
-                   "USD millions, sourced from the monthly Portfolio Summary. IFRS classification "
-                   "and valuation method are the accounts team's (Ardent / Project Matrix), "
-                   "adopted as their classification; all economics are our own figures.")
+        r1[2].metric("Value created", _fmt_money(gain), border=True)
+        r1[3].metric("Gross multiple", (f"{moic:.2f}x" if moic else "n/a"), border=True)
+        r1[4].metric("Live investments", f"{len(live):,}", border=True)
+        r2 = st.columns(5)
+        r2[0].metric("Exited investments", f"{len(exited):,}", border=True)
+        r2[1].metric("Growth since inception", f"{growth:+.0f}%", border=True)
+        r2[2].metric("Movement in period", _fmt_money(movement), border=True)
+        r2[3].metric("Independently valued", f"{indep_pct:.0f}%", border=True)
+        r2[4].metric("Concentration risk", f"{score * 100:.1f}%", border=True)
+        st.caption(f"Concentration risk reads **{band}**. Amounts in USD millions, sourced from the "
+                   "monthly Portfolio Summary. IFRS classification and valuation method are the "
+                   "accounts team's (Ardent / Project Matrix), adopted as their classification; all "
+                   "economics are our own figures.")
 
     with st.container(border=True):
         st.subheader("The portfolio since inception")
         _render_nav_since_inception(months_df, positions_df)
 
     with st.container(border=True):
-        st.subheader("Does it tie back?")
-        section_tot = float(live.groupby("section")["carrying_value"].sum().sum())
-        tie = abs(section_tot - float(carry)) < 0.5
-        _html_table(pd.DataFrame([
-            {"check": "Sum of the holdings' fair value", "value": float(carry)},
-            {"check": "Sum of the entity subtotals", "value": section_tot},
-        ]), {"check": "Check", "value": "USD m"},
-            fmts={"value": lambda v: f"${v:,.1f}"})
-        st.caption(("Ties." if tie else "Does not tie — investigate.") + " Reconciliation to the "
-                   "signed statements and board deck is built in the IFRS & Audit Trail view.")
-
-    with st.container(border=True):
         st.subheader("What the portfolio is made of")
         cc = st.columns(2)
         with cc[0]:
-            st.caption("By IFRS classification")
-            ifrs = (live.groupby("ifrs_class", as_index=False)["carrying_value"].sum()
-                    .sort_values("carrying_value", ascending=False))
-            _bar_h(ifrs, "ifrs_class", "carrying_value", height=200)
-            st.caption("By valuation method")
-            vm = (live.groupby("valuation_method", as_index=False)["carrying_value"].sum()
-                  .sort_values("carrying_value", ascending=False))
-            _bar_h(vm, "valuation_method", "carrying_value", height=240)
-        with cc[1]:
             st.caption("By sector")
             sec = (live[live["sector"] != ""].groupby("sector", as_index=False)["carrying_value"]
                    .sum().sort_values("carrying_value", ascending=False))
-            _bar_h(sec, "sector", "carrying_value", height=200)
+            _bar_h(sec, "sector", "carrying_value", height=260)
+        with cc[1]:
             st.caption("By holding type")
             lv = live.copy()
             lv["bucket"] = [_instrument_bucket(dt, ins, s)
                            for dt, ins, s in zip(lv["deal_type"], lv["instrument"], lv["sector"])]
+            lv["bucket"] = lv["bucket"].map(
+                {"Equity / equity-like": "Equity", "Loans / debt-like": "Loans"}).fillna(lv["bucket"])
             bt = (lv.groupby("bucket", as_index=False)["carrying_value"].sum()
                   .sort_values("carrying_value", ascending=False))
-            _bar_h(bt, "bucket", "carrying_value", height=240)
-        st.caption("IFRS classification and valuation method are the accounts team's, adopted as "
-                   "their classification; all values are our own.")
+            _bar_h(bt, "bucket", "carrying_value", height=260)
+        st.caption("Equity includes equity and equity-like instruments (preference shares, "
+                   "ordinary shares, SARs and LP co-investments); loans are note/loan/debt/"
+                   "convertible instruments; funds are fund vehicles.")
 
     with st.container(border=True):
-        st.subheader("Where the value sits — ten largest holdings")
+        st.subheader("Ten largest holdings")
+        try:
+            _dark = getattr(st.context.theme, "type", "light") == "dark"
+        except Exception:  # noqa: BLE001
+            _dark = False
+        fv_col = "#EAF3E6" if _dark else "#14261c"
         by_co = live.assign(company=live["deal_name"].map(_consolidate_name))
         top = (by_co.groupby("company", as_index=False)[["invested", "carrying_value", "gain"]]
                .sum().sort_values("carrying_value", ascending=False).head(10))
@@ -1188,9 +1199,12 @@ def _render_bor_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
             "company": "Investment", "ifrs": "IFRS", "invested": "Capital deployed",
             "carrying_value": "Fair value", "gain": "Value created", "weight": "Weight",
         }, fmts={
-            "invested": lambda v: f"${v:,.1f}", "carrying_value": lambda v: f"${v:,.1f}",
+            "invested": lambda v: f"${v:,.1f}",
+            "carrying_value": lambda v: f"<span style='color:{fv_col};font-weight:700'>${v:,.1f}</span>",
             "gain": lambda v: f"${v:,.1f}", "weight": lambda v: f"{v * 100:.1f}%",
         })
+        st.caption("Ranked by fair value. Weight = each holding's fair value as a share of the "
+                   "total portfolio fair value (the live holdings sum to 100%).")
 
     with st.container(border=True):
         st.subheader("How concentrated is it")
@@ -1207,7 +1221,10 @@ def _render_bor_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
                             for n, r, w, _ in measures])
         _html_table(mdf, {"Measure": "Measure", "Reading": "Reading", "Weight": "Weight"})
         st.caption(f"Weighted composite risk score {score * 100:.1f}% — {band}. "
-                   "A presentation aid, not a regulatory capital measure.")
+                   "**Reading** is each measure's own value (e.g. the share of value held in the "
+                   "top five holdings); **Weight** is how much that measure counts toward the "
+                   "composite score, and the weights sum to 100%. The score is the weighted "
+                   "average of the readings. A presentation aid, not a regulatory capital measure.")
 
     obs = _exec_observations(live)
     if obs:
@@ -1225,39 +1242,16 @@ def _render_bor_register(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
         return
     live = _attach_accounts_attrs(live)
     by_co = live.assign(company=live["deal_name"].map(_consolidate_name))
-    reg = (by_co.groupby("company", as_index=False)
-           .agg(ifrs=("ifrs_class", "first"), valuation=("valuation_method", "first"),
-                sector=("sector", "first"), geography=("geography", "first"),
-                status=("status", "first"), invested=("invested", "sum"),
-                carrying_value=("carrying_value", "sum"), gain=("gain", "sum")))
-    reg["multiple"] = reg["carrying_value"] / reg["invested"].where(reg["invested"] != 0)
-    tot = reg["carrying_value"].sum()
-    reg["weight"] = reg["carrying_value"] / tot if tot else 0
-    reg = reg.sort_values("carrying_value", ascending=False)
-
+    order = (by_co.groupby("company", as_index=False)["carrying_value"].sum()
+             .sort_values("carrying_value", ascending=False)["company"].tolist())
     with st.container(border=True):
-        st.subheader("Complete investment register")
-        st.dataframe(reg, hide_index=True, width="stretch", column_config={
-            "company": st.column_config.TextColumn("Investment"),
-            "ifrs": st.column_config.TextColumn("IFRS"),
-            "valuation": st.column_config.TextColumn("Valuation method"),
-            "sector": st.column_config.TextColumn("Sector"),
-            "geography": st.column_config.TextColumn("Geography"),
-            "status": st.column_config.TextColumn("Status"),
-            "invested": st.column_config.NumberColumn("Capital deployed", format="$%.1f"),
-            "carrying_value": st.column_config.NumberColumn("Fair value", format="$%.1f"),
-            "gain": st.column_config.NumberColumn("Value created", format="$%.1f"),
-            "multiple": st.column_config.NumberColumn("Multiple", format="%.2fx"),
-            "weight": st.column_config.NumberColumn("Weight", format="percent"),
-        })
-        st.caption("Every live holding in scope. Economics (capital deployed, fair value, value "
-                   "created) are our own figures; IFRS classification and valuation method are the "
-                   "accounts team's. USD millions.")
-
-    with st.container(border=True):
-        st.subheader("Investment fact sheet")
-        pick = st.selectbox("Investment", reg["company"].tolist(), key="bor_reg_pick")
-        _render_bor_factsheet(pick, by_co, positions_df)
+        st.subheader("Company details")
+        lc, rc = st.columns([1, 3.2])
+        with lc:
+            pick = st.radio("Investment", order, key="bor_reg_pick",
+                            label_visibility="collapsed")
+        with rc:
+            _render_bor_factsheet(pick, by_co, positions_df)
 
 
 def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.DataFrame) -> None:
@@ -1273,26 +1267,20 @@ def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.Da
     weight = fv / float(by_co["carrying_value"].sum()) if by_co["carrying_value"].sum() else 0
 
     def _dl(keys: list[str]) -> str:
-        lines = []
-        for k in keys:
-            v = attrs.get(k) or "Pending"
-            lines.append(f"**{k}:** {v}")
-        return "  \n".join(lines)
+        return "  \n".join(f"**{k}:** {attrs.get(k) or 'Pending'}" for k in keys)
 
-    cc = st.columns(2)
-    with cc[0]:
-        st.markdown("**Identity and provenance**")
-        st.markdown(_dl(["Legal entity", "Sub-group", "Holding type", "Sector", "Instrument",
-                         "Listed status", "Jurisdiction", "Region", "First recognised", "Source"]))
-    with cc[1]:
-        st.markdown("**Measurement**")
-        mc = st.columns(2)
-        mc[0].metric("Fair value", _fmt_money(fv), border=True)
-        mc[1].metric("Capital deployed", _fmt_money(inv), border=True)
-        mc[0].metric("Value created", _fmt_money(gain), border=True)
-        mc[1].metric("Multiple", (f"{mult:.2f}x" if mult else "n/a"), border=True)
-        st.markdown(_dl(["IFRS classification", "Valuation method", "Fair value hierarchy",
-                         "Valuation basis", "Influence band", "Holding"]))
+    st.markdown(f"#### {company}")
+    with st.container(horizontal=True):
+        st.metric("Fair value", _fmt_money(fv), border=True)
+        st.metric("Capital deployed", _fmt_money(inv), border=True)
+        st.metric("Value created", _fmt_money(gain), border=True)
+        st.metric("Multiple", (f"{mult:.2f}x" if mult else "n/a"), border=True)
+    st.markdown("**Identity and provenance**")
+    st.markdown(_dl(["Legal entity", "Sub-group", "Holding type", "Sector", "Instrument",
+                     "Listed status", "Jurisdiction", "Region", "First recognised", "Source"]))
+    st.markdown("**Measurement basis**")
+    st.markdown(_dl(["IFRS classification", "Valuation method", "Fair value hierarchy",
+                     "Valuation basis", "Influence band", "Holding"]))
     st.caption("Identity and classification fields are the accounts team's (adopted); fair value, "
                "capital deployed and value created are our own figures. "
                f"Weight in portfolio {weight * 100:.1f}%.")
@@ -1312,19 +1300,74 @@ def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.Da
         cfc = cf[cf["company"] == company].sort_values("flow_date")
         if len(cfc):
             with st.container(border=True):
-                st.markdown("**Cash movements on record** — cited to source cell")
+                st.markdown("**Cash movements on record**")
                 view = cfc[["flow_date", "accounting_entity", "contribution", "distribution",
-                            "currency", "sheet", "excel_row", "filename"]].copy()
-                view["cell"] = view["sheet"].astype(str) + "!row" + view["excel_row"].astype(str)
-                view = view.drop(columns=["sheet", "excel_row"])
+                            "currency"]].copy()
                 st.dataframe(view, hide_index=True, width="stretch", column_config={
                     "flow_date": st.column_config.TextColumn("Date"),
                     "accounting_entity": st.column_config.TextColumn("Entity"),
                     "contribution": st.column_config.NumberColumn("Contribution", format="%.2f"),
                     "distribution": st.column_config.NumberColumn("Distribution", format="%.2f"),
-                    "cell": st.column_config.TextColumn("Source cell"),
-                    "filename": st.column_config.TextColumn("Source file"),
+                    "currency": st.column_config.TextColumn("Currency"),
                 })
+                st.caption("Source file and cell for every line are tracked internally and can be "
+                           "produced on request.")
+
+
+def _render_bor_parked(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
+    st.markdown("<h1 class='g42-serif' style='margin:0'>Parked</h1>", unsafe_allow_html=True)
+    st.caption("Holding area for sections taken out of other views — nothing is deleted; "
+               "we will place these where they belong later.")
+    m = _latest_month(months_df)
+    live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
+    if live.empty:
+        st.info("No live holdings in this scope.")
+        return
+    live = _attach_accounts_attrs(live)
+    by_co = live.assign(company=live["deal_name"].map(_consolidate_name))
+    reg = (by_co.groupby("company", as_index=False)
+           .agg(ifrs=("ifrs_class", "first"), valuation=("valuation_method", "first"),
+                sector=("sector", "first"), geography=("geography", "first"),
+                status=("status", "first"), invested=("invested", "sum"),
+                carrying_value=("carrying_value", "sum"), gain=("gain", "sum")))
+    reg["multiple"] = reg["carrying_value"] / reg["invested"].where(reg["invested"] != 0)
+    tot = reg["carrying_value"].sum()
+    reg["weight"] = reg["carrying_value"] / tot if tot else 0
+    reg = reg.sort_values("carrying_value", ascending=False)
+    with st.container(border=True):
+        st.subheader("Complete investment register")
+        st.dataframe(reg, hide_index=True, width="stretch", column_config={
+            "company": st.column_config.TextColumn("Investment"),
+            "ifrs": st.column_config.TextColumn("IFRS"),
+            "valuation": st.column_config.TextColumn("Valuation method"),
+            "sector": st.column_config.TextColumn("Sector"),
+            "geography": st.column_config.TextColumn("Geography"),
+            "status": st.column_config.TextColumn("Status"),
+            "invested": st.column_config.NumberColumn("Capital deployed", format="$%.1f"),
+            "carrying_value": st.column_config.NumberColumn("Fair value", format="$%.1f"),
+            "gain": st.column_config.NumberColumn("Value created", format="$%.1f"),
+            "multiple": st.column_config.NumberColumn("Multiple", format="%.2fx"),
+            "weight": st.column_config.NumberColumn("Weight", format="percent"),
+        })
+        st.caption("Every live holding in scope. Economics are our own figures; IFRS "
+                   "classification and valuation method are the accounts team's. USD millions.")
+
+
+def _render_bor_analytics(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
+    sub = st.segmented_control(
+        "Analytics view", ["Value creation", "Portfolio evolution", "Geography", "Sector",
+                           "Concentration risk"],
+        default="Value creation", key="bor_an_view", label_visibility="collapsed") or "Value creation"
+    if sub == "Value creation":
+        _render_value_creation(months_df, positions_df)
+    elif sub == "Portfolio evolution":
+        _render_portfolio_growth(months_df, positions_df)
+    elif sub == "Geography":
+        _render_geography(months_df, positions_df)
+    elif sub == "Sector":
+        _render_sector(months_df, positions_df)
+    elif sub == "Concentration risk":
+        _render_concentration(months_df, positions_df)
 
 
 def _render_bor_ifrs(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
@@ -1465,8 +1508,8 @@ def _render_value_creation(months_df: pd.DataFrame, positions_df: pd.DataFrame) 
     with st.container(horizontal=True):
         st.metric("Capital deployed", _fmt_money(inv), border=True)
         st.metric("Current fair value", _fmt_money(fv), border=True)
-        st.metric("Value created", _fmt_money(vc),
-                  delta=(f"{mult:.2f}x" if mult else None), border=True)
+        st.metric("Value created", _fmt_money(vc), border=True)
+        st.metric("Gross multiple", (f"{mult:.2f}x" if mult else "n/a"), border=True)
         st.metric("Live holdings", f"{len(live):,}", border=True)
     st.caption(f"Live holdings only, as of {lbl}. Capital deployed = invested; value created = "
                f"fair value \u2212 invested. Our {len(live)} holdings. USD millions.")

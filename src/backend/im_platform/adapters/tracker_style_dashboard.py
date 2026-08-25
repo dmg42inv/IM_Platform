@@ -618,6 +618,10 @@ _DEAL_NOTES: list[str] = [
     "School Hack's Committed figure ($2.75M) includes a $250,000 cloud-compute services credit "
     "the company is entitled to under the Subscription Agreement, in addition to the $2.5M cash "
     "equity subscription.",
+    "vTv Therapeutics Inc.'s Committed figure is shown equal to Invested (~$24.5M): against an "
+    "original commitment of approximately $25M, the subscription was ultimately taken up at a "
+    "discount, so somewhat less capital was deployed - the tracker records the discounted amount "
+    "as both Committed and Invested.",
 ]
 
 
@@ -1395,7 +1399,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   body {{ margin: 0; font-family: "EB Garamond", Garamond, Georgia, "Times New Roman", serif; background: var(--bg); color: var(--text); }}
   header {{ padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }}
   header .report-asof {{ font-size: 15px; color: var(--text); }}
-  header .report-asof .gen {{ color: var(--muted); font-size: 12px; font-weight: 400; }}
+  header .report-asof .gen {{ color: var(--muted); font-size: 12px; font-weight: 400; font-style: italic; }}
   nav {{ display: flex; gap: 6px; padding: 10px 18px; border-bottom: 1px solid var(--border); overflow-x: auto; }}
   nav button {{ background: rgba(47,107,69,0.06); border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; cursor: pointer; font-size: 13px; border-radius: 8px; white-space: nowrap; }}
   nav button.active {{ background: var(--accent); color: #ffffff; border-color: var(--accent); }}
@@ -1408,7 +1412,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   .kpi-card .value {{ font-size: 20px; font-weight: 600; margin-top: 6px; }}
   .panel {{ background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 16px; }}
   .table-scroll {{ overflow-x: auto; }}
-  .panel-head {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }}
+  .panel-head {{ display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px; }}
   .panel h2 {{ font-size: 13px; margin: 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }}
     .table-filter-bar {{ display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 0 0 10px; }}
     .table-filter-bar .row-count {{ color: var(--muted); font-size: 12px; }}
@@ -1426,7 +1430,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   th.left, td.left {{ text-align: left; white-space: nowrap; min-width: 220px; }}
   td.wrap {{ white-space: normal; max-width: 420px; min-width: 260px; vertical-align: middle; }}
   th {{ color: var(--muted); font-weight: 500; vertical-align: middle; }}
-  tr.section-header td {{ background: #E7EFE8; font-weight: 600; color: var(--accent); vertical-align: middle; text-align: left; }}
+  tr.section-header td {{ background: #E7EFE8; font-weight: 600; color: var(--accent); vertical-align: middle; text-align: left; border-top: 14px solid var(--bg); }}
   tr.subtotal td {{ background: #E1D8C0; font-weight: 600; border-top: 1px solid var(--border); vertical-align: middle; }}
   tr.grand-total td {{ background: #DCE7DE; font-weight: 700; border-top: 2px solid var(--accent); vertical-align: middle; }}
   .pos {{ color: var(--green); }} .neg {{ color: var(--red); }}
@@ -1444,6 +1448,7 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
      clipped by any ancestor's overflow/scroll box - a real, hard-to-debug
      bug hit with the pure-CSS version. */
   .tt {{ cursor: help; border-bottom: 1px dotted var(--muted); }}
+  td.tt {{ border-bottom: 1px solid var(--border); }}
   #jsTooltip {{
     display: none; position: fixed; background: #FFFFFF; color: var(--text);
     border: 1px solid var(--accent); padding: 8px 10px; border-radius: 6px;
@@ -1460,24 +1465,23 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
 </head>
 <body>
 
+<nav>
+  <button class="tab-btn active" data-tab="live">Live Investments</button>
+  <button class="tab-btn" data-tab="exited">Exited Investments</button>
+  <button class="tab-btn" data-tab="vintage">Vintage</button>
+  <button class="tab-btn" data-tab="nav">NAV</button>
+  <button class="tab-btn" data-tab="cashflows">Cashflows</button>
+  <button class="tab-btn" data-tab="ownership">Ownership &amp; Domiciliation</button>
+  <button class="tab-btn" data-tab="log">Log</button>
+  <button class="tab-btn" data-tab="glossary">Glossary</button>
+</nav>
+
 <header>
   <div class="report-asof"><strong>As of {as_of_short}</strong><span class="gen"> &middot; generated {gen_short}</span></div>
   <div class="top-actions">
     <button id="btnUpdate">Update</button>
   </div>
 </header>
-
-<nav>
-  <button class="tab-btn active" data-tab="live">Live Investments</button>
-  <button class="tab-btn" data-tab="exited">Exited Investments</button>
-  <button class="tab-btn" data-tab="vintage">Vintage</button>
-  <button class="tab-btn" data-tab="nav">NAV</button>
-  <button class="tab-btn" data-tab="cashflows">All Cashflows</button>
-  <button class="tab-btn" data-tab="ownership">Ownership &amp; Domiciliation</button>
-  <button class="tab-btn" data-tab="log">Log</button>
-    <button class="tab-btn" data-tab="monthly-diff">Monthly Diff</button>
-  <button class="tab-btn" data-tab="glossary">Glossary</button>
-</nav>
 
 <main>
 
