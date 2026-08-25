@@ -5,8 +5,8 @@ Generated 2026-08-25. Read-only audit of Company-details identity / classificati
 ## Summary
 
 - **605** identity/classification datapoints audited across **50** companies.
-- **grounded** (cited to our own documents): **5**
-- **adopted** (accounts pack, unverified): **355**
+- **grounded** (cited to our own documents): **13**
+- **adopted** (accounts pack, unverified): **347**
 - **web** (internet-sourced, pending confirmation): **5**
 - **gap** (placeholder / missing): **240**
 
@@ -286,41 +286,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | n/d | gap |  |
 | First recognised | Not disclosed | gap |  |
 
-### Instadeep Limited  — 13 to verify (6 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Applied AI & Software Decision making AI | adopted | accounts pack |
-| Instrument | B Prefs | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | England and Wales | adopted | candidate: 2. UK - 2019 FINAL_full_accts_ye_311219 (11) (1).pdf (legal doc, candidate - confirm; alt: United Kingdom) |
-| IFRS classification | FVTPL | adopted | accounts pack |
-| Valuation method | Not covered by the Ardent report | gap |  |
-| Fair value hierarchy | Not assessed | gap |  |
-| Influence band | Not disclosed | gap |  |
-| Holding | n/d | gap |  |
-| First recognised | Not disclosed | gap |  |
-| Description/website | https://instadeep.com | web | Wikipedia (fetched 2026-08-23) |
-
-### Esyasoft Holding  — 12 to verify (6 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Energy & Utilities Smart grid and utility software | adopted | accounts pack |
-| Instrument | Convertible Note | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | Dubai International Financial Centre (DIFC) | adopted | candidate: G42 Esyasoft Due Diligence Report 2 4 20.docx (legal doc, candidate - confirm; alt: India) |
-| IFRS classification | FVTPL | adopted | accounts pack |
-| Valuation method | Not covered by the Ardent report | gap |  |
-| Fair value hierarchy | Not assessed | gap |  |
-| Influence band | Not disclosed | gap |  |
-| Holding | n/d | gap |  |
-| First recognised | Not disclosed | gap |  |
-
 ### Honor Device Co Ltd  — 12 to verify (6 gaps)
 
 | Field | Current value | Tier | Note |
@@ -338,6 +303,23 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | n/d | gap |  |
 | First recognised | 26 Jul 2022 | adopted | accounts pack |
 
+### Instadeep Limited  — 12 to verify (6 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Applied AI & Software Decision making AI | adopted | accounts pack |
+| Instrument | B Prefs | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVTPL | adopted | accounts pack |
+| Valuation method | Not covered by the Ardent report | gap |  |
+| Fair value hierarchy | Not assessed | gap |  |
+| Influence band | Not disclosed | gap |  |
+| Holding | n/d | gap |  |
+| First recognised | Not disclosed | gap |  |
+| Description/website | https://instadeep.com | web | Wikipedia (fetched 2026-08-23) |
+
 ### WLD Tokens  — 12 to verify (6 gaps)
 
 | Field | Current value | Tier | Note |
@@ -348,6 +330,22 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Instrument | Tokens | adopted | accounts pack |
 | Listed status | Not disclosed | gap |  |
 | Jurisdiction | Cayman Islands | adopted | accounts pack |
+| IFRS classification | FVTPL | adopted | accounts pack |
+| Valuation method | Not covered by the Ardent report | gap |  |
+| Fair value hierarchy | Not assessed | gap |  |
+| Influence band | Not disclosed | gap |  |
+| Holding | n/d | gap |  |
+| First recognised | Not disclosed | gap |  |
+
+### Esyasoft Holding  — 11 to verify (6 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Energy & Utilities Smart grid and utility software | adopted | accounts pack |
+| Instrument | Convertible Note | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
 | IFRS classification | FVTPL | adopted | accounts pack |
 | Valuation method | Not covered by the Ardent report | gap |  |
 | Fair value hierarchy | Not assessed | gap |  |
@@ -457,23 +455,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 3.1% | adopted | accounts pack |
 | First recognised | 15 Jul 2025 | adopted | accounts pack |
 
-### Mena Mobile Inc  — 12 to verify (4 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Financial Technology Mobile commerce | adopted | accounts pack |
-| Instrument | B Prefs | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | Cayman Islands | adopted | candidate: Mena Mobile - Due Diligence Report (final).pdf (legal doc, candidate - confirm; alt: China) |
-| IFRS classification | FVTPL | adopted | accounts pack |
-| Valuation method | Not covered by the Ardent report | gap |  |
-| Fair value hierarchy | Not assessed | gap |  |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 14.0% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-
 ### School Hack (AIREV Holding Limited)  — 12 to verify (4 gaps)
 
 | Field | Current value | Tier | Note |
@@ -489,6 +470,22 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Fair value hierarchy | Not assessed | gap |  |
 | Influence band | Significant influence (20-50%) | adopted | accounts pack |
 | Holding | 25.0% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |
+
+### Mena Mobile Inc  — 11 to verify (4 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Financial Technology Mobile commerce | adopted | accounts pack |
+| Instrument | B Prefs | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVTPL | adopted | accounts pack |
+| Valuation method | Not covered by the Ardent report | gap |  |
+| Fair value hierarchy | Not assessed | gap |  |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 14.0% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
 ### Acies Investments Fund I, L.P  — 12 to verify (3 gaps)
@@ -593,42 +590,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 10.1% | adopted | accounts pack |
 | First recognised | 11 Feb 2021 | adopted | accounts pack |
 
-### DriveNets  — 13 to verify (2 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | D2 Investments RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | AI Infrastructure & Networking Network cloud software | adopted | accounts pack |
-| Instrument | Equity-TBC | gap |  |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | Israel | adopted | candidate: DriveNets - Series D - SPA [Meitar April 16, 2026](14938774.23).docx (legal doc, candidate - confirm) |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Price of recent transaction | adopted | accounts pack |
-| Fair value hierarchy | Level 2 | adopted | accounts pack |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 6.6% | adopted | accounts pack |
-| First recognised | 23 Mar 2022 | adopted | accounts pack |
-| Description/website | https://drivenets.com | web | Wikipedia (fetched 2026-08-23) |
-
-### Neuralink  — 13 to verify (2 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Expansion Project Technologies Holding 12 SPV RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Healthcare & Life Sciences Neurotechnology | adopted | accounts pack |
-| Instrument | Series E Preferred Shares | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | Nevada | adopted | candidate: Neuralink Investment Summary .docx (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM)) |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Price of recent investment | adopted | accounts pack |
-| Fair value hierarchy | Level 2 | adopted | accounts pack |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 0.5% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-| Description/website | https://neuralink.com | web | Wikipedia (fetched 2026-08-23) |
-
 ### Beyond Limits  — 12 to verify (2 gaps)
 
 | Field | Current value | Tier | Note |
@@ -646,6 +607,23 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 7.8% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
+### DriveNets  — 12 to verify (2 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | D2 Investments RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | AI Infrastructure & Networking Network cloud software | adopted | accounts pack |
+| Instrument | Equity-TBC | gap |  |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Price of recent transaction | adopted | accounts pack |
+| Fair value hierarchy | Level 2 | adopted | accounts pack |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 6.6% | adopted | accounts pack |
+| First recognised | 23 Mar 2022 | adopted | accounts pack |
+| Description/website | https://drivenets.com | web | Wikipedia (fetched 2026-08-23) |
+
 ### E-line Ventures LLC  — 12 to verify (2 gaps)
 
 | Field | Current value | Tier | Note |
@@ -661,23 +639,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Fair value hierarchy | Level 3 | adopted | accounts pack |
 | Influence band | Minority (<20%) | adopted | accounts pack |
 | Holding | 11.6% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-
-### Endless Studios LLC  — 12 to verify (2 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Media, Gaming & Entertainment Game development and learning | adopted | accounts pack |
-| Instrument | A Pref Units | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | Delaware | adopted | candidate: Round 1, Endless Studios Limited Liability Company Agreement.pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM)) |
-| IFRS classification | FVTPL | adopted | accounts pack |
-| Valuation method | Market multiple | adopted | accounts pack |
-| Fair value hierarchy | Level 3 | adopted | accounts pack |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 16.0% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
 ### Flyr Inc  — 12 to verify (2 gaps)
@@ -714,22 +675,22 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 6.4% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
-### Liquid AI  — 12 to verify (2 gaps)
+### Neuralink  — 12 to verify (2 gaps)
 
 | Field | Current value | Tier | Note |
 |---|---|---|---|
-| Legal entity | Expansion Project Technologies Holding 11 SPV RSC Ltd | adopted | accounts pack |
+| Legal entity | Expansion Project Technologies Holding 12 SPV RSC Ltd | adopted | accounts pack |
 | Holding type | Corporate | adopted | accounts pack |
-| Sector | Applied AI & Software Foundation models | adopted | accounts pack |
-| Instrument | Series A Preferred | adopted | accounts pack |
+| Sector | Healthcare & Life Sciences Neurotechnology | adopted | accounts pack |
+| Instrument | Series E Preferred Shares | adopted | accounts pack |
 | Listed status | Not disclosed | gap |  |
-| Jurisdiction | Delaware | adopted | candidate: Liquid AI, Inc. - Series A - Secretary's Certificate [EXECUTED].pdf (legal doc, candidate - confirm) |
 | IFRS classification | FVOCI | adopted | accounts pack |
 | Valuation method | Price of recent investment | adopted | accounts pack |
 | Fair value hierarchy | Level 2 | adopted | accounts pack |
 | Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 3.0% | adopted | accounts pack |
+| Holding | 0.5% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
+| Description/website | https://neuralink.com | web | Wikipedia (fetched 2026-08-23) |
 
 ### Tools for Humanity Corporation  — 12 to verify (2 gaps)
 
@@ -781,6 +742,22 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 12.1% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
+### Endless Studios LLC  — 11 to verify (2 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Media, Gaming & Entertainment Game development and learning | adopted | accounts pack |
+| Instrument | A Pref Units | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVTPL | adopted | accounts pack |
+| Valuation method | Market multiple | adopted | accounts pack |
+| Fair value hierarchy | Level 3 | adopted | accounts pack |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 16.0% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |
+
 ### Heygears  — 11 to verify (2 gaps)
 
 | Field | Current value | Tier | Note |
@@ -795,6 +772,22 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Fair value hierarchy | Level 3 | adopted | accounts pack |
 | Influence band | Minority (<20%) | adopted | accounts pack |
 | Holding | 14.4% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |
+
+### Liquid AI  — 11 to verify (2 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Expansion Project Technologies Holding 11 SPV RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Applied AI & Software Foundation models | adopted | accounts pack |
+| Instrument | Series A Preferred | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Price of recent investment | adopted | accounts pack |
+| Fair value hierarchy | Level 2 | adopted | accounts pack |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 3.0% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
 ### eSpace  — 11 to verify (2 gaps)
@@ -813,7 +806,7 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 2.6% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
-### ONT plc  — 13 to verify (1 gaps)
+### ONT plc  — 12 to verify (1 gaps)
 
 | Field | Current value | Tier | Note |
 |---|---|---|---|
@@ -822,7 +815,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Sector | Healthcare & Life Sciences Genomic sequencing | adopted | accounts pack |
 | Instrument | Ordinary Shares | adopted | accounts pack |
 | Listed status | Listed | adopted | accounts pack |
-| Jurisdiction | United Kingdom | adopted | candidate: 31-12-2019 ONT Accounts.pdf (legal doc, candidate - confirm; alt: England and Wales) |
 | IFRS classification | FVOCI | adopted | accounts pack |
 | Valuation method | Listed share price | adopted | accounts pack |
 | Fair value hierarchy | Level 1 | adopted | accounts pack |

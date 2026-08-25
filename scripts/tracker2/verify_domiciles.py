@@ -221,6 +221,25 @@ def main() -> None:
         if skipped:
             print(f"Skipped (excluded): {', '.join(skipped)}")
 
+    if "--confirm-list" in sys.argv:
+        idx = sys.argv.index("--confirm-list")
+        names = set()
+        if idx + 1 < len(sys.argv):
+            names = {x.strip().lower() for x in sys.argv[idx + 1].split(";") if x.strip()}
+        rmap = {r["company"]: r for r in results}
+        confirmed = 0
+        for name in names:
+            r, entry = rmap.get(name), dom.get(name)
+            if not r or not entry:
+                print(f"  ! not found: {name}")
+                continue
+            entry["domicile_status"] = "confirmed"
+            entry["domicile_evidence"] = r["evidence"]
+            entry["domicile_evidence_source"] = f"{r['source_file']} (legal_kb.sqlite; manual review)"
+            confirmed += 1
+        DOM.write_text(json.dumps(dom, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"Confirmed {confirmed} manually-reviewed domiciles.")
+
 
 if __name__ == "__main__":
     main()

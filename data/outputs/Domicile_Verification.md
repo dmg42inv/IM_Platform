@@ -4,23 +4,18 @@ Generated 2026-08-25. Each grounded domicile candidate checked against its cited
 
 ## Summary
 
-- **high** confidence (phrase verbatim AND names the company): **7**
+- **high** confidence (phrase verbatim AND names the company): **2**
 - **medium** confidence (phrase/term found, context unclear): **14**
 - **low** confidence (matched a third party / placeholder - REVIEW): **8**
 
-Phrase-match tally: phrase_verified=28, term_only=1, phrase_not_found=0, doc_not_found=0.
+Phrase-match tally: phrase_verified=23, term_only=1, phrase_not_found=0, doc_not_found=0.
 
 Only **high** rows are safe to promote to domicile_status=confirmed on a glance. **low** rows are likely false positives (the phrase describes someone else).
 
 | Confidence | Company | Domicile | Quality | Evidence (from cited doc) | Source file |
 |---|---|---|---|---|---|
-| high | acies investments fund i, l.p. | Delaware | self_named | . Structure \| Acies Ventures Fund I, L.P. (the "Partnership") will be organized as a Delaware limited partnership. Acies Ventures GP I, LLC, a Del... | Acies -- Anchor Summary of Terms (execution version).DOCX |
-| high | applied ai corporation limited | Abu Dhabi Global Market (ADGM) | self_named | that APPLIED AI CORPORATION LIMITED 000007424 Registered Number is an incorporated company pursuant to Abu Dhabi Global Market Companies (Amendment... | Certificate of Incorporation - APPLIED AI CORPORATION LIMITED.pdf |
 | high | beyond limits | Delaware | self_named | ellect Inc. (f/k/a Beyond Limits Media Group, Inc.) ("BII") - BII was incorporated in the State of Delaware, USA on November 12, 2014 with registra... | Project Emerald - DD Report.pdf |
-| high | cerebras systems inc | Delaware | self_named | of Operations Cerebras Systems Inc. (the "Company" or "Cerebras") was incorporated in Delaware in April 2016. Cerebras is an artificial intelligenc... | 10Q Q126  Cerebras.pdf |
-| high | espace | Delaware | self_named | ration is espace Inc. (the "Corporation"). SECOND: The address of the registered office of the Corporation in the State of Delaware is 1201 Orange ... | 2023.09.25 B1 and B2 Purchase and Sale Agreement.pdf |
 | high | flyr inc | Delaware | self_named | common stock as collateral. In March 2022, FLYR Labs Global, Inc. was incorporated in Delaware for the purpose of hiring international employees. F... | FLYR, Inc. and Subsidiaries FS 12 31 21.pdf |
-| high | heygears | China | self_named | HeyGears Intelligence Technology Co., Ltd. (广州黑格智能科技有限 公司), a company incorporated under the laws of People's Republic of China (the "PRC") with it... | 1. HeyGears - MOZN SHA (EXE).pdf |
 | medium | drivenets | Israel | context_unclear | ualification. The Company is a corporation duly organized and validly existing under the laws of the State of Israel and has all requisite corporat... | DriveNets - Series D - SPA [Meitar April 16, 2026](14938774.23).docx |
 | medium | e-line ventures llc | Delaware | context_unclear | 2.1. Formation. The Company has been organized as a Delaware limited liability company by the filing of a certificate of formation | Round 1, Endless Studios Limited Liability Company Agreement.pdf |
 | medium | endless studios llc | Delaware | context_unclear | 2.1. Formation. The Company has been organized as a Delaware limited liability company by the filing of a certificate of formation | Round 1, Endless Studios Limited Liability Company Agreement.pdf |

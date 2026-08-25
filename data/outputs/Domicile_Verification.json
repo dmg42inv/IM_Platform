@@ -1,27 +1,5 @@
 [
   {
-    "company": "acies investments fund i, l.p.",
-    "domicile": "Delaware",
-    "source_file": "Acies -- Anchor Summary of Terms (execution version).DOCX",
-    "phrase": "organized as a Delaware",
-    "status": "phrase_verified",
-    "evidence": ". Structure | Acies Ventures Fund I, L.P. (the \"Partnership\") will be organized as a Delaware limited partnership. Acies Ventures GP I, LLC, a Delaware limited lia",
-    "evidence_quality": "self_named",
-    "confidence": "high",
-    "n_candidates": 1
-  },
-  {
-    "company": "applied ai corporation limited",
-    "domicile": "Abu Dhabi Global Market (ADGM)",
-    "source_file": "Certificate of Incorporation - APPLIED AI CORPORATION LIMITED.pdf",
-    "phrase": "incorporated company pursuant to Abu Dhabi Global Market",
-    "status": "phrase_verified",
-    "evidence": "that APPLIED AI CORPORATION LIMITED 000007424 Registered Number is an incorporated company pursuant to Abu Dhabi Global Market Companies (Amendment No. 1) Regulations 2020 and is taken to be incor",
-    "evidence_quality": "self_named",
-    "confidence": "high",
-    "n_candidates": 2
-  },
-  {
     "company": "beyond limits",
     "domicile": "Delaware",
     "source_file": "Project Emerald - DD Report.pdf",
@@ -33,45 +11,12 @@
     "n_candidates": 3
   },
   {
-    "company": "cerebras systems inc",
-    "domicile": "Delaware",
-    "source_file": "10Q Q126  Cerebras.pdf",
-    "phrase": "incorporated in Delaware",
-    "status": "phrase_verified",
-    "evidence": "of Operations Cerebras Systems Inc. (the \"Company\" or \"Cerebras\") was incorporated in Delaware in April 2016. Cerebras is an artificial intelligence (\"AI\") infrastr",
-    "evidence_quality": "self_named",
-    "confidence": "high",
-    "n_candidates": 4
-  },
-  {
-    "company": "espace",
-    "domicile": "Delaware",
-    "source_file": "2023.09.25 B1 and B2 Purchase and Sale Agreement.pdf",
-    "phrase": "registered office of the Corporation in the State of Delaware",
-    "status": "phrase_verified",
-    "evidence": "ration is espace Inc. (the \"Corporation\"). SECOND: The address of the registered office of the Corporation in the State of Delaware is 1201 Orange Street, Suite 600, in the City of Wilmington, County o",
-    "evidence_quality": "self_named",
-    "confidence": "high",
-    "n_candidates": 1
-  },
-  {
     "company": "flyr inc",
     "domicile": "Delaware",
     "source_file": "FLYR, Inc. and Subsidiaries FS 12 31 21.pdf",
     "phrase": "incorporated in Delaware",
     "status": "phrase_verified",
     "evidence": "common stock as collateral. In March 2022, FLYR Labs Global, Inc. was incorporated in Delaware for the purpose of hiring international employees. FLYR Labs Global,",
-    "evidence_quality": "self_named",
-    "confidence": "high",
-    "n_candidates": 3
-  },
-  {
-    "company": "heygears",
-    "domicile": "China",
-    "source_file": "1. HeyGears - MOZN SHA (EXE).pdf",
-    "phrase": "incorporated under the laws of People's Republic of China",
-    "status": "phrase_verified",
-    "evidence": "HeyGears Intelligence Technology Co., Ltd. (\u5e7f\u5dde\u9ed1\u683c\u667a\u80fd\u79d1\u6280\u6709\u9650 \u516c\u53f8), a company incorporated under the laws of People's Republic of China (the \"PRC\") with its unified social credit number of 9144010634743208",
     "evidence_quality": "self_named",
     "confidence": "high",
     "n_candidates": 3

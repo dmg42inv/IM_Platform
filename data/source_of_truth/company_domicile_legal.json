@@ -15,6 +15,7 @@
     "domicile_source": "G42 x PGIM - NDA 20.11.2024 v1.docx (legal doc, candidate - confirm; alt: Delaware)",
     "domicile_status": "candidate",
     "domicile_phrase": "registered in the Abu Dhabi Global Market",
+    "domicile_review_note": "MIS-SOURCED (2026-08-25): the ADGM phrase in the cited NDA describes 'Group 42 Holding Limited', not Inveniam. Needs a real Inveniam charter/registration; alt candidate Delaware.",
     "domicile_candidates": [
       "Abu Dhabi Global Market (ADGM)",
       "Delaware",
@@ -26,23 +27,27 @@
   "liquid ai": {
     "domicile": "Delaware",
     "domicile_source": "Liquid AI, Inc. - Series A - Secretary's Certificate [EXECUTED].pdf (legal doc, candidate - confirm)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "registered office in the State of Delaware",
     "domicile_candidates": [
       "Delaware",
       "June",
       "July"
-    ]
+    ],
+    "domicile_evidence": "oposed to be taken is delivered to the Corporation by delivery to its registered office in the State of Delaware, its principal office, or an officer or agent of the Corporation havi",
+    "domicile_evidence_source": "Liquid AI, Inc. - Series A - Secretary's Certificate [EXECUTED].pdf (legal_kb.sqlite; manual review)"
   },
   "neuralink": {
     "domicile": "Nevada",
     "domicile_source": "Neuralink Investment Summary .docx (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "incorporated in Nevada",
     "domicile_candidates": [
       "Nevada",
       "Abu Dhabi Global Market (ADGM)"
-    ]
+    ],
+    "domicile_evidence": "Agreement (the \"SPA\"). Company Snapshot The Company is a corporation incorporated in Nevada. The principal executive office of the Company is located in Fremont,",
+    "domicile_evidence_source": "Neuralink Investment Summary .docx (legal_kb.sqlite; manual review)"
   },
   "verses ai inc": {
     "domicile": "California",
@@ -68,11 +73,13 @@
   "drivenets": {
     "domicile": "Israel",
     "domicile_source": "DriveNets - Series D - SPA [Meitar April 16, 2026](14938774.23).docx (legal doc, candidate - confirm)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "existing under the laws of the State of Israel",
     "domicile_candidates": [
       "Israel"
-    ]
+    ],
+    "domicile_evidence": "ualification. The Company is a corporation duly organized and validly existing under the laws of the State of Israel and has all requisite corporate power and authority to own, lease and",
+    "domicile_evidence_source": "DriveNets - Series D - SPA [Meitar April 16, 2026](14938774.23).docx (legal_kb.sqlite; manual review)"
   },
   "new space capital fund i": {
     "domicile": "Luxembourg",
@@ -105,6 +112,7 @@
     "domicile_source": "1. North Summit Capital Fund - Amended and.PDF (legal doc, candidate - confirm; alt: Cayman Islands)",
     "domicile_status": "candidate",
     "domicile_phrase": "organized under PRC",
+    "domicile_review_note": "MIS-SOURCED (2026-08-25): 'organized under PRC law' is a generic clause about portfolio companies, not North Summit itself. Alt candidate Cayman Islands - needs the fund's own formation doc.",
     "domicile_candidates": [
       "China",
       "Cayman Islands",
@@ -230,12 +238,14 @@
   "endless studios llc": {
     "domicile": "Delaware",
     "domicile_source": "Round 1, Endless Studios Limited Liability Company Agreement.pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "organized as a Delaware",
     "domicile_candidates": [
       "Delaware",
       "Abu Dhabi Global Market (ADGM)"
-    ]
+    ],
+    "domicile_evidence": "2.1. Formation. The Company has been organized as a Delaware limited liability company by the filing of a certificate of formation",
+    "domicile_evidence_source": "Round 1, Endless Studios Limited Liability Company Agreement.pdf (legal_kb.sqlite; manual review)"
   },
   "flyr inc": {
     "domicile": "Delaware",
@@ -264,7 +274,7 @@
   "ont plc": {
     "domicile": "United Kingdom",
     "domicile_source": "31-12-2019 ONT Accounts.pdf (legal doc, candidate - confirm; alt: England and Wales)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "incorporated in the United Kingdom",
     "domicile_candidates": [
       "United Kingdom",
@@ -272,7 +282,9 @@
       "Table",
       "Japan",
       "Singapore"
-    ]
+    ],
+    "domicile_evidence": "General Information Oxford Nanopore Technologies Limited is a company incorporated in the United Kingdom under the Companies Act 2006 and is registered in England and Wales.",
+    "domicile_evidence_source": "31-12-2019 ONT Accounts.pdf (legal_kb.sqlite; manual review)"
   },
   "espace": {
     "domicile": "Delaware",
@@ -288,29 +300,33 @@
   "sinovation disrupt fund, l.p.": {
     "domicile": "Cayman Islands",
     "domicile_source": "Amended and Restated LPA 12.pdf (legal doc, candidate - confirm; alt: Hong Kong)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "registered office of the Partnership in the Cayman Islands",
     "domicile_candidates": [
       "Cayman Islands",
       "Hong Kong"
-    ]
+    ],
+    "domicile_evidence": "ip Interests. The General Partner shall cause to be maintained at the registered office of the Partnership in the Cayman Islands or such other place as the General Partner may determine from time to",
+    "domicile_evidence_source": "Amended and Restated LPA 12.pdf (legal_kb.sqlite; manual review)"
   },
   "esyasoft holding": {
     "domicile": "Dubai International Financial Centre (DIFC)",
     "domicile_source": "G42 Esyasoft Due Diligence Report 2 4 20.docx (legal doc, candidate - confirm; alt: India)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "incorporated under the laws of Dubai International Financial Centre",
     "domicile_candidates": [
       "Dubai International Financial Centre (DIFC)",
       "India",
       "Abu Dhabi Global Market (ADGM)",
       "Dubai Silicon Oasis"
-    ]
+    ],
+    "domicile_evidence": "aSoft \" or the \"Company\"), is a private company limited by shares and incorporated under the laws of Dubai International Financial Centre, having its address at Unit 1006, Level 10, Liberty House, Dubai Inte",
+    "domicile_evidence_source": "G42 Esyasoft Due Diligence Report 2 4 20.docx (legal_kb.sqlite; manual review)"
   },
   "instadeep limited": {
     "domicile": "England and Wales",
     "domicile_source": "2. UK - 2019 FINAL_full_accts_ye_311219 (11) (1).pdf (legal doc, candidate - confirm; alt: United Kingdom)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "registered in England and Wales",
     "domicile_candidates": [
       "England and Wales",
@@ -318,7 +334,9 @@
       "France",
       "United Arab Emirates",
       "Nigeria"
-    ]
+    ],
+    "domicile_evidence": "neral information The company is a private company limited by shares, registered in England and Wales. The address of the registered office is 2 Eastbourne Terrace, London",
+    "domicile_evidence_source": "2. UK - 2019 FINAL_full_accts_ye_311219 (11) (1).pdf (legal_kb.sqlite; manual review)"
   },
   "jysan technologies": {
     "domicile": "England and Wales",
@@ -336,7 +354,7 @@
   "mena mobile inc": {
     "domicile": "Cayman Islands",
     "domicile_source": "Mena Mobile - Due Diligence Report (final).pdf (legal doc, candidate - confirm; alt: China)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "incorporated in the Cayman Islands",
     "domicile_candidates": [
       "Cayman Islands",
@@ -344,6 +362,8 @@
       "British Virgin Islands",
       "Hong Kong",
       "Abu Dhabi"
-    ]
+    ],
+    "domicile_evidence": "nd of financing if the registration is completed then. The Target was incorporated in the Cayman Islands on August 22, 2016. The share capital of the Target is US$50,000 divi",
+    "domicile_evidence_source": "Mena Mobile - Due Diligence Report (final).pdf (legal_kb.sqlite; manual review)"
   }
 }

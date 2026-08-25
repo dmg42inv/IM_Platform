@@ -1,8 +1,8 @@
 {
   "generated": "2026-08-25",
   "tally": {
-    "grounded": 5,
-    "adopted": 355,
+    "grounded": 13,
+    "adopted": 347,
     "web": 5,
     "gap": 240
   },
@@ -786,8 +786,8 @@
         {
           "field": "Jurisdiction",
           "value": "Israel",
-          "status": "adopted",
-          "source": "candidate: DriveNets - Series D - SPA [Meitar April 16, 2026](14938774.23).docx (legal doc, candidate - confirm)"
+          "status": "grounded",
+          "source": "DriveNets - Series D - SPA [Meitar April 16, 2026](14938774.23).docx (legal doc, candidate - confirm)"
         },
         {
           "field": "IFRS classification",
@@ -862,12 +862,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Israel",
-          "status": "adopted",
-          "source": "candidate: DriveNets - Series D - SPA [Meitar April 16, 2026](14938774.23).docx (legal doc, candidate - confirm)"
         },
         {
           "field": "IFRS classification",
@@ -1098,8 +1092,8 @@
         {
           "field": "Jurisdiction",
           "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: Round 1, Endless Studios Limited Liability Company Agreement.pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))"
+          "status": "grounded",
+          "source": "Round 1, Endless Studios Limited Liability Company Agreement.pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))"
         },
         {
           "field": "IFRS classification",
@@ -1168,12 +1162,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: Round 1, Endless Studios Limited Liability Company Agreement.pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))"
         },
         {
           "field": "IFRS classification",
@@ -1392,8 +1380,8 @@
         {
           "field": "Jurisdiction",
           "value": "Dubai International Financial Centre (DIFC)",
-          "status": "adopted",
-          "source": "candidate: G42 Esyasoft Due Diligence Report 2 4 20.docx (legal doc, candidate - confirm; alt: India)"
+          "status": "grounded",
+          "source": "G42 Esyasoft Due Diligence Report 2 4 20.docx (legal doc, candidate - confirm; alt: India)"
         },
         {
           "field": "IFRS classification",
@@ -1462,12 +1450,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Dubai International Financial Centre (DIFC)",
-          "status": "adopted",
-          "source": "candidate: G42 Esyasoft Due Diligence Report 2 4 20.docx (legal doc, candidate - confirm; alt: India)"
         },
         {
           "field": "IFRS classification",
@@ -2586,8 +2568,8 @@
         {
           "field": "Jurisdiction",
           "value": "England and Wales",
-          "status": "adopted",
-          "source": "candidate: 2. UK - 2019 FINAL_full_accts_ye_311219 (11) (1).pdf (legal doc, candidate - confirm; alt: United Kingdom)"
+          "status": "grounded",
+          "source": "2. UK - 2019 FINAL_full_accts_ye_311219 (11) (1).pdf (legal doc, candidate - confirm; alt: United Kingdom)"
         },
         {
           "field": "IFRS classification",
@@ -2662,12 +2644,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "England and Wales",
-          "status": "adopted",
-          "source": "candidate: 2. UK - 2019 FINAL_full_accts_ye_311219 (11) (1).pdf (legal doc, candidate - confirm; alt: United Kingdom)"
         },
         {
           "field": "IFRS classification",
@@ -3498,8 +3474,8 @@
         {
           "field": "Jurisdiction",
           "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: Liquid AI, Inc. - Series A - Secretary's Certificate [EXECUTED].pdf (legal doc, candidate - confirm)"
+          "status": "grounded",
+          "source": "Liquid AI, Inc. - Series A - Secretary's Certificate [EXECUTED].pdf (legal doc, candidate - confirm)"
         },
         {
           "field": "IFRS classification",
@@ -3568,12 +3544,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: Liquid AI, Inc. - Series A - Secretary's Certificate [EXECUTED].pdf (legal doc, candidate - confirm)"
         },
         {
           "field": "IFRS classification",
@@ -4098,8 +4068,8 @@
         {
           "field": "Jurisdiction",
           "value": "Cayman Islands",
-          "status": "adopted",
-          "source": "candidate: Mena Mobile - Due Diligence Report (final).pdf (legal doc, candidate - confirm; alt: China)"
+          "status": "grounded",
+          "source": "Mena Mobile - Due Diligence Report (final).pdf (legal doc, candidate - confirm; alt: China)"
         },
         {
           "field": "IFRS classification",
@@ -4168,12 +4138,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Cayman Islands",
-          "status": "adopted",
-          "source": "candidate: Mena Mobile - Due Diligence Report (final).pdf (legal doc, candidate - confirm; alt: China)"
         },
         {
           "field": "IFRS classification",
@@ -5148,8 +5112,8 @@
         {
           "field": "Jurisdiction",
           "value": "Nevada",
-          "status": "adopted",
-          "source": "candidate: Neuralink Investment Summary .docx (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))"
+          "status": "grounded",
+          "source": "Neuralink Investment Summary .docx (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))"
         },
         {
           "field": "IFRS classification",
@@ -5224,12 +5188,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Nevada",
-          "status": "adopted",
-          "source": "candidate: Neuralink Investment Summary .docx (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))"
         },
         {
           "field": "IFRS classification",
@@ -5760,8 +5718,8 @@
         {
           "field": "Jurisdiction",
           "value": "United Kingdom",
-          "status": "adopted",
-          "source": "candidate: 31-12-2019 ONT Accounts.pdf (legal doc, candidate - confirm; alt: England and Wales)"
+          "status": "grounded",
+          "source": "31-12-2019 ONT Accounts.pdf (legal doc, candidate - confirm; alt: England and Wales)"
         },
         {
           "field": "IFRS classification",
@@ -5836,12 +5794,6 @@
           "value": "Listed",
           "status": "adopted",
           "source": "accounts pack"
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "United Kingdom",
-          "status": "adopted",
-          "source": "candidate: 31-12-2019 ONT Accounts.pdf (legal doc, candidate - confirm; alt: England and Wales)"
         },
         {
           "field": "IFRS classification",
