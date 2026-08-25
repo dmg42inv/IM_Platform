@@ -1306,6 +1306,10 @@ def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.Da
     attrs = _lookup_accounts(company)
     facts = _load_company_facts().get(company.strip().lower(), {})
     dom = _load_domicile_legal().get(company.strip().lower(), {})
+    # A grounded listing confirmation from our own source-of-truth documents
+    # supersedes an accounts-pack "Not disclosed" (never an explicit value).
+    if dom.get("listed_status"):
+        attrs = {**attrs, "Listed status": dom["listed_status"]}
     inv = float(sub["invested"].sum())
     fv = float(sub["carrying_value"].sum())
     gain = float(sub["gain"].sum())
@@ -1336,6 +1340,10 @@ def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.Da
         st.markdown(f"**Domicile (our legal documents):** {dom['domicile']}  \n"
                     f"<span style='font-size:11px;opacity:.6'>Source: "
                     f"{dom.get('domicile_source', 'legal docs')}</span>",
+                    unsafe_allow_html=True)
+    if dom.get("listed_status"):
+        st.markdown(f"<span style='font-size:11px;opacity:.6'>Listed status source: "
+                    f"{dom.get('listed_status_source', 'our source-of-truth documents')}</span>",
                     unsafe_allow_html=True)
     st.caption("Identity and classification fields are the accounts team's (adopted); fair value, "
                "capital deployed and value created are our own figures. "

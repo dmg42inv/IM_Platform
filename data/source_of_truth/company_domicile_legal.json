@@ -206,7 +206,10 @@
       "California",
       "Japan",
       "Canada"
-    ]
+    ],
+    "listed_status": "Listed (Nasdaq: CBRS)",
+    "listed_status_source": "Our own files (Document_Manifest): Cerebras - 424B4.pdf (final IPO prospectus), Cerebras_Systems_Inc_-_Final Prospectus.pdf, 10Q Q126  Cerebras.pdf; ticker CBRS per our equity-research notes. See Listed_Entity_IR_Check_Log.md 2026-08-25.",
+    "listed_status_grounded": true
   },
   "e-line ventures llc": {
     "domicile": "Delaware",
