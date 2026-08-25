@@ -57,11 +57,13 @@
   "acies investments fund i, l.p.": {
     "domicile": "Delaware",
     "domicile_source": "Acies -- Anchor Summary of Terms (execution version).DOCX (legal doc, candidate - confirm)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "organized as a Delaware",
     "domicile_candidates": [
       "Delaware"
-    ]
+    ],
+    "domicile_evidence": ". Structure | Acies Ventures Fund I, L.P. (the \"Partnership\") will be organized as a Delaware limited partnership. Acies Ventures GP I, LLC, a Delaware limited lia",
+    "domicile_evidence_source": "Acies -- Anchor Summary of Terms (execution version).DOCX (legal_kb.sqlite)"
   },
   "drivenets": {
     "domicile": "Israel",
@@ -178,12 +180,14 @@
   "applied ai corporation limited": {
     "domicile": "Abu Dhabi Global Market (ADGM)",
     "domicile_source": "Certificate of Incorporation - APPLIED AI CORPORATION LIMITED.pdf (legal doc, candidate - confirm; alt: Delaware)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "incorporated company pursuant to Abu Dhabi Global Market",
     "domicile_candidates": [
       "Abu Dhabi Global Market (ADGM)",
       "Delaware"
-    ]
+    ],
+    "domicile_evidence": "that APPLIED AI CORPORATION LIMITED 000007424 Registered Number is an incorporated company pursuant to Abu Dhabi Global Market Companies (Amendment No. 1) Regulations 2020 and is taken to be incor",
+    "domicile_evidence_source": "Certificate of Incorporation - APPLIED AI CORPORATION LIMITED.pdf (legal_kb.sqlite)"
   },
   "beyond limits": {
     "domicile": "Delaware",
@@ -199,7 +203,7 @@
   "cerebras systems inc": {
     "domicile": "Delaware",
     "domicile_source": "10Q Q126  Cerebras.pdf (legal doc, candidate - confirm; alt: California)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "incorporated in Delaware",
     "domicile_candidates": [
       "Delaware",
@@ -209,7 +213,9 @@
     ],
     "listed_status": "Listed (Nasdaq: CBRS)",
     "listed_status_source": "Our own files (Document_Manifest): Cerebras - 424B4.pdf (final IPO prospectus), Cerebras_Systems_Inc_-_Final Prospectus.pdf, 10Q Q126  Cerebras.pdf; ticker CBRS per our equity-research notes. See Listed_Entity_IR_Check_Log.md 2026-08-25.",
-    "listed_status_grounded": true
+    "listed_status_grounded": true,
+    "domicile_evidence": "of Operations Cerebras Systems Inc. (the \"Company\" or \"Cerebras\") was incorporated in Delaware in April 2016. Cerebras is an artificial intelligence (\"AI\") infrastr",
+    "domicile_evidence_source": "10Q Q126  Cerebras.pdf (legal_kb.sqlite)"
   },
   "e-line ventures llc": {
     "domicile": "Delaware",
@@ -245,13 +251,15 @@
   "heygears": {
     "domicile": "China",
     "domicile_source": "1. HeyGears - MOZN SHA (EXE).pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "incorporated under the laws of People's Republic of China",
     "domicile_candidates": [
       "China",
       "Abu Dhabi Global Market (ADGM)",
       "Abu Dhabi"
-    ]
+    ],
+    "domicile_evidence": "HeyGears Intelligence Technology Co., Ltd. (广州黑格智能科技有限 公司), a company incorporated under the laws of People's Republic of China (the \"PRC\") with its unified social credit number of 9144010634743208",
+    "domicile_evidence_source": "1. HeyGears - MOZN SHA (EXE).pdf (legal_kb.sqlite)"
   },
   "ont plc": {
     "domicile": "United Kingdom",
@@ -269,11 +277,13 @@
   "espace": {
     "domicile": "Delaware",
     "domicile_source": "2023.09.25 B1 and B2 Purchase and Sale Agreement.pdf (legal doc, candidate - confirm)",
-    "domicile_status": "candidate",
+    "domicile_status": "confirmed",
     "domicile_phrase": "registered office of the Corporation in the State of Delaware",
     "domicile_candidates": [
       "Delaware"
-    ]
+    ],
+    "domicile_evidence": "ration is espace Inc. (the \"Corporation\"). SECOND: The address of the registered office of the Corporation in the State of Delaware is 1201 Orange Street, Suite 600, in the City of Wilmington, County o",
+    "domicile_evidence_source": "2023.09.25 B1 and B2 Purchase and Sale Agreement.pdf (legal_kb.sqlite)"
   },
   "sinovation disrupt fund, l.p.": {
     "domicile": "Cayman Islands",

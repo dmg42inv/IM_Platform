@@ -5,8 +5,8 @@ Generated 2026-08-25. Read-only audit of Company-details identity / classificati
 ## Summary
 
 - **605** identity/classification datapoints audited across **50** companies.
-- **grounded** (cited to our own documents): **1**
-- **adopted** (accounts pack, unverified): **359**
+- **grounded** (cited to our own documents): **5**
+- **adopted** (accounts pack, unverified): **355**
 - **web** (internet-sourced, pending confirmation): **5**
 - **gap** (placeholder / missing): **240**
 
@@ -629,23 +629,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | First recognised | Not disclosed | gap |  |
 | Description/website | https://neuralink.com | web | Wikipedia (fetched 2026-08-23) |
 
-### Applied AI Corporation Limited  — 12 to verify (2 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Applied AI & Software Enterprise AI applications | adopted | accounts pack |
-| Instrument | Convertible Note | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | Abu Dhabi Global Market (ADGM) | adopted | candidate: Certificate of Incorporation - APPLIED AI CORPORATION LIMITED.pdf (legal doc, candidate - confirm; alt: Delaware) |
-| IFRS classification | FVTPL | adopted | accounts pack |
-| Valuation method | Price of recent transaction | adopted | accounts pack |
-| Fair value hierarchy | Level 2 | adopted | accounts pack |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 12.1% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-
 ### Beyond Limits  — 12 to verify (2 gaps)
 
 | Field | Current value | Tier | Note |
@@ -712,23 +695,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Fair value hierarchy | Level 3 | adopted | accounts pack |
 | Influence band | Minority (<20%) | adopted | accounts pack |
 | Holding | 3.3% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-
-### Heygears  — 12 to verify (2 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | Industrial Technology Digital manufacturing and 3D printing | adopted | accounts pack |
-| Instrument | Registered Capital | adopted | accounts pack |
-| Listed status | Not disclosed | gap |  |
-| Jurisdiction | China | adopted | candidate: 1. HeyGears - MOZN SHA (EXE).pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM)) |
-| IFRS classification | FVTPL | adopted | accounts pack |
-| Valuation method | Market multiple | adopted | accounts pack |
-| Fair value hierarchy | Level 3 | adopted | accounts pack |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 14.4% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
 ### Life Biosciences LLC  — 12 to verify (2 gaps)
@@ -799,7 +765,39 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Holding | 3.6% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
 
-### eSpace  — 12 to verify (2 gaps)
+### Applied AI Corporation Limited  — 11 to verify (2 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Applied AI & Software Enterprise AI applications | adopted | accounts pack |
+| Instrument | Convertible Note | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVTPL | adopted | accounts pack |
+| Valuation method | Price of recent transaction | adopted | accounts pack |
+| Fair value hierarchy | Level 2 | adopted | accounts pack |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 12.1% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |
+
+### Heygears  — 11 to verify (2 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Mozn Holding RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | Industrial Technology Digital manufacturing and 3D printing | adopted | accounts pack |
+| Instrument | Registered Capital | adopted | accounts pack |
+| Listed status | Not disclosed | gap |  |
+| IFRS classification | FVTPL | adopted | accounts pack |
+| Valuation method | Market multiple | adopted | accounts pack |
+| Fair value hierarchy | Level 3 | adopted | accounts pack |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 14.4% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |
+
+### eSpace  — 11 to verify (2 gaps)
 
 | Field | Current value | Tier | Note |
 |---|---|---|---|
@@ -808,7 +806,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Sector | Space & Geospatial Satellite constellations | adopted | accounts pack |
 | Instrument | B Prefs | adopted | accounts pack |
 | Listed status | Not disclosed | gap |  |
-| Jurisdiction | Delaware | adopted | candidate: 2023.09.25 B1 and B2 Purchase and Sale Agreement.pdf (legal doc, candidate - confirm) |
 | IFRS classification | FVTPL | adopted | accounts pack |
 | Valuation method | Price of recent transaction | adopted | accounts pack |
 | Fair value hierarchy | Level 2 | adopted | accounts pack |
@@ -834,23 +831,6 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | First recognised | Not disclosed | gap |  |
 | Description/website | https://nanoporetech.com | web | Wikipedia (fetched 2026-08-23) |
 
-### Cerebras Systems Inc  — 12 to verify (1 gaps)
-
-| Field | Current value | Tier | Note |
-|---|---|---|---|
-| Legal entity | Expansion Project Technologies Holding 12 SPV RSC Ltd | adopted | accounts pack |
-| Holding type | Corporate | adopted | accounts pack |
-| Sector | AI Compute & Semiconductors AI accelerator silicon | adopted | accounts pack |
-| Instrument | Series F Preferred | adopted | accounts pack |
-| Jurisdiction | Delaware | adopted | candidate: 10Q Q126  Cerebras.pdf (legal doc, candidate - confirm; alt: California) |
-| IFRS classification | FVOCI | adopted | accounts pack |
-| Valuation method | Price of recent transaction | adopted | accounts pack |
-| Fair value hierarchy | Level 2 | adopted | accounts pack |
-| Influence band | Minority (<20%) | adopted | accounts pack |
-| Holding | 1.6% | adopted | accounts pack |
-| First recognised | Not disclosed | gap |  |
-| Description/website | https://cerebras.ai | web | Wikipedia (fetched 2026-08-23) |
-
 ### vTv Therapeutics Inc  — 12 to verify (1 gaps)
 
 | Field | Current value | Tier | Note |
@@ -867,3 +847,19 @@ Tiers: grounded = traceable to a cited document; adopted = taken from the accoun
 | Influence band | Minority (<20%) | adopted | accounts pack |
 | Holding | 2.1% | adopted | accounts pack |
 | First recognised | Not disclosed | gap |  |
+
+### Cerebras Systems Inc  — 11 to verify (1 gaps)
+
+| Field | Current value | Tier | Note |
+|---|---|---|---|
+| Legal entity | Expansion Project Technologies Holding 12 SPV RSC Ltd | adopted | accounts pack |
+| Holding type | Corporate | adopted | accounts pack |
+| Sector | AI Compute & Semiconductors AI accelerator silicon | adopted | accounts pack |
+| Instrument | Series F Preferred | adopted | accounts pack |
+| IFRS classification | FVOCI | adopted | accounts pack |
+| Valuation method | Price of recent transaction | adopted | accounts pack |
+| Fair value hierarchy | Level 2 | adopted | accounts pack |
+| Influence band | Minority (<20%) | adopted | accounts pack |
+| Holding | 1.6% | adopted | accounts pack |
+| First recognised | Not disclosed | gap |  |
+| Description/website | https://cerebras.ai | web | Wikipedia (fetched 2026-08-23) |

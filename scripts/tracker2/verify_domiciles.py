@@ -197,9 +197,17 @@ def main() -> None:
     print(f"Wrote {OUT_MD}\nWrote {OUT_JSON}")
 
     if "--promote" in sys.argv:
-        promoted = 0
+        excludes: set[str] = set()
+        if "--exclude" in sys.argv:
+            idx = sys.argv.index("--exclude")
+            if idx + 1 < len(sys.argv):
+                excludes = {x.strip().lower() for x in sys.argv[idx + 1].split(";") if x.strip()}
+        promoted, skipped = 0, []
         for r in results:
             if r["confidence"] != "high":
+                continue
+            if r["company"] in excludes:
+                skipped.append(r["company"])
                 continue
             entry = dom.get(r["company"])
             if not entry:
@@ -210,6 +218,8 @@ def main() -> None:
             promoted += 1
         DOM.write_text(json.dumps(dom, indent=2, ensure_ascii=False), encoding="utf-8")
         print(f"Promoted {promoted} high-confidence domiciles to domicile_status=confirmed.")
+        if skipped:
+            print(f"Skipped (excluded): {', '.join(skipped)}")
 
 
 if __name__ == "__main__":

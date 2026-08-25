@@ -1,8 +1,8 @@
 {
   "generated": "2026-08-25",
   "tally": {
-    "grounded": 1,
-    "adopted": 359,
+    "grounded": 5,
+    "adopted": 355,
     "web": 5,
     "gap": 240
   },
@@ -192,8 +192,8 @@
         {
           "field": "Jurisdiction",
           "value": "Abu Dhabi Global Market (ADGM)",
-          "status": "adopted",
-          "source": "candidate: Certificate of Incorporation - APPLIED AI CORPORATION LIMITED.pdf (legal doc, candidate - confirm; alt: Delaware)"
+          "status": "grounded",
+          "source": "Certificate of Incorporation - APPLIED AI CORPORATION LIMITED.pdf (legal doc, candidate - confirm; alt: Delaware)"
         },
         {
           "field": "IFRS classification",
@@ -262,12 +262,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Abu Dhabi Global Market (ADGM)",
-          "status": "adopted",
-          "source": "candidate: Certificate of Incorporation - APPLIED AI CORPORATION LIMITED.pdf (legal doc, candidate - confirm; alt: Delaware)"
         },
         {
           "field": "IFRS classification",
@@ -492,8 +486,8 @@
         {
           "field": "Jurisdiction",
           "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: 10Q Q126  Cerebras.pdf (legal doc, candidate - confirm; alt: California)"
+          "status": "grounded",
+          "source": "10Q Q126  Cerebras.pdf (legal doc, candidate - confirm; alt: California)"
         },
         {
           "field": "IFRS classification",
@@ -562,12 +556,6 @@
           "value": "Series F Preferred",
           "status": "adopted",
           "source": "accounts pack"
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: 10Q Q126  Cerebras.pdf (legal doc, candidate - confirm; alt: California)"
         },
         {
           "field": "IFRS classification",
@@ -1260,8 +1248,8 @@
         {
           "field": "Jurisdiction",
           "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: 2023.09.25 B1 and B2 Purchase and Sale Agreement.pdf (legal doc, candidate - confirm)"
+          "status": "grounded",
+          "source": "2023.09.25 B1 and B2 Purchase and Sale Agreement.pdf (legal doc, candidate - confirm)"
         },
         {
           "field": "IFRS classification",
@@ -1330,12 +1318,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "Delaware",
-          "status": "adopted",
-          "source": "candidate: 2023.09.25 B1 and B2 Purchase and Sale Agreement.pdf (legal doc, candidate - confirm)"
         },
         {
           "field": "IFRS classification",
@@ -2160,8 +2142,8 @@
         {
           "field": "Jurisdiction",
           "value": "China",
-          "status": "adopted",
-          "source": "candidate: 1. HeyGears - MOZN SHA (EXE).pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))"
+          "status": "grounded",
+          "source": "1. HeyGears - MOZN SHA (EXE).pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))"
         },
         {
           "field": "IFRS classification",
@@ -2230,12 +2212,6 @@
           "value": "Not disclosed",
           "status": "gap",
           "source": ""
-        },
-        {
-          "field": "Jurisdiction",
-          "value": "China",
-          "status": "adopted",
-          "source": "candidate: 1. HeyGears - MOZN SHA (EXE).pdf (legal doc, candidate - confirm; alt: Abu Dhabi Global Market (ADGM))"
         },
         {
           "field": "IFRS classification",
