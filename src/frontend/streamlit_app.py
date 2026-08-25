@@ -1384,7 +1384,7 @@ def _render_bor_parked(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> N
                "we will place these where they belong later.")
     sub = st.segmented_control(
         "Parked view", ["Complete investment register", "IFRS & Audit Trail",
-                        "Visual one-pagers"],
+                        "Visual one-pagers", "Data provenance"],
         default="Complete investment register", key="bor_parked_view",
         label_visibility="collapsed") or "Complete investment register"
     if sub == "IFRS & Audit Trail":
@@ -1392,6 +1392,9 @@ def _render_bor_parked(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> N
         return
     if sub == "Visual one-pagers":
         _render_bor_onepagers()
+        return
+    if sub == "Data provenance":
+        _render_bor_provenance()
         return
     _render_bor_parked_register(months_df, positions_df)
 
@@ -1410,6 +1413,75 @@ def _render_bor_onepagers() -> None:
               "#companies{display:block !important;}main{padding-top:4px !important;}</style>")
     html = html.replace("</head>", inject + "</head>", 1)
     components.html(html, height=1600, scrolling=True)
+
+
+def _render_bor_provenance() -> None:
+    """Read-only view of how grounded each Company-details datapoint is, from the
+    grounding audit (scripts/tracker2/grounding_status.py) and the confirmed
+    domicile/listing evidence in company_domicile_legal.json."""
+    def _esc(s: str) -> str:
+        return (str(s or "")).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    st.subheader("Data provenance & verification")
+    st.markdown("<span style='font-size:12px;color:#8a8f88'>How traceable each Company-details "
+                "identity / classification datapoint is. <b>Grounded</b> = cited to our own "
+                "documents; <b>adopted</b> = taken from the accounts pack as-is; <b>web</b> = from "
+                "the internet; <b>gap</b> = not disclosed / not assessed.</span>",
+                unsafe_allow_html=True)
+    report_path = ROOT / "data" / "outputs" / "Grounding_Status_Report.json"
+    if not report_path.exists():
+        st.info("Grounding report not generated yet. Run "
+                "`python -m scripts.tracker2.grounding_status` to build it.")
+        return
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    t = report["tally"]
+    total = sum(t.values()) or 1
+    with st.container(horizontal=True):
+        st.metric("Grounded", f"{t['grounded']:,}", border=True)
+        st.metric("Adopted", f"{t['adopted']:,}", border=True)
+        st.metric("Web", f"{t['web']:,}", border=True)
+        st.metric("Gaps", f"{t['gap']:,}", border=True)
+    st.caption(f"{t['grounded']} of {sum(t.values())} identity/classification datapoints grounded "
+               f"({t['grounded'] / total * 100:.0f}%) across {len(report['companies'])} companies. "
+               f"Audit generated {report.get('generated', '')}.")
+
+    dom = _load_domicile_legal()
+    grounded_rows = []
+    for key, e in sorted(dom.items()):
+        if not isinstance(e, dict):
+            continue
+        if e.get("domicile_status") == "confirmed":
+            ev = e.get("domicile_evidence") or e.get("domicile_source", "")
+            grounded_rows.append([key.title(), "Domicile", e.get("domicile", ""), ev])
+        if e.get("listed_status_grounded"):
+            grounded_rows.append([key.title(), "Listed status", e.get("listed_status", ""),
+                                  e.get("listed_status_source", "")])
+    if grounded_rows:
+        with st.container(border=True):
+            st.markdown("**Grounded, with evidence**")
+            gdf = pd.DataFrame(
+                [[c, f, v, (_esc(ev)[:180] + ("\u2026" if len(ev) > 180 else ""))]
+                 for c, f, v, ev in grounded_rows],
+                columns=["Company", "Field", "Value", "Evidence / source"])
+            _html_table(gdf, {"Company": "Company", "Field": "Field", "Value": "Value",
+                              "Evidence / source": "Evidence / source"})
+
+    with st.container(border=True):
+        st.markdown("**By company**")
+        st.caption("Count of datapoints in each grounding tier; most gaps first.")
+        summ = []
+        for name, data in report["companies"].items():
+            c = {"grounded": 0, "adopted": 0, "web": 0, "gap": 0}
+            for f in data["fields"]:
+                c[f["status"]] = c.get(f["status"], 0) + 1
+            summ.append([name, c["grounded"], c["adopted"], c["web"], c["gap"]])
+        sdf = (pd.DataFrame(summ, columns=["Company", "Grounded", "Adopted", "Web", "Gap"])
+               .sort_values(["Gap", "Adopted"], ascending=False))
+        _html_table(sdf, {"Company": "Company", "Grounded": "Grounded", "Adopted": "Adopted",
+                          "Web": "Web", "Gap": "Gap"},
+                    fmts={"Grounded": lambda v: f"{int(v)}", "Adopted": lambda v: f"{int(v)}",
+                          "Web": lambda v: f"{int(v)}", "Gap": lambda v: f"{int(v)}"})
+    st.caption("Refresh with `python -m scripts.tracker2.grounding_status` after grounding more fields.")
 
 
 def _render_bor_parked_register(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
