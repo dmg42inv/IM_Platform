@@ -11,3 +11,6 @@ WS-13Aug.code-workspace
 
 __pycache__/
 *.egg-info/
+
+# Build artifacts (regenerated locally; must never be committed)
+data/legal_kb/
