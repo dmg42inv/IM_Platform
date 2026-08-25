@@ -18,6 +18,7 @@ SNAPSHOT_HISTORY_PATH = ROOT / "data" / "source_of_truth" / "Portfolio_Snapshot_
 MONTHLY_DIFF_PATH = ROOT / "data" / "outputs" / "Portfolio_Monthly_Diff.xlsx"
 PORTFOLIO_DB_PATH = ROOT / "data" / "portfolio" / "portfolio.sqlite"
 ACCOUNTS_ATTRS_PATH = ROOT / "data" / "outputs" / "accounts_team" / "accounts_attributes.json"
+BASIS_BRIDGE_PATH = ROOT / "data" / "portfolio" / "basis_bridge.json"
 SNAPSHOT_SHEET = "Portfolio_Snapshot_History"
 MONTHLY_DIFF_SHEET = "Latest_Diff"
 APP_TITLE = "Investments Portfolio"
@@ -133,6 +134,10 @@ def _inject_theme() -> None:
         .conf-badge {{ background:#b3253a; color:#fff; font-size:10px; font-weight:700;
             letter-spacing:.08em; padding:2px 8px; border-radius:4px; margin-left:10px;
             vertical-align:middle; text-transform:uppercase; }}
+        /* Company-details left rail: name buttons rendered as a clean vertical list. */
+        [class*="st-key-borco_"] button {{ justify-content:flex-start !important;
+            text-align:left !important; padding:5px 12px !important; font-size:13px !important;
+            min-height:0 !important; }}
         </style>
         """,
         unsafe_allow_html=True,
@@ -383,6 +388,15 @@ def _load_accounts_attrs(mtime_ns: int) -> list[dict]:
     if not ACCOUNTS_ATTRS_PATH.exists():
         return []
     return json.loads(ACCOUNTS_ATTRS_PATH.read_text(encoding="utf-8"))
+
+
+@st.cache_data(show_spinner=False)
+def _load_basis_bridge(mtime_ns: int) -> dict:
+    """Per-holding reconciliation between the Live-register and NAV+CAS bases."""
+    del mtime_ns
+    if not BASIS_BRIDGE_PATH.exists():
+        return {}
+    return json.loads(BASIS_BRIDGE_PATH.read_text(encoding="utf-8"))
 
 
 def _norm_key(s: str) -> str:
@@ -1060,7 +1074,7 @@ def _render_ov_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> 
 
 
 _BOR_VIEWS = ["Overview", "Portfolio", "Company details", "Analytics",
-              "IFRS & Audit Trail", "Change Log", "Parked"]
+              "Change Log", "Parked"]
 
 
 def _render_book_of_record(view: str, months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
@@ -1072,21 +1086,20 @@ def _render_book_of_record(view: str, months_df: pd.DataFrame, positions_df: pd.
     if view == "Overview":
         _render_bor_overview(months_df, positions_df)
     elif view == "Portfolio":
-        st.info(
-            "Why the totals here differ from the Overview: this operational view carries each "
-            "**fund / LP position at its latest Capital Account Statement NAV**, whereas the "
-            "Overview uses the summary Live-register figure. **Every direct holding matches "
-            "exactly**; the difference is entirely the fund vehicles — principally the MGX "
-            "vehicles. On this basis invested is ~\\$2,160m and fair value ~\\$4,568m, versus "
-            "~\\$1,903m and ~\\$3,735m on the Overview. Both are grounded in our data; the figures "
-            "will be aligned in next month's reporting.")
+        st.markdown(
+            "<div style='font-size:12px;font-style:italic;color:#8a8f88;line-height:1.5;"
+            "margin:2px 0 12px'>Why the totals here differ from the Overview: this operational "
+            "view carries each fund / LP position at its latest Capital Account Statement NAV, "
+            "whereas the Overview uses the summary Live-register figure. Every direct holding "
+            "matches exactly; the difference is entirely the fund vehicles — principally the MGX "
+            "vehicles. On this basis invested is ~&#36;2,160m and fair value ~&#36;4,568m, versus "
+            "~&#36;1,903m and ~&#36;3,735m on the Overview. Both are grounded in our data; the "
+            "figures will be aligned in next month's reporting.</div>", unsafe_allow_html=True)
         _render_current_month()
     elif view == "Company details":
         _render_bor_register(months_df, positions_df)
     elif view == "Analytics":
         _render_bor_analytics(months_df, positions_df)
-    elif view == "IFRS & Audit Trail":
-        _render_bor_ifrs(months_df, positions_df)
     elif view == "Change Log":
         _render_bor_changelog()
     elif view == "Parked":
@@ -1244,14 +1257,21 @@ def _render_bor_register(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
     by_co = live.assign(company=live["deal_name"].map(_consolidate_name))
     order = (by_co.groupby("company", as_index=False)["carrying_value"].sum()
              .sort_values("carrying_value", ascending=False)["company"].tolist())
+    if st.session_state.get("bor_reg_pick") not in order:
+        st.session_state["bor_reg_pick"] = order[0]
     with st.container(border=True):
         st.subheader("Company details")
         lc, rc = st.columns([1, 3.2])
         with lc:
-            pick = st.radio("Investment", order, key="bor_reg_pick",
-                            label_visibility="collapsed")
+            for name in order:
+                sel = st.session_state["bor_reg_pick"] == name
+                if st.button(name, key=f"borco_{_norm_key(name)}",
+                             type=("primary" if sel else "secondary"),
+                             use_container_width=True):
+                    st.session_state["bor_reg_pick"] = name
+                    st.rerun()
         with rc:
-            _render_bor_factsheet(pick, by_co, positions_df)
+            _render_bor_factsheet(st.session_state["bor_reg_pick"], by_co, positions_df)
 
 
 def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.DataFrame) -> None:
@@ -1260,6 +1280,8 @@ def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.Da
         st.info("No data for this holding.")
         return
     attrs = _lookup_accounts(company)
+    facts = _load_company_facts().get(company.strip().lower(), {})
+    dom = _load_domicile_legal().get(company.strip().lower(), {})
     inv = float(sub["invested"].sum())
     fv = float(sub["carrying_value"].sum())
     gain = float(sub["gain"].sum())
@@ -1270,6 +1292,11 @@ def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.Da
         return "  \n".join(f"**{k}:** {attrs.get(k) or 'Pending'}" for k in keys)
 
     st.markdown(f"#### {company}")
+    if facts.get("description"):
+        line = f"_{facts['description']}_"
+        if facts.get("website"):
+            line += f"  \u00b7  [{facts['website']}]({facts['website']})"
+        st.markdown(line)
     with st.container(horizontal=True):
         st.metric("Fair value", _fmt_money(fv), border=True)
         st.metric("Capital deployed", _fmt_money(inv), border=True)
@@ -1281,6 +1308,11 @@ def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.Da
     st.markdown("**Measurement basis**")
     st.markdown(_dl(["IFRS classification", "Valuation method", "Fair value hierarchy",
                      "Valuation basis", "Influence band", "Holding"]))
+    if dom.get("domicile"):
+        st.markdown(f"**Domicile (our legal documents):** {dom['domicile']}  \n"
+                    f"<span style='font-size:11px;opacity:.6'>Source: "
+                    f"{dom.get('domicile_source', 'legal docs')}</span>",
+                    unsafe_allow_html=True)
     st.caption("Identity and classification fields are the accounts team's (adopted); fair value, "
                "capital deployed and value created are our own figures. "
                f"Weight in portfolio {weight * 100:.1f}%.")
@@ -1318,6 +1350,17 @@ def _render_bor_parked(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> N
     st.markdown("<h1 class='g42-serif' style='margin:0'>Parked</h1>", unsafe_allow_html=True)
     st.caption("Holding area for sections taken out of other views — nothing is deleted; "
                "we will place these where they belong later.")
+    sub = st.segmented_control(
+        "Parked view", ["Complete investment register", "IFRS & Audit Trail"],
+        default="Complete investment register", key="bor_parked_view",
+        label_visibility="collapsed") or "Complete investment register"
+    if sub == "IFRS & Audit Trail":
+        _render_bor_ifrs(months_df, positions_df)
+        return
+    _render_bor_parked_register(months_df, positions_df)
+
+
+def _render_bor_parked_register(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
     m = _latest_month(months_df)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
     if live.empty:
@@ -1426,6 +1469,28 @@ def _render_bor_ifrs(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> Non
         st.caption(("Internal figures tie. " if tie else "Internal figures do not tie — investigate. ")
                    + "Reconciliation to the signed statutory statements and the board deck is not "
                    "yet wired into our data — flagged as an open item, not estimated.")
+
+        bridge = _load_basis_bridge(_path_mtime(BASIS_BRIDGE_PATH))
+        if bridge.get("drivers"):
+            st.markdown("**Live-register basis vs NAV + Capital Account Statement basis**")
+            bdf = pd.DataFrame(bridge["drivers"])
+            _html_table(bdf[["holding", "invested_live", "invested_nav", "inv_delta",
+                             "carrying_live", "carrying_nav", "cv_delta"]], {
+                "holding": "Holding", "invested_live": "Invested (Live)",
+                "invested_nav": "Invested (NAV+CAS)", "inv_delta": "\u0394 inv",
+                "carrying_live": "Fair value (Live)", "carrying_nav": "Fair value (NAV+CAS)",
+                "cv_delta": "\u0394 FV"}, fmts={
+                "invested_live": lambda v: f"{v:,.1f}", "invested_nav": lambda v: f"{v:,.1f}",
+                "inv_delta": lambda v: f"{v:+,.1f}", "carrying_live": lambda v: f"{v:,.1f}",
+                "carrying_nav": lambda v: f"{v:,.1f}", "cv_delta": lambda v: f"{v:+,.1f}"})
+            t = bridge.get("totals", {})
+            st.caption(
+                f"Differences vs the Live-register basis arise solely on fund / LP positions "
+                f"carried at their latest Capital Account Statement NAV — principally the MGX "
+                f"vehicles; {bridge.get('n_tie', '?')} of {bridge.get('n_holdings', '?')} holdings "
+                f"tie exactly. Totals (USD m): invested {t.get('invested_live', 0):,.1f} → "
+                f"{t.get('invested_nav', 0):,.1f}; fair value {t.get('carrying_live', 0):,.1f} → "
+                f"{t.get('carrying_nav', 0):,.1f}.")
 
     with st.container(border=True):
         st.subheader("Basis of preparation")

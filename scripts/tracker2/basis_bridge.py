@@ -9,6 +9,7 @@ can see exactly which holdings drive the gap. Read-only.
 from __future__ import annotations
 
 import html as _html
+import json
 import re
 import sqlite3
 from pathlib import Path
@@ -86,6 +87,31 @@ def main() -> None:
           f"delta={m['inv_delta'].sum():9.1f}")
     print(f"  Carrying  Live={m['carrying_live'].sum():9.1f}  NAV+CAS={m['carrying_nav'].sum():9.1f}  "
           f"delta={m['cv_delta'].sum():9.1f}")
+
+    def _r(v):
+        return None if pd.isna(v) else round(float(v), 1)
+
+    drivers = [
+        {"holding": (r["deal_name"] if pd.notna(r["deal_name"]) else r["name"]),
+         "invested_live": _r(r["invested_live"]), "invested_nav": _r(r["invested_nav"]),
+         "inv_delta": _r(r["inv_delta"]), "carrying_live": _r(r["carrying_live"]),
+         "carrying_nav": _r(r["carrying_nav"]), "cv_delta": _r(r["cv_delta"])}
+        for _, r in show.iterrows()
+        if pd.isna(r["cv_delta"]) or abs(r["cv_delta"]) > 0.05
+        or pd.isna(r["inv_delta"]) or abs(r["inv_delta"]) > 0.05
+    ]
+    payload = {
+        "drivers": drivers,
+        "totals": {
+            "invested_live": _r(m["invested_live"].sum()), "invested_nav": _r(m["invested_nav"].sum()),
+            "carrying_live": _r(m["carrying_live"].sum()), "carrying_nav": _r(m["carrying_nav"].sum()),
+        },
+        "n_holdings": int(m["deal_name"].notna().sum()),
+        "n_tie": int(((m["cv_delta"].abs() <= 0.05) & m["deal_name"].notna()).sum()),
+    }
+    Path("data/portfolio/basis_bridge.json").write_text(
+        json.dumps(payload, indent=2), encoding="utf-8")
+    print("Wrote data/portfolio/basis_bridge.json")
 
 
 if __name__ == "__main__":
