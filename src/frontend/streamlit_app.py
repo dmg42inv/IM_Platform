@@ -584,7 +584,7 @@ def _render_company_profiles(months_df: pd.DataFrame, positions_df: pd.DataFrame
 
     st.markdown("<hr style='margin:18px 0;border-top:1px solid #E4E0D0'>", unsafe_allow_html=True)
     st.caption("Visual one-pagers (from the Portfolio Summary):")
-    html_path = ROOT / "data" / "outputs" / "Tracker_Style_Dashboard.html"
+    html_path = ROOT / "data" / "outputs" / "G42_Investments_Portfolio_Dashboard_2026-08-25.html"
     if not html_path.exists():
         st.info("Tracker dashboard not generated yet.")
         return
@@ -1403,7 +1403,7 @@ def _render_bor_onepagers() -> None:
     st.caption("Company Profiles — PitchBook-style one-pagers, retained from Tracker 1 for "
                "reference (financials/domicile/ownership are ours; website, logo, description and "
                "key people are pending until sourced).")
-    html_path = ROOT / "data" / "outputs" / "Tracker_Style_Dashboard.html"
+    html_path = ROOT / "data" / "outputs" / "G42_Investments_Portfolio_Dashboard_2026-08-25.html"
     if not html_path.exists():
         st.info("Reference dashboard not generated yet.")
         return
@@ -2151,7 +2151,7 @@ def _render_parking() -> None:
 def _render_current_month() -> None:
     """Embed the generated tracker-style dashboard (company profiles) for the
     latest reporting month."""
-    html_path = ROOT / "data" / "outputs" / "Tracker_Style_Dashboard.html"
+    html_path = ROOT / "data" / "outputs" / "G42_Investments_Portfolio_Dashboard_2026-08-25.html"
     if not html_path.exists():
         st.info("Tracker dashboard not generated yet. Run "
                 "`im_platform generate-tracker-dashboard` to build it.")
