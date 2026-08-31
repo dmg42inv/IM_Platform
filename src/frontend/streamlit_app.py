@@ -144,8 +144,8 @@ def _inject_theme() -> None:
     )
 
 
-NAV_SECTIONS = ["Overview", "Portfolio", "Company Profiles", "Historical", "Accounts team",
-                "Analytics", "Misc", "Parking"]
+NAV_SECTIONS = ["Overview", "Portfolio", "Company Profiles", "Historical",
+                "Analytics", "Misc", "Parking lot"]
 
 # Sections whose figures are position-derived, so the entity scope filter applies.
 _SCOPED_SECTIONS = {"Overview", "Company Profiles", "Historical", "Analytics"}
@@ -444,9 +444,6 @@ def _render_app(history: pd.DataFrame, monthly_diff: pd.DataFrame,
     if section == "Company Profiles":
         _render_company_profiles(s_months, s_positions)
         return
-    if section == "Accounts team":
-        _render_accounts_team()
-        return
     if section == "Overview":
         _render_ov_overview(s_months, s_positions)
         return
@@ -456,7 +453,7 @@ def _render_app(history: pd.DataFrame, monthly_diff: pd.DataFrame,
     if section == "Misc":
         _render_misc(months_df, positions_df)
         return
-    if section == "Parking":
+    if section == "Parking lot":
         _render_parking()
         return
 
@@ -2143,9 +2140,10 @@ def _render_misc(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
 def _render_parking() -> None:
     """Holding area for sections removed from other tabs — nothing is deleted, so
     anything parked here can be restored to any tab on request."""
-    st.markdown("<h1 class='g42-serif'>Parking</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='g42-serif'>Parking lot</h1>", unsafe_allow_html=True)
     st.caption("A holding area for sections we take out of other tabs. Kept here so nothing is "
-               "lost and any of it can be moved back on request. Empty for now.")
+               "lost and any of it can be moved back on request.")
+    _render_accounts_team()
 
 
 def _render_current_month() -> None:
