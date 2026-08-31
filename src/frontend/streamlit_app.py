@@ -491,9 +491,10 @@ def _render_app(history: pd.DataFrame, monthly_diff: pd.DataFrame,
 
 
 def _render_company_profiles(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
-    """Grounded per-company detail (identity, economics, carry history, cited cash
-    movements) followed by the visual one-pagers from the tracker embed."""
+    """Tracker one-pagers first, then the grounded per-company detail (identity,
+    economics, carry history, cited cash movements)."""
     st.markdown("<h2 class='g42-serif'>Company profiles</h2>", unsafe_allow_html=True)
+    _render_company_one_pagers()
     if not positions_df.empty:
         # Full investment register (every holding in scope) — sortable, exportable.
         m0 = _latest_month(months_df)
@@ -579,8 +580,8 @@ def _render_company_profiles(months_df: pd.DataFrame, positions_df: pd.DataFrame
                         "filename": st.column_config.TextColumn("Source file"),
                     })
 
-    st.markdown("<hr style='margin:18px 0;border-top:1px solid #E4E0D0'>", unsafe_allow_html=True)
-    st.caption("Visual one-pagers (from the Portfolio Summary):")
+
+def _render_company_one_pagers() -> None:
     html_path = ROOT / "data" / "outputs" / "G42_Investments_Portfolio_Dashboard_2026-08-25.html"
     if not html_path.exists():
         st.info("Tracker dashboard not generated yet.")
@@ -591,6 +592,7 @@ def _render_company_profiles(months_df: pd.DataFrame, positions_df: pd.DataFrame
              "document.querySelectorAll('section.tab').forEach(function(s){s.classList.remove('active');});"
              "var c=document.getElementById('companies');if(c){c.classList.add('active');}});</script>")
     components.html(html, height=1600, scrolling=True)
+    st.markdown("<hr style='margin:18px 0;border-top:1px solid #E4E0D0'>", unsafe_allow_html=True)
 
 
 def _render_accounts_team() -> None:
