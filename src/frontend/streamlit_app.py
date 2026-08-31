@@ -587,6 +587,9 @@ def _render_company_one_pagers() -> None:
         st.info("Tracker dashboard not generated yet.")
         return
     html = html_path.read_text(encoding="utf-8")
+    # Only the per-company panel belongs here; the tracker's other tabs (Live, Exited,
+    # Vintage, NAV, Cashflows...) are already served by the Portfolio section.
+    html += "<style>nav{display:none !important;}</style>"
     # The companies nav button was removed from the tracker; reveal the panel directly.
     html += ("<script>window.addEventListener('load',function(){"
              "document.querySelectorAll('section.tab').forEach(function(s){s.classList.remove('active');});"
