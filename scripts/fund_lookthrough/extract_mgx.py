@@ -322,9 +322,13 @@ def process(path: Path, conn: sqlite3.Connection | None, apply: bool) -> dict:
 
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     digest = sha256(path)
+    # Reports are filed in more than one folder, so replace on fund and reporting
+    # date rather than file hash, otherwise holdings are counted twice.
     conn.execute("DELETE FROM fund_holdings WHERE doc_id IN "
-                 "(SELECT doc_id FROM fund_documents WHERE sha256 = ?)", (digest,))
-    conn.execute("DELETE FROM fund_documents WHERE sha256 = ?", (digest,))
+                 "(SELECT doc_id FROM fund_documents WHERE fund = ? AND as_of_date = ?)",
+                 (fund, scheds[0].as_of_date))
+    conn.execute("DELETE FROM fund_documents WHERE fund = ? AND as_of_date = ?",
+                 (fund, scheds[0].as_of_date))
     cur = conn.execute(
         "INSERT INTO fund_documents (fund, doc_type, as_of_date, file_name, file_path, "
         "sha256, pages, ingested_at) VALUES (?,?,?,?,?,?,?,?)",
