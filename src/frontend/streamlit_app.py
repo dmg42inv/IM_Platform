@@ -5,6 +5,7 @@ import json
 import os
 import re
 import sqlite3
+import sys
 from pathlib import Path
 
 import altair as alt
@@ -12,8 +13,13 @@ import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
-
 ROOT = Path(__file__).resolve().parents[2]
+# Streamlit runs this file directly, so resolve the backend package from the repo rather than
+# relying on the editable install being present.
+sys.path.insert(0, str(ROOT / "src" / "backend"))
+
+from im_platform import metrics  # noqa: E402  - needs the path above
+
 SNAPSHOT_HISTORY_PATH = ROOT / "data" / "source_of_truth" / "Portfolio_Snapshot_History.xlsx"
 MONTHLY_DIFF_PATH = ROOT / "data" / "outputs" / "Portfolio_Monthly_Diff.xlsx"
 PORTFOLIO_DB_PATH = ROOT / "data" / "portfolio" / "portfolio.sqlite"
@@ -886,7 +892,7 @@ def _exec_observations(live: pd.DataFrame) -> list[str]:
                    f"**{sec.iloc[0] / total * 100:.0f}%** ({_fmt_money(sec.iloc[0])}).")
     inv, gain, dist = (float(live["invested"].sum()), float(live["gain"].sum()),
                        float(live["distributions"].sum()))
-    moic = (dist + total) / inv if inv else None
+    moic = metrics.gross_multiple(live)
     if moic:
         obs.append(f"Value created is **{_fmt_money(gain)}** \u2014 a **{moic:.2f}x** gross multiple "
                    f"on **{_fmt_money(inv)}** of capital deployed.")
@@ -913,7 +919,7 @@ def _render_ov_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> 
     exited = month_pos[month_pos["tab"] == "Exited"]
     inv, carry, dist, gain = (live["invested"].sum(), live["carrying_value"].sum(),
                               live["distributions"].sum(), live["gain"].sum())
-    moic = (dist + carry) / inv if inv else None
+    moic = metrics.gross_multiple(live)
     tcol = st.columns([1.5, 5], vertical_alignment="bottom")
     with tcol[0]:
         st.markdown("<h1 class='g42-serif' style='margin:0'>Overview</h1>",
@@ -931,7 +937,7 @@ def _render_ov_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> 
         kc[0].metric("Current fair value", _fmt_money(carry), border=True)
         kc[1].metric("Capital deployed", _fmt_money(inv), border=True)
         kc[2].metric("Value created", _fmt_money(gain), border=True)
-        kc[3].metric("Gross MOIC (TVPI)", (f"{moic:.2f}x" if moic else "n/a"), border=True)
+        kc[3].metric("Gross MOIC (TVPI)", metrics.format_multiple(moic), border=True)
         kc[4].metric("Live investments", f"{len(live):,}", border=True)
         st.caption(f"Figures reflect the {len(live)} live (unrealised) investments only; a further "
                    f"{len(exited)} investments have been realised or written off and are excluded.")
@@ -1026,12 +1032,12 @@ def _render_ov_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> 
             st.subheader("MGX sub-group")
             m_inv, m_fv, m_gain = (mgx["invested"].sum(), mgx["carrying_value"].sum(),
                                    mgx["gain"].sum())
-            m_mult = m_fv / m_inv if m_inv else None
+            m_mult = metrics.gross_multiple(mgx)
             with st.container(horizontal=True):
                 st.metric("MGX fair value", _fmt_money(m_fv), border=True)
                 st.metric("Capital deployed", _fmt_money(m_inv), border=True)
                 st.metric("Value created", _fmt_money(m_gain), border=True)
-                st.metric("Multiple", (f"{m_mult:.2f}x" if m_mult else "n/a"), border=True)
+                st.metric("Gross multiple", metrics.format_multiple(m_mult), border=True)
                 st.metric("Vehicles", f"{mgx['deal_name'].nunique():,}", border=True)
             mt = (mgx.groupby("deal_name", as_index=False)
                   .agg(deal_type=("deal_type", "first"), geography=("geography", "first"),
@@ -1127,7 +1133,7 @@ def _render_bor_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
     carry = live["carrying_value"].sum()
     dist = live["distributions"].sum()
     gain = live["gain"].sum()
-    moic = (dist + carry) / inv if inv else None
+    moic = metrics.gross_multiple(live)
     ms = months_df.sort_values("month_id")
     first_carry = float(ms["live_carrying"].iloc[0]) if len(ms) else 0.0
     growth = (carry / first_carry - 1) * 100 if first_carry else 0.0
@@ -1161,7 +1167,7 @@ def _render_bor_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
         r1[0].metric("Current fair value", _fmt_money(carry), border=True)
         r1[1].metric("Capital deployed", _fmt_money(inv), border=True)
         r1[2].metric("Value created", _fmt_money(gain), border=True)
-        r1[3].metric("Gross multiple", (f"{moic:.2f}x" if moic else "n/a"), border=True)
+        r1[3].metric("Gross multiple", metrics.format_multiple(moic), border=True)
         r1[4].metric("Live investments", f"{len(live):,}", border=True)
         r2 = st.columns(5)
         r2[0].metric("Exited investments", f"{len(exited):,}", border=True)
@@ -1315,7 +1321,7 @@ def _render_bor_factsheet(company: str, by_co: pd.DataFrame, positions_df: pd.Da
     inv = float(sub["invested"].sum())
     fv = float(sub["carrying_value"].sum())
     gain = float(sub["gain"].sum())
-    mult = fv / inv if inv else None
+    mult = metrics.gross_multiple(sub)
     weight = fv / float(by_co["carrying_value"].sum()) if by_co["carrying_value"].sum() else 0
 
     def _dl(keys: list[str]) -> str:
@@ -1676,15 +1682,16 @@ def _render_value_creation(months_df: pd.DataFrame, positions_df: pd.DataFrame) 
     lbl = dict(zip(months_df["month_id"], months_df["label"])).get(m, m)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")]
     inv, fv, vc = live["invested"].sum(), live["carrying_value"].sum(), live["gain"].sum()
-    mult = fv / inv if inv else None
+    mult = metrics.gross_multiple(live)
     with st.container(horizontal=True):
         st.metric("Capital deployed", _fmt_money(inv), border=True)
         st.metric("Current fair value", _fmt_money(fv), border=True)
         st.metric("Value created", _fmt_money(vc), border=True)
-        st.metric("Gross multiple", (f"{mult:.2f}x" if mult else "n/a"), border=True)
+        st.metric("Gross multiple", metrics.format_multiple(mult), border=True)
         st.metric("Live holdings", f"{len(live):,}", border=True)
     st.caption(f"Live holdings only, as of {lbl}. Capital deployed = invested; value created = "
-               f"fair value \u2212 invested. Our {len(live)} holdings. USD millions.")
+               f"fair value + distributions \u2212 invested; gross multiple = (distributions + fair "
+               f"value) / invested. Our {len(live)} holdings. USD millions.")
 
     with st.container(border=True):
         st.subheader("Value created since inception")
@@ -2097,12 +2104,10 @@ def _render_misc(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
         st.subheader("Basis of preparation")
         st.markdown(
             "- Figures are USD millions from the monthly **Portfolio Summary** tracker (the Live / "
-            "Exited register) — our single source of truth for the 26-name book.\n"
-            "- Capital deployed = cumulative **Invested**; Fair value = **Carrying Value**; Value "
-            "created = Fair value + Distributions − Invested (the tracker's own definition); "
-            "MOIC = (Distributions + Fair value) / Invested.\n"
-            "- Every figure traces to a tracker cell (see the source-cell citations in Company "
-            "Profiles); source files are SHA-256 fingerprinted below.\n"
+            "Exited register), with fund positions carried at their latest capital account statement.\n"
+            + "\n".join(f"- {line}" for line in metrics.BASIS_OF_PREPARATION) + "\n"
+            "- Every figure traces to a tracker cell or a statement line; source files are SHA-256 "
+            "fingerprinted below.\n"
             "- Entity scope: **MOZN** = the MOZN holding company; **MGX** = the GX Investments / MGX "
             "sub-book (inside G42); **G42** = everything that isn't MOZN; **Consolidated** = all."
         )
