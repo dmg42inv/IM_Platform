@@ -67,11 +67,11 @@ class Exposure:
     company: str
     fund: str
     position: str
-    fund_fair_value: float
-    our_fair_value: float
+    fund_fair_value: float   # USD millions, to match monthly_positions
+    our_fair_value: float    # USD millions
     currency: str
     as_of_date: str
-    attribution_factor: float
+    attribution_factor: float  # true fraction of the fund we are attributed
     source_doc: str
 
 
@@ -114,7 +114,9 @@ def build_exposures(db_path: str | Path, month_id: str) -> tuple[list[Exposure],
             "select investment_name, reporting_currency, fair_value, doc_id from fund_holdings"
             " where fund=? and as_of_date=? and level='instrument' and fair_value is not null",
             (fund, as_of)).fetchall()
-        gross = sum(float(r["fair_value"] or 0.0) for r in rows)
+        # fund_holdings stores whole units; monthly_positions stores USD millions. Normalise here
+        # so the attribution factor is a genuine fraction rather than a mixed-unit ratio.
+        gross = sum(float(r["fair_value"] or 0.0) for r in rows) / 1_000_000.0
         if not rows or gross <= 0:
             warnings.append(f"{fund}: instrument holdings carry no fair value at {as_of}.")
             continue
@@ -126,7 +128,7 @@ def build_exposures(db_path: str | Path, month_id: str) -> tuple[list[Exposure],
         source_doc = doc["file_name"] if doc else "fund quarterly report"
 
         for r in rows:
-            fv = float(r["fair_value"] or 0.0)
+            fv = float(r["fair_value"] or 0.0) / 1_000_000.0
             exposures.append(Exposure(
                 company=canonical_name(r["investment_name"]),
                 fund=fund,

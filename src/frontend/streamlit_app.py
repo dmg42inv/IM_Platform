@@ -1794,7 +1794,6 @@ def _render_exposure(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> Non
             st.markdown(f"**{position}** \u2014 {_fmt_money(part['our_fair_value'].sum())} "
                         f"across {part['company'].nunique()} companies".replace("$", "\\$"))
             v = part[["company", "fund_fair_value", "our_fair_value"]].copy()
-            v["fund_fair_value"] = v["fund_fair_value"] / 1_000_000
             _html_table(v.sort_values("our_fair_value", ascending=False), {
                 "company": "Company", "fund_fair_value": "Fund-level fair value",
                 "our_fair_value": "Our share"},
