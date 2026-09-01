@@ -19,6 +19,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src" / "backend"))
 
 from im_platform import metrics  # noqa: E402  - needs the path above
+from im_platform.exposure import (  # noqa: E402
+    FUND_TO_POSITION, Exposure, build_exposures, by_company)
 
 SNAPSHOT_HISTORY_PATH = ROOT / "data" / "source_of_truth" / "Portfolio_Snapshot_History.xlsx"
 MONTHLY_DIFF_PATH = ROOT / "data" / "outputs" / "Portfolio_Monthly_Diff.xlsx"
@@ -1657,11 +1659,14 @@ def _render_ov_analytics(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
         st.info("No portfolio database yet.")
         return
     view = st.segmented_control(
-        "Analytics view", ["Value creation", "Concentration", "Portfolio growth",
-                           "Geography", "Sector"],
+        "Analytics view", ["Value creation", "Exposure look-through", "Concentration",
+                           "Portfolio growth", "Geography", "Sector"],
         default="Value creation", key="an_view", label_visibility="collapsed") or "Value creation"
     if view == "Value creation":
         _render_value_creation(months_df, positions_df)
+        return
+    if view == "Exposure look-through":
+        _render_exposure(months_df, positions_df)
         return
     if view == "Portfolio growth":
         _render_portfolio_growth(months_df, positions_df)
@@ -1673,6 +1678,152 @@ def _render_ov_analytics(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
         _render_sector(months_df, positions_df)
         return
     _render_concentration(months_df, positions_df)
+
+
+def _look_through_frame(month_id: str):
+    """Underlying exposures for the month, aggregated by company. Cached on DB mtime."""
+    return _cached_exposures(str(PORTFOLIO_DB_PATH), _path_mtime(PORTFOLIO_DB_PATH), month_id)
+
+
+@st.cache_data(show_spinner=False)
+def _cached_exposures(path: str, mtime_ns: int, month_id: str):
+    del mtime_ns
+    exps, warns = build_exposures(path, month_id)
+    rows = [{"company": e.company, "position": e.position, "fund": e.fund,
+             "our_fair_value": e.our_fair_value, "fund_fair_value": e.fund_fair_value,
+             "currency": e.currency, "as_of_date": e.as_of_date,
+             "attribution_factor": e.attribution_factor, "source_doc": e.source_doc}
+            for e in exps]
+    return pd.DataFrame(rows), pd.DataFrame(by_company(exps)), warns
+
+
+def _true_exposure_table(live: pd.DataFrame, agg: pd.DataFrame) -> pd.DataFrame:
+    """Direct holdings and fund look-through on one list - our actual economic exposure.
+
+    Fund positions are replaced by the companies underneath them, so nothing is double counted.
+    """
+    looked_through = set(FUND_TO_POSITION.values())
+    direct = (live[~live["deal_name"].isin(looked_through)]
+              .assign(company=lambda d: d["deal_name"].map(_consolidate_name))
+              .groupby("company", as_index=False)["carrying_value"].sum()
+              .rename(columns={"carrying_value": "our_fair_value"}))
+    direct["holding"] = "Direct"
+    if agg.empty:
+        combined = direct
+    else:
+        indirect = agg[["company", "our_fair_value"]].copy()
+        indirect["holding"] = "Through a fund"
+        combined = pd.concat([direct, indirect], ignore_index=True)
+    # The same name could appear both directly and through a fund; sum it.
+    out = (combined.groupby("company", as_index=False)
+           .agg(our_fair_value=("our_fair_value", "sum"),
+                holding=("holding", lambda s: " + ".join(sorted(set(s))))))
+    total = out["our_fair_value"].sum()
+    out["weight"] = out["our_fair_value"] / total if total else 0.0
+    return out.sort_values("our_fair_value", ascending=False)
+
+
+def _render_exposure(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
+    """What we are really exposed to, once the funds are looked through."""
+    m = _latest_month(months_df)
+    lbl = dict(zip(months_df["month_id"], months_df["label"])).get(m, m)
+    live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
+    if live.empty:
+        st.info("No live holdings in this scope.")
+        return
+    detail, agg, warns = _look_through_frame(m)
+    if detail.empty:
+        st.info("No fund look-through data on file for this month.")
+        return
+    # Keep only vehicles present in the current entity scope.
+    in_scope = set(live["deal_name"])
+    detail = detail[detail["position"].isin(in_scope)]
+    if detail.empty:
+        st.info("No looked-through fund vehicles in this entity scope.")
+        return
+    agg = pd.DataFrame(by_company([r for r in _rebuild(detail)]))
+
+    portfolio_fv = float(live["carrying_value"].sum())
+    looked = float(detail["our_fair_value"].sum())
+    fund_positions = float(live[live["deal_name"].isin(set(detail["position"]))]["carrying_value"].sum())
+
+    with st.container(border=True):
+        st.markdown(
+            f"<div style='text-align:right;font-size:12px;opacity:.6;margin:-2px 0 6px'>"
+            f"As of {lbl}</div>", unsafe_allow_html=True)
+        k = st.columns(4)
+        k[0].metric("Fund positions looked through", _fmt_money(fund_positions), border=True)
+        k[1].metric("Underlying companies", f"{agg['company'].nunique():,}", border=True)
+        k[2].metric("Share of portfolio", f"{fund_positions / portfolio_fv * 100:.0f}%" if portfolio_fv else "n/a", border=True)
+        k[3].metric("Largest underlying", agg.iloc[0]["company"] if len(agg) else "\u2014",
+                    delta=_fmt_money(agg.iloc[0]["our_fair_value"]) if len(agg) else None,
+                    delta_color="off", border=True)
+        st.caption("Each fund line on the register is one position; underneath it sits a portfolio "
+                   "of companies. These are our attributable share of those companies.")
+
+    combined = _true_exposure_table(live, agg)
+    with st.container(border=True):
+        st.subheader("Our ten largest exposures, once funds are looked through")
+        top = combined.head(10).copy()
+        _html_table(top, {"company": "Company", "holding": "Held", "our_fair_value": "Our fair value",
+                          "weight": "Weight"},
+                    fmts={"our_fair_value": lambda v: f"${v:,.1f}",
+                          "weight": lambda v: f"{v * 100:.1f}%"})
+        hidden = top[top["holding"].str.contains("fund")]["company"].tolist()
+        if hidden:
+            st.caption(f"**{', '.join(hidden)}** do not appear in the investment register at all \u2014 "
+                       f"they are held through fund vehicles. On a direct-holdings view they are invisible.")
+
+    with st.container(border=True):
+        st.subheader("Every underlying company")
+        show = agg.copy()
+        show["weight"] = show["our_fair_value"] / portfolio_fv if portfolio_fv else 0.0
+        _html_table(show[["company", "via", "our_fair_value", "weight"]], {
+            "company": "Company", "via": "Held through", "our_fair_value": "Our fair value",
+            "weight": "% of portfolio"},
+            fmts={"our_fair_value": lambda v: f"${v:,.1f}", "weight": lambda v: f"{v * 100:.2f}%"})
+        _bar_h(agg.head(15).rename(columns={"our_fair_value": "fair_value"}),
+               "company", "fair_value", x_title="Our fair value, USD m")
+
+    with st.container(border=True):
+        st.subheader("By vehicle")
+        for position, part in detail.groupby("position"):
+            factor = float(part["attribution_factor"].iloc[0])
+            src = str(part["source_doc"].iloc[0])
+            asof = str(part["as_of_date"].iloc[0])
+            st.markdown(f"**{position}** \u2014 {_fmt_money(part['our_fair_value'].sum())} "
+                        f"across {part['company'].nunique()} companies".replace("$", "\\$"))
+            v = part[["company", "fund_fair_value", "our_fair_value"]].copy()
+            v["fund_fair_value"] = v["fund_fair_value"] / 1_000_000
+            _html_table(v.sort_values("our_fair_value", ascending=False), {
+                "company": "Company", "fund_fair_value": "Fund-level fair value",
+                "our_fair_value": "Our share"},
+                fmts={"fund_fair_value": lambda x: f"{x:,.1f}", "our_fair_value": lambda x: f"${x:,.1f}"})
+            st.caption(f"Attribution factor {factor * 100:.4f}% \u00b7 holdings as at {asof} \u00b7 "
+                       f"source: {src}")
+
+    with st.container(border=True):
+        st.subheader("Basis and coverage")
+        st.markdown(
+            "- Instrument fair values in the fund reports are **gross**; a fund's ending NAV is "
+            "**net** of incentive allocation and fees. Attributing on NAV/NAV would overstate our "
+            "share by around a fifth.\n"
+            "- We attribute instead on **our carrying value / the sum of the fund's instrument "
+            "fair values**, so the companies below sum exactly to the fund position we already "
+            "tied to its capital account statement.\n"
+            "- The same company held through two vehicles is added together.")
+        if warns:
+            st.warning("**Not yet looked through** \u2014 disclosed rather than left out:\n\n"
+                       + "\n".join(f"- {w}" for w in warns))
+
+
+def _rebuild(detail: pd.DataFrame):
+    """Turn the scoped detail frame back into Exposure records for aggregation."""
+    return [Exposure(company=r.company, fund=r.fund, position=r.position,
+                     fund_fair_value=r.fund_fair_value, our_fair_value=r.our_fair_value,
+                     currency=r.currency, as_of_date=r.as_of_date,
+                     attribution_factor=r.attribution_factor, source_doc=r.source_doc)
+            for r in detail.itertuples()]
 
 
 def _render_value_creation(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
