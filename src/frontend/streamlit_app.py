@@ -1692,7 +1692,8 @@ def _cached_exposures(path: str, mtime_ns: int, month_id: str):
     rows = [{"company": e.company, "position": e.position, "fund": e.fund,
              "our_fair_value": e.our_fair_value, "fund_fair_value": e.fund_fair_value,
              "currency": e.currency, "as_of_date": e.as_of_date,
-             "attribution_factor": e.attribution_factor, "source_doc": e.source_doc}
+             "attribution_factor": e.attribution_factor,
+             "capital_account_share": e.capital_account_share, "source_doc": e.source_doc}
             for e in exps]
     return pd.DataFrame(rows), pd.DataFrame(by_company(exps)), warns
 
@@ -1798,8 +1799,15 @@ def _render_exposure(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> Non
                 "company": "Company", "fund_fair_value": "Fund-level fair value",
                 "our_fair_value": "Our share"},
                 fmts={"fund_fair_value": lambda x: f"{x:,.1f}", "our_fair_value": lambda x: f"${x:,.1f}"})
+            cap = part["capital_account_share"].iloc[0]
+            corroboration = ""
+            if pd.notna(cap):
+                agrees = abs(float(cap) - factor) <= 0.005
+                corroboration = (
+                    f" \u00b7 capital account statement puts our ownership at {float(cap) * 100:.2f}%"
+                    f"{', which corroborates it' if agrees else ', a difference explained under Basis and coverage'}")
             st.caption(f"Attribution factor {factor * 100:.4f}% \u00b7 holdings as at {asof} \u00b7 "
-                       f"source: {src}")
+                       f"source: {src}{corroboration}")
 
     with st.container(border=True):
         st.subheader("Basis and coverage")

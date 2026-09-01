@@ -73,6 +73,7 @@ class Exposure:
     as_of_date: str
     attribution_factor: float  # true fraction of the fund we are attributed
     source_doc: str
+    capital_account_share: float | None = None  # our NAV / partnership NAV, per the statement
 
 
 def _latest_holdings_date(con: sqlite3.Connection, fund: str) -> str | None:
@@ -80,6 +81,15 @@ def _latest_holdings_date(con: sqlite3.Connection, fund: str) -> str | None:
         "select max(as_of_date) from fund_holdings where fund=? and level='instrument'", (fund,)
     ).fetchone()
     return row[0] if row and row[0] else None
+
+
+def _capital_account_share(con: sqlite3.Connection, fund: str, as_of: str) -> float | None:
+    """Ownership per the capital account statement. Names differ in case between tables."""
+    row = con.execute(
+        "select our_share from fund_capital_accounts"
+        " where fund=? collate nocase and as_of_date=? and our_share is not null",
+        (fund, as_of)).fetchone()
+    return float(row[0]) if row and row[0] is not None else None
 
 
 def build_exposures(db_path: str | Path, month_id: str) -> tuple[list[Exposure], list[str]]:
@@ -114,6 +124,17 @@ def build_exposures(db_path: str | Path, month_id: str) -> tuple[list[Exposure],
             "select investment_name, reporting_currency, fair_value, doc_id from fund_holdings"
             " where fund=? and as_of_date=? and level='instrument' and fair_value is not null",
             (fund, as_of)).fetchall()
+        # A holding with no fair value drops out of both the numerator and the attribution
+        # factor, so it disappears from the analysis without a trace. Say so instead.
+        missing = [
+            r["investment_name"] for r in con.execute(
+                "select investment_name from fund_holdings where fund=? and as_of_date=?"
+                " and level='instrument' and fair_value is null", (fund, as_of))
+        ]
+        if missing:
+            warnings.append(
+                f"{fund}: no fair value on file for {', '.join(missing)}, "
+                f"so {'they are' if len(missing) > 1 else 'it is'} excluded from the look-through.")
         # fund_holdings stores whole units; monthly_positions stores USD millions. Normalise here
         # so the attribution factor is a genuine fraction rather than a mixed-unit ratio.
         gross = sum(float(r["fair_value"] or 0.0) for r in rows) / 1_000_000.0
@@ -122,6 +143,15 @@ def build_exposures(db_path: str | Path, month_id: str) -> tuple[list[Exposure],
             continue
 
         factor = our_value / gross
+        # The statement's own ownership percentage is an independent check on the factor. The two
+        # only agree where the fund carries no material accrued carry or fund-level liability.
+        cap_share = _capital_account_share(con, fund, as_of)
+        if cap_share is not None and abs(cap_share - factor) > 0.005:
+            warnings.append(
+                f"{fund}: capital account puts our ownership at {cap_share * 100:.2f}%, but the "
+                f"look-through uses {factor * 100:.2f}%. The partnership's NAV is net of incentive "
+                f"allocation and fund-level items that cannot be attributed to any one holding, "
+                f"so the NAV share would overstate exposure to each company.")
         doc = con.execute(
             "select file_name from fund_documents where doc_id=?", (rows[0]["doc_id"],)
         ).fetchone()
@@ -139,6 +169,7 @@ def build_exposures(db_path: str | Path, month_id: str) -> tuple[list[Exposure],
                 as_of_date=as_of,
                 attribution_factor=factor,
                 source_doc=source_doc,
+                capital_account_share=cap_share,
             ))
 
     # Funds we hold that have no look-through at all.

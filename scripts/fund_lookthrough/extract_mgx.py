@@ -21,6 +21,7 @@ document's own 'Total:' line before anything is written.
 from __future__ import annotations
 
 import argparse
+import bisect
 import hashlib
 import re
 import sqlite3
@@ -139,24 +140,37 @@ def open_pdf(path: Path):
 def anchors_from_total(total_numeric: list[tuple[str, float, float]]) -> list[float]:
     """Right-edge x of each column, taken from the schedule's own Total line.
 
-    The Total line populates every column, so it is a reliable template; data
+    The Total line occupies every column, so it is a reliable template; data
     rows leave cells blank and cannot be mapped by token order alone.
+
+    Nil cells ('-') must be kept. Dropping them shortens the template and
+    silently shifts every column to their right by one, which reads the fair
+    value column as unrealised gain and so on - a corruption that reconciling
+    rows against the same mis-mapped Total line cannot detect.
     """
-    return [x1 for text, _x0, x1 in total_numeric if parse_number(text) is not None]
+    return [x1 for _text, _x0, x1 in total_numeric]
 
 
 def map_to_columns(numeric: list[tuple[str, float, float]], anchors: list[float],
                    columns: list[str]) -> dict[str, float | None]:
+    """Assign cells to columns by right edge, splitting at the midpoint between
+    anchors. A fixed tolerance cannot be used: numbers are right-aligned but a
+    nil dash sits mid-cell, so its anchor is well left of the column's edge.
+    """
     values: dict[str, float | None] = {c: None for c in columns}
     if not anchors:
         return values
+    usable = min(len(anchors), len(columns))
+    bounds = [(anchors[i] + anchors[i + 1]) / 2.0 for i in range(len(anchors) - 1)]
     for text, _x0, x1 in numeric:
-        if parse_number(text) is None:
+        value = parse_number(text)
+        if value is None:
             continue
-        idx = min(range(len(anchors)), key=lambda i: abs(anchors[i] - x1))
-        if abs(anchors[idx] - x1) > 10.0 or idx >= len(columns):
+        if x1 < anchors[0] - 30.0 or x1 > anchors[-1] + 30.0:
             continue
-        values[columns[idx]] = parse_number(text)
+        idx = bisect.bisect_left(bounds, x1)
+        if idx < usable:
+            values[columns[idx]] = value
     return values
 
 
@@ -231,12 +245,41 @@ def parse_schedule(page, page_no: int) -> Schedule | None:
     return sched
 
 
+def check_identities(level: str, rows: list[Holding]) -> list[str]:
+    """Cross-column arithmetic the schedule must satisfy row by row.
+
+    Summing rows against the printed Total proves nothing about column mapping,
+    because both sides are mapped the same way. These identities span columns,
+    so a one-place shift breaks them.
+    """
+    problems: list[str] = []
+    for r in rows:
+        cost = r.values.get("cost")
+        fair_value = r.values.get("fair_value")
+        if cost is not None and fair_value is not None:
+            expected = cost + (r.values.get("unrealised_gain_loss") or 0.0)
+            if abs(expected - fair_value) > max(2.0, abs(fair_value) * 1e-9):
+                problems.append(
+                    f"{level}.{r.investment_name}: cost + unrealised = {expected:,.0f} "
+                    f"but fair value column reads {fair_value:,.0f}")
+        invested = r.values.get("invested_capital")
+        multiple = r.values.get("multiple")
+        if invested and multiple is not None:
+            expected_m = (invested + (r.values.get("total_return") or 0.0)) / invested
+            if abs(expected_m - multiple) > 0.02:
+                problems.append(
+                    f"{level}.{r.investment_name}: (invested + total return) / invested = "
+                    f"{expected_m:.2f}x but printed multiple is {multiple:.2f}x")
+    return problems
+
+
 def validate(sched: Schedule) -> list[str]:
     """Reconcile parsed rows to the schedule's own printed Total line."""
     problems = list(sched.unmapped)
     for level, rows in (("vehicle", sched.vehicles), ("instrument", sched.instruments)):
         if not rows:
             continue
+        problems.extend(check_identities(level, rows))
         total = sched.totals.get(level)
         if not total:
             problems.append(f"{level}: {len(rows)} rows but no Total row to check against")
