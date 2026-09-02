@@ -6,6 +6,57 @@ to fill a gap. A value that cannot be evidenced is shown as pending or unknown.
 
 ---
 
+## 0. Where this is going
+
+**The objective is a dashboard built entirely from our own source data.**
+
+The monthly Excel tracker is a *transitional* input. It exists to support the move, not to be
+depended on. Every month it remains the origin of a figure is a month in which the platform
+cannot answer "where did this come from" without pointing at a spreadsheet that someone edits by
+hand. The end state removes it.
+
+### Target architecture
+
+```
+primary documents  ->  extraction  ->  truth layer  ->  metric definitions  ->  views
+(statements,           hashed,        audit.sqlite     im_platform.metrics    dashboard
+ reports, LPAs)        page-level     + portfolio                             + exports
+                       locators       .sqlite
+```
+
+Facts flow one way. A view never reaches past the metric layer, the metric layer never reaches
+past the truth layer, and the truth layer holds nothing that did not arrive through a hashed,
+validated extraction. The Excel tracker enters at the far left as one document among many — it is
+evidence of what the accounts team reported, not the definition of what is true.
+
+### The rule that keeps us on the path
+
+**No new dependency on the tracker.** Any new figure must be derivable from primary sources. When
+a value can only come from the spreadsheet today, it is recorded as such and listed below as an
+open dependency, so the remaining distance is always visible rather than assumed.
+
+### Transition state, and what closes it
+
+| Dependency | Today | Closes when |
+|---|---|---|
+| Position-level register | tracker workbook per month | positions derive from statements, capital accounts and price sources |
+| Listed prices | tracker NAV tab, then external quotes | price sources ingested per month with date, ticker and exchange calendar |
+| Unlisted marks | tracker | board packs and valuation memos extracted and tied to each mark |
+| Fund positions | capital account statements (**already independent**) | — |
+| Look-through | quarterly reports (**already independent**) | — |
+| Historic months | tracker only, 45 of 47 uncertified | validator run across every month with sources attached |
+
+**Do not wait to be asked to close these.** Reducing the list is standing work. When a piece of
+evidence needed to close one is missing, say so and go and find it.
+
+### How we will know it is done
+
+Every figure on the dashboard resolves to a primary document with a page reference, the tracker
+can be withheld for a month without any number becoming unavailable, and the certified badge is
+earned by evidence rather than granted by default.
+
+---
+
 ## 1. Document intake is mandatory
 
 **No document enters any analysis until it has been screened.** Not one. Reading a new PDF and
