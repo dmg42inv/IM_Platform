@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import calendar
 import json
 from pathlib import Path
 
@@ -422,6 +423,58 @@ def _correct_deals_for_snapshot(
     return deals, citation_lookup
 
 
+def _apply_db_positions(deals: pd.DataFrame, month_id: str, db_path: Path) -> pd.DataFrame:
+    """Replace deal figures with the reconciled positions held in the database.
+
+    The tracker workbook and the reconciled extract are separate inputs that drift apart: the
+    extract's valuations stopped at 31 July, so a dashboard built from the August tracker still
+    carried July prices for the listed names and reconciled to neither source. Taking the figures
+    from monthly_positions makes this view agree with every other view by construction, because
+    they read the same table.
+    """
+    import sqlite3
+
+    con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    try:
+        rows = con.execute(
+            "select deal_name, tab, committed, invested, remaining_commitment, distributions,"
+            " carrying_value, gain, tvpi from monthly_positions where month_id=?",
+            (month_id,)).fetchall()
+    finally:
+        con.close()
+    if not rows:
+        raise SystemExit(f"no positions in the database for {month_id}")
+
+    by_deal = {r["deal_name"].strip(): dict(r) for r in rows}
+    # The tracker reports MGX I LP and Denali on one line; the register keeps Denali separate, so
+    # the combined row takes MGX I LP and Denali stands on its own row alongside it.
+    aliases = {"MGX I LP + Denali": "MGX I LP"}
+    numeric = ["committed", "invested", "remaining_commitment", "distributions",
+               "carrying_value", "gain", "tvpi"]
+    updated = deals.copy()
+    matched, unmatched = 0, []
+    for index, row in updated.iterrows():
+        name = str(row["deal_name"]).strip()
+        record = by_deal.get(aliases.get(name, name))
+        if record is None:
+            unmatched.append(name)
+            continue
+        for column in numeric:
+            updated.at[index, column] = record[column]
+        if name in aliases:
+            updated.at[index, "deal_name"] = aliases[name]
+        matched += 1
+
+    missing_from_dashboard = sorted(set(by_deal) - {str(d).strip() for d in updated["deal_name"]})
+    print(f"Positions from database {month_id}: {matched} deals updated.")
+    if unmatched:
+        print(f"  not in the database, left as extracted: {', '.join(unmatched)}")
+    if missing_from_dashboard:
+        print(f"  in the database but not on the dashboard: {', '.join(missing_from_dashboard)}")
+    return updated
+
+
 def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     output_path = args.output_file or Path("data/outputs/Tracker_Style_Dashboard.html")
     intake_path = args.intake_file or Path("data/source_of_truth/Investment_Register_Intake.xlsx")
@@ -440,6 +493,9 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
     cashflow, valuation = _filter_resolved_extract(cashflow, valuation)
 
     deals, citation_lookup = _correct_deals_for_snapshot(deals, cashflow, valuation, deal_entity_map, intake_path)
+    if getattr(args, "deals_from_db", None):
+        deals = _apply_db_positions(deals, args.deals_from_db,
+                                    args.portfolio_db or Path("data/portfolio/portfolio.sqlite"))
     section_irr = compute_section_irr(deals, cashflow, valuation, deal_entity_map)
     vintage_irr = compute_vintage_irr(deals, cashflow, valuation, deal_entity_map)
     quarterly = build_quarterly_cashflows(cashflow)
@@ -461,6 +517,10 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
         scan_report = json.loads(scan_report_path.read_text(encoding="utf-8"))
 
     as_of_date = valuation["valuation_date"].max() if len(valuation) else None
+    if getattr(args, "deals_from_db", None):
+        # The label must name the month the figures are actually on.
+        _y, _m = int(args.deals_from_db[:4]), int(args.deals_from_db[5:7])
+        as_of_date = pd.Timestamp(_y, _m, calendar.monthrange(_y, _m)[1])
     snapshot = build_monthly_snapshot(deals, str(as_of_date) if as_of_date is not None else "")
     snapshot_history, monthly_diff = write_snapshot_outputs(snapshot, snapshot_history_path, monthly_diff_path)
 
@@ -639,6 +699,8 @@ def main() -> None:
     tracker_dashboard_parser.add_argument("--tracker-extract-file", type=Path, default=None, help="Path to the Tracker_Extract_Reconciled workbook")
     tracker_dashboard_parser.add_argument("--reconciliation-file", type=Path, default=None, help="Path to the Entity_Reconciliation workbook")
     tracker_dashboard_parser.add_argument("--output-file", type=Path, default=None, help="Where to write the HTML dashboard")
+    tracker_dashboard_parser.add_argument("--deals-from-db", type=str, default=None, help="Month id, e.g. 2026-08. Take deal figures from the reconciled positions in the database instead of the tracker extract")
+    tracker_dashboard_parser.add_argument("--portfolio-db", type=Path, default=None, help="Portfolio database path")
     tracker_dashboard_parser.set_defaults(func=_generate_tracker_dashboard_command)
 
     snapshot_backfill_parser = subparsers.add_parser(
