@@ -171,6 +171,9 @@ after any change under `src/backend/`**, and verify with a fresh headless run
 visual check is not a test. Every structural change is verified by loading the app headlessly and
 walking the sections it touches.
 
+---
+
+## 7. Retrieval
 
 Search in this order, and never hand-roll regex over raw text before trying the stack:
 
