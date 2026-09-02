@@ -16,3 +16,4 @@ __pycache__/
 data/legal_kb/
 
 data/evidence/*.log
+tmp_*.py
