@@ -5,6 +5,7 @@ import json
 import os
 import re
 import sqlite3
+import subprocess
 import sys
 from pathlib import Path
 
@@ -464,7 +465,7 @@ def _render_app(history: pd.DataFrame, monthly_diff: pd.DataFrame,
     s_positions = _scoped_positions(positions_df, scope)
 
     if section == "Portfolio":
-        _render_current_month()
+        _render_current_month(s_months)
         return
     if section == "Company Profiles":
         _render_company_profiles(s_months, s_positions)
@@ -1194,7 +1195,7 @@ def _render_book_of_record(view: str, months_df: pd.DataFrame, positions_df: pd.
             "vehicles. On this basis invested is ~&#36;2,160m and fair value ~&#36;4,568m, versus "
             "~&#36;1,903m and ~&#36;3,735m on the Overview. Both are grounded in our data; the "
             "figures will be aligned in next month's reporting.</div>", unsafe_allow_html=True)
-        _render_current_month()
+        _render_current_month(s_months)
     elif view == "Company details":
         _render_bor_register(months_df, positions_df)
     elif view == "Analytics":
@@ -2400,18 +2401,75 @@ def _render_parking() -> None:
     _render_accounts_team()
 
 
-def _render_current_month() -> None:
-    """Embed the generated tracker-style dashboard (company profiles) for the
-    latest reporting month."""
-    html_path = ROOT / "data" / "outputs" / "G42_Investments_Portfolio_Dashboard_2026-08-25.html"
-    if not html_path.exists():
-        st.info("Tracker dashboard not generated yet. Run "
-                "`im_platform generate-tracker-dashboard` to build it.")
+_MONTH_HTML_CACHE = ROOT / "data" / "outputs" / "_month_cache"
+
+
+def _tracker_file_for(month_id: str) -> Path | None:
+    """The workbook a month was ingested from, if it is still readable."""
+    con = sqlite3.connect(f"file:{PORTFOLIO_DB_PATH}?mode=ro", uri=True)
+    try:
+        row = con.execute(
+            "select path from sources where month_id=? and path is not null"
+            " order by ingested_at desc limit 1", (month_id,)).fetchone()
+    except sqlite3.OperationalError:
+        return None
+    finally:
+        con.close()
+    if not row:
+        return None
+    path = Path(row[0])
+    return path if os.path.exists("\\\\?\\" + str(path)) else None
+
+
+def _month_dashboard_html(month_id: str, db_mtime: int) -> tuple[str | None, str]:
+    """Rendered register for a month, built on demand and cached on disk.
+
+    Returns the html and a status. The generator reads the month's own workbook, so a month whose
+    workbook is not readable cannot be rendered here - which is stated rather than papered over.
+    """
+    _MONTH_HTML_CACHE.mkdir(parents=True, exist_ok=True)
+    target = _MONTH_HTML_CACHE / f"{month_id}.html"
+    if target.exists() and target.stat().st_mtime_ns > db_mtime:
+        return target.read_text(encoding="utf-8"), "cached"
+
+    tracker = _tracker_file_for(month_id)
+    if tracker is None:
+        return None, "no_workbook"
+
+    env = dict(os.environ, PYTHONPATH=str(ROOT / "src" / "backend"), PYTHONWARNINGS="ignore")
+    result = subprocess.run(
+        [sys.executable, "-m", "im_platform.cli", "generate-tracker-dashboard",
+         "--tracker-file", str(tracker), "--deals-from-db", month_id,
+         "--skip-snapshot", "--output-file", str(target)],
+        cwd=str(ROOT), env=env, capture_output=True, text=True, timeout=300)
+    if result.returncode != 0 or not target.exists():
+        return None, (result.stderr or result.stdout or "generation failed").strip()[-400:]
+    return target.read_text(encoding="utf-8"), "generated"
+
+
+def _render_current_month(months_df: pd.DataFrame) -> None:
+    """The tracker-style register for the selected month."""
+    month_id = _view_month(months_df)
+    if not month_id:
+        st.info("No reporting months loaded.")
         return
-    html = html_path.read_text(encoding="utf-8")
-    # Contained height so the table scrolls INSIDE the iframe and the sticky nav
-    # band stays pinned (a taller iframe would scroll the whole panel out of view).
+    label = dict(zip(months_df["month_id"], months_df["label"])).get(month_id, month_id)
+
+    with st.spinner(f"Building the register for {label}..."):
+        html, status = _month_dashboard_html(month_id, _path_mtime(PORTFOLIO_DB_PATH))
+
+    if html is None:
+        if status == "no_workbook":
+            st.warning(
+                f"**{label} cannot be rendered here.** This view is built from that month's own "
+                f"tracker workbook, and no readable workbook is recorded for it. The figures "
+                f"themselves are in the database and appear on Overview and Analytics.")
+        else:
+            st.error(f"Could not build the register for {label}.")
+            st.code(status)
+        return
     components.html(html, height=800, scrolling=True)
+
 
 
 def _render_nav_evolution(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:

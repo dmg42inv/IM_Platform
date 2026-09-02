@@ -469,7 +469,10 @@ def _apply_db_positions(deals: pd.DataFrame, month_id: str, db_path: Path) -> pd
     missing_from_dashboard = sorted(set(by_deal) - {str(d).strip() for d in updated["deal_name"]})
     print(f"Positions from database {month_id}: {matched} deals updated.")
     if unmatched:
-        print(f"  not in the database, left as extracted: {', '.join(unmatched)}")
+        # A deal the database does not hold for this month is not a position in this month.
+        # Keeping the extract's figures would silently add value the register never had.
+        print(f"  dropped, not held in {month_id}: {', '.join(unmatched)}")
+        updated = updated[~updated["deal_name"].astype(str).str.strip().isin(unmatched)].reset_index(drop=True)
     if missing_from_dashboard:
         print(f"  in the database but not on the dashboard: {', '.join(missing_from_dashboard)}")
     return updated
@@ -522,7 +525,11 @@ def _generate_tracker_dashboard_command(args: argparse.Namespace) -> None:
         _y, _m = int(args.deals_from_db[:4]), int(args.deals_from_db[5:7])
         as_of_date = pd.Timestamp(_y, _m, calendar.monthrange(_y, _m)[1])
     snapshot = build_monthly_snapshot(deals, str(as_of_date) if as_of_date is not None else "")
-    snapshot_history, monthly_diff = write_snapshot_outputs(snapshot, snapshot_history_path, monthly_diff_path)
+    if getattr(args, "skip_snapshot", False):
+        # Rendering a month must not mutate the history; only a deliberate run should append.
+        snapshot_history, monthly_diff = pd.DataFrame(), pd.DataFrame()
+    else:
+        snapshot_history, monthly_diff = write_snapshot_outputs(snapshot, snapshot_history_path, monthly_diff_path)
 
     html = build_tracker_style_dashboard_html(
         deals, section_irr, vintage_irr, quarterly, historical_nav, cashflow, ownership, change_log,
@@ -701,6 +708,7 @@ def main() -> None:
     tracker_dashboard_parser.add_argument("--output-file", type=Path, default=None, help="Where to write the HTML dashboard")
     tracker_dashboard_parser.add_argument("--deals-from-db", type=str, default=None, help="Month id, e.g. 2026-08. Take deal figures from the reconciled positions in the database instead of the tracker extract")
     tracker_dashboard_parser.add_argument("--portfolio-db", type=Path, default=None, help="Portfolio database path")
+    tracker_dashboard_parser.add_argument("--skip-snapshot", action="store_true", help="Do not append to the snapshot history; use when rendering a month for display")
     tracker_dashboard_parser.set_defaults(func=_generate_tracker_dashboard_command)
 
     snapshot_backfill_parser = subparsers.add_parser(
