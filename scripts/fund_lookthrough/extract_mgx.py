@@ -232,8 +232,13 @@ def parse_schedule(page, page_no: int) -> Schedule | None:
             sched.unmapped.append(f"{lvl}: no Total row to anchor columns on")
             continue
         anchors = anchors_from_total(total_entry[2])
-        if len(anchors) < 3:
-            sched.unmapped.append(f"{lvl}: Total row gave only {len(anchors)} columns")
+        # The Total line occupies every column, so its cell count must equal the expected column
+        # count. A shortfall means the template lost a column and every column to its right is
+        # shifted - the failure that read unrealised gain as fair value.
+        if len(anchors) != len(columns):
+            sched.unmapped.append(
+                f"{lvl}: Total row gave {len(anchors)} columns but {len(columns)} were expected; "
+                f"column positions cannot be trusted")
             continue
         for name, currency, numeric, line, is_total in entries:
             values = map_to_columns(numeric, anchors, columns)
