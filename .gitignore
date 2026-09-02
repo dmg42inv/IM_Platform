@@ -18,3 +18,8 @@ data/legal_kb/
 data/evidence/*.log
 tmp_*.py
 data/evidence/bm25.sqlite*
+
+# Derived evidence artefacts - regenerable from the corpus by scripts/evidence_audit
+data/evidence/*.sqlite
+data/evidence/*.sqlite-*
+data/evidence/audit_outputs/*.csv
