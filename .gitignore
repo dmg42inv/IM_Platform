@@ -14,3 +14,5 @@ __pycache__/
 
 # Build artifacts (regenerated locally; must never be committed)
 data/legal_kb/
+
+data/evidence/*.log
