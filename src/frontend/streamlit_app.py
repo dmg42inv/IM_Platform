@@ -157,6 +157,9 @@ NAV_SECTIONS = ["Overview", "Portfolio", "Company Profiles", "Historical",
 
 # Sections whose figures are position-derived, so the entity scope filter applies.
 _SCOPED_SECTIONS = {"Overview", "Company Profiles", "Historical", "Analytics"}
+# Sections that report a single month. Historical plots every month at once and Parking lot is
+# not month-bound, so offering them a month would be a control that changes nothing.
+_MONTH_SECTIONS = {"Overview", "Portfolio", "Company Profiles", "Analytics", "Misc"}
 _SCOPE_OPTIONS = ["Consolidated", "G42", "MOZN", "MGX"]
 
 
@@ -211,14 +214,18 @@ def _render_header(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> tuple
         latest = months_df.sort_values("month_id").iloc[-1]
         d = pd.to_datetime(latest["as_of_date"], errors="coerce")
         as_of = d.strftime("%d %b %Y") if pd.notna(d) else str(latest.get("label", ""))
-    top = st.columns([4.6, 2.4, 1.1, 1.1], vertical_alignment="center")
+    # The nav widget holds the current section in session state, so the header can know which
+    # controls are relevant before the nav itself is drawn further down.
+    active_section = st.session_state.get("nav_section") or "Overview"
+    month_applies = active_section in _MONTH_SECTIONS
+    top = st.columns([5.2, 1.6, 1.6, 1.6], vertical_alignment="center")
     with top[0]:
         st.markdown(
             "<div class='g42-brand'><span class='g42-mark'>G42</span>"
             "<span class='g42-title'>Investments Portfolio</span></div>",
             unsafe_allow_html=True)
     with top[1]:
-        if len(months_df):
+        if month_applies and len(months_df):
             ordered = months_df.sort_values("month_id", ascending=False)
             options = list(ordered["month_id"])
             labels = dict(zip(ordered["month_id"], ordered["label"]))
@@ -254,7 +261,8 @@ def _render_header(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> tuple
                 "Entity scope", _SCOPE_OPTIONS, default="Consolidated",
                 key="scope_sel", label_visibility="collapsed") or "Consolidated"
     st.markdown("<hr style='margin:8px 0 16px;border-top:2px solid #2F6B45'>", unsafe_allow_html=True)
-    _render_evidence_badge(_view_month(months_df))
+    if section in _MONTH_SECTIONS:
+        _render_evidence_badge(_view_month(months_df))
     return section, scope
 
 
