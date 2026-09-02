@@ -1417,8 +1417,10 @@ _HTML_TEMPLATE = r"""<!DOCTYPE html>
   .panel h2 {{ font-size: 13px; margin: 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }}
     .table-filter-bar {{ display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 0 0 10px; }}
     .table-filter-bar .row-count {{ color: var(--muted); font-size: 12px; }}
-    th .th-label {{ display: block; margin-bottom: 5px; }}
-    th .column-filter {{ width: 100%; min-width: 72px; background: #FFFFFF; border: 1px solid var(--border); color: var(--text); border-radius: 5px; padding: 4px 6px; font-size: 11px; }}
+    th .th-label {{ display: block; }}
+    th .column-filter {{ width: 100%; min-width: 72px; background: #FFFFFF; border: 1px solid var(--border); color: var(--text); border-radius: 5px; padding: 4px 6px; font-size: 11px; margin-top: 5px; }}
+    /* A select inside the header widens its column, so filters stay out of the layout until asked for. */
+    table:not(.filters-on) th .column-filter {{ display: none; }}
     th .column-filter:focus {{ outline: none; border-color: var(--accent); }}
   .dl-btn {{ background: var(--sub-bg); border: 1px solid var(--border); color: var(--accent); border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; }}
   .dl-btn:hover {{ background: var(--border); }}
@@ -1685,7 +1687,7 @@ function setupTableFilters() {{
         const clearButton = document.createElement("button");
         clearButton.type = "button";
         clearButton.className = "dl-btn";
-        clearButton.textContent = "Clear filters";
+        clearButton.textContent = "Show filters";
 
         const rowCount = document.createElement("span");
         rowCount.className = "row-count";
@@ -1759,8 +1761,13 @@ function setupTableFilters() {{
 
         filterSelects.forEach(select => select.addEventListener("change", applyFilter));
         clearButton.addEventListener("click", () => {{
-            filterSelects.forEach(select => {{ select.value = ""; }});
-            applyFilter();
+            const turningOn = !table.classList.contains("filters-on");
+            table.classList.toggle("filters-on", turningOn);
+            clearButton.textContent = turningOn ? "Hide filters" : "Show filters";
+            if (!turningOn) {{
+                filterSelects.forEach(select => {{ select.value = ""; }});
+                applyFilter();
+            }}
         }});
         applyFilter();
     }});
