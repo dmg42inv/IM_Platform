@@ -211,16 +211,24 @@ def _render_header(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> tuple
         latest = months_df.sort_values("month_id").iloc[-1]
         d = pd.to_datetime(latest["as_of_date"], errors="coerce")
         as_of = d.strftime("%d %b %Y") if pd.notna(d) else str(latest.get("label", ""))
-    top = st.columns([7, 1.1, 1.1], vertical_alignment="center")
+    top = st.columns([4.6, 2.4, 1.1, 1.1], vertical_alignment="center")
     with top[0]:
         st.markdown(
             "<div class='g42-brand'><span class='g42-mark'>G42</span>"
             "<span class='g42-title'>Investments Portfolio</span></div>",
             unsafe_allow_html=True)
     with top[1]:
+        if len(months_df):
+            ordered = months_df.sort_values("month_id", ascending=False)
+            options = list(ordered["month_id"])
+            labels = dict(zip(ordered["month_id"], ordered["label"]))
+            st.selectbox(
+                "Reporting month", options, key="month_sel",
+                format_func=lambda m: str(labels.get(m, m)), label_visibility="collapsed")
+    with top[2]:
         if st.button("Theme", key="hdr_theme", icon=":material/brightness_6:"):
             st.session_state["_flip_theme"] = True
-    with top[2]:
+    with top[3]:
         if st.button("Sign out", key="hdr_signout", icon=":material/logout:"):
             st.session_state["authenticated"] = False
             st.session_state["username"] = ""
@@ -246,6 +254,7 @@ def _render_header(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> tuple
                 "Entity scope", _SCOPE_OPTIONS, default="Consolidated",
                 key="scope_sel", label_visibility="collapsed") or "Consolidated"
     st.markdown("<hr style='margin:8px 0 16px;border-top:2px solid #2F6B45'>", unsafe_allow_html=True)
+    _render_evidence_badge(_view_month(months_df))
     return section, scope
 
 
@@ -505,7 +514,7 @@ def _render_company_profiles(months_df: pd.DataFrame, positions_df: pd.DataFrame
     _render_company_one_pagers()
     if not positions_df.empty:
         # Full investment register (every holding in scope) — sortable, exportable.
-        m0 = _latest_month(months_df)
+        m0 = _view_month(months_df)
         reg = positions_df[positions_df["month_id"] == m0].copy()
         with st.container(border=True):
             st.subheader("Investment register")
@@ -536,7 +545,7 @@ def _render_company_profiles(months_df: pd.DataFrame, positions_df: pd.DataFrame
         companies = sorted(pos["company"].dropna().unique())
         company = st.selectbox("Company", companies, key="co_pick")
         sub = pos[pos["company"] == company]
-        m = _latest_month(months_df)
+        m = _view_month(months_df)
         latest = sub[sub["month_id"] == m]
         fact = {**facts.get(company.strip().lower(), {}), **(dom.get(company.strip().lower()) or {})}
 
@@ -812,10 +821,79 @@ def _load_sources(path: str, mtime_ns: int) -> pd.DataFrame:
             "FROM sources ORDER BY kind, month_id", conn)
 
 
-def _latest_month(months_df: pd.DataFrame) -> str | None:
+def _view_month(months_df: pd.DataFrame) -> str | None:
+    """The month being viewed: whatever the header selector holds, else the most recent."""
     if months_df.empty:
         return None
-    return months_df.sort_values("month_id")["month_id"].iloc[-1]
+    available = list(months_df.sort_values("month_id")["month_id"])
+    chosen = st.session_state.get("month_sel")
+    return chosen if chosen in available else available[-1]
+
+
+def _month_evidence(path: str, mtime_ns: int) -> dict[str, dict]:
+    return _cached_month_evidence(path, mtime_ns)
+
+
+@st.cache_data(show_spinner=False)
+def _cached_month_evidence(path: str, mtime_ns: int) -> dict[str, dict]:
+    """How well supported each month is, counted from the evidence tables themselves."""
+    del mtime_ns
+    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    try:
+        rows = con.execute(
+            "select m.month_id,"
+            " (select count(*) from monthly_positions p where p.month_id=m.month_id) positions,"
+            " (select count(*) from nav_observations n where n.month_id=m.month_id) nav_obs,"
+            " (select count(*) from valuation_inputs v where v.month_id=m.month_id) val_inputs"
+            " from tracker_months m").fetchall()
+    except sqlite3.OperationalError:
+        return {}
+    finally:
+        con.close()
+
+    out: dict[str, dict] = {}
+    for month_id, positions, nav_obs, val_inputs in rows:
+        if not positions:
+            tier, note = "none", "No positions recorded for this month."
+        elif nav_obs and val_inputs:
+            tier, note = "certified", (
+                f"{nav_obs} NAV observations and {val_inputs} valuation inputs on file; "
+                f"reconciled position by position.")
+        elif nav_obs or val_inputs:
+            tier, note = "partial", (
+                f"{nav_obs} NAV observations, {val_inputs} valuation inputs. "
+                f"Partly evidenced; the rest carries the tracker's own figures.")
+        else:
+            tier, note = "tracker", (
+                "Tracker figures only. No independent NAV observation or valuation input has "
+                "been loaded for this month, so nothing here is corroborated against a source "
+                "document.")
+        out[month_id] = {"tier": tier, "note": note, "positions": positions,
+                         "nav_obs": nav_obs, "val_inputs": val_inputs}
+    return out
+
+
+_EVIDENCE_STYLE = {
+    "certified": ("#2F6B45", "Certified"),
+    "partial": ("#B26A00", "Partly evidenced"),
+    "tracker": ("#8A6D3B", "Tracker figures only"),
+    "none": ("#9A9A9A", "No data"),
+}
+
+
+def _render_evidence_badge(month_id: str | None) -> None:
+    if not month_id:
+        return
+    info = _month_evidence(str(PORTFOLIO_DB_PATH), _path_mtime(PORTFOLIO_DB_PATH)).get(month_id)
+    if not info:
+        return
+    colour, label = _EVIDENCE_STYLE.get(info["tier"], _EVIDENCE_STYLE["tracker"])
+    st.markdown(
+        f"<div style='margin:-6px 0 10px;font-size:12px'>"
+        f"<span style='background:{colour};color:#fff;border-radius:3px;padding:1px 7px;"
+        f"font-weight:600'>{label}</span>"
+        f"<span style='opacity:.7;margin-left:8px'>{info['note']}</span></div>",
+        unsafe_allow_html=True)
 
 
 # ---- New consolidated sections (built for review, alongside the existing tabs) ----
@@ -914,7 +992,7 @@ def _render_ov_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> 
         st.markdown("<h1 class='g42-serif'>Overview</h1>", unsafe_allow_html=True)
         st.info("No portfolio database yet.")
         return
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     lbl = dict(zip(months_df["month_id"], months_df["label"])).get(m, m)
     month_pos = positions_df[positions_df["month_id"] == m]
     live = month_pos[month_pos["tab"] == "Live"]
@@ -1122,7 +1200,7 @@ def _render_book_of_record(view: str, months_df: pd.DataFrame, positions_df: pd.
 
 
 def _render_bor_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     lbl = dict(zip(months_df["month_id"], months_df["label"])).get(m, m)
     month_pos = positions_df[positions_df["month_id"] == m]
     live = month_pos[month_pos["tab"] == "Live"]
@@ -1261,7 +1339,7 @@ def _render_bor_overview(months_df: pd.DataFrame, positions_df: pd.DataFrame) ->
 
 
 def _render_bor_register(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
     if live.empty:
         st.info("No live holdings in this scope.")
@@ -1495,7 +1573,7 @@ def _render_bor_provenance() -> None:
 
 
 def _render_bor_parked_register(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
     if live.empty:
         st.info("No live holdings in this scope.")
@@ -1548,7 +1626,7 @@ def _render_bor_analytics(months_df: pd.DataFrame, positions_df: pd.DataFrame) -
 
 
 def _render_bor_ifrs(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
     if live.empty:
         st.info("No live holdings in this scope.")
@@ -1726,7 +1804,7 @@ def _true_exposure_table(live: pd.DataFrame, agg: pd.DataFrame) -> pd.DataFrame:
 
 def _render_exposure(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
     """What we are really exposed to, once the funds are looked through."""
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     lbl = dict(zip(months_df["month_id"], months_df["label"])).get(m, m)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
     if live.empty:
@@ -1836,7 +1914,7 @@ def _rebuild(detail: pd.DataFrame):
 def _render_value_creation(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
     """Capital deployed vs fair value, and who created/lost value — grounded on our
     tracker's live holdings."""
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     lbl = dict(zip(months_df["month_id"], months_df["label"])).get(m, m)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")]
     inv, fv, vc = live["invested"].sum(), live["carrying_value"].sum(), live["gain"].sum()
@@ -1963,7 +2041,7 @@ def _exposure_table(live: pd.DataFrame, col: str) -> pd.DataFrame:
 
 
 def _render_geography(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
     if live.empty:
         st.info("No live holdings in this scope.")
@@ -2009,7 +2087,7 @@ def _render_geography(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> No
 
 
 def _render_sector(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")].copy()
     if live.empty:
         st.info("No live holdings in this scope.")
@@ -2088,7 +2166,7 @@ def _render_concentration(months_df: pd.DataFrame, positions_df: pd.DataFrame) -
         st.line_chart(months_df.set_index("as_of_date")[["live_invested", "live_carrying"]]
                       .rename(columns={"live_invested": "Invested", "live_carrying": "Fair value"}),
                       height=280, x_label="Month", y_label="USD, millions")
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")]
     if live.empty:
         st.info("No live holdings in this scope.")
@@ -2228,7 +2306,7 @@ def _render_misc(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
     if months_df.empty or positions_df.empty:
         st.info("No portfolio database yet.")
         return
-    m = _latest_month(months_df)
+    m = _view_month(months_df)
     mrow = months_df[months_df["month_id"] == m].iloc[0]
     live = positions_df[(positions_df["month_id"] == m) & (positions_df["tab"] == "Live")]
     recompute = float(live["carrying_value"].sum())

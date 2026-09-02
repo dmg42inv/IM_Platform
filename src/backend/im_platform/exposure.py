@@ -24,6 +24,7 @@ reported by vehicle.
 """
 from __future__ import annotations
 
+import calendar
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -76,10 +77,21 @@ class Exposure:
     capital_account_share: float | None = None  # our NAV / partnership NAV, per the statement
 
 
-def _latest_holdings_date(con: sqlite3.Connection, fund: str) -> str | None:
+def _month_end(month_id: str) -> str:
+    year, month = int(month_id[:4]), int(month_id[5:7])
+    return f"{month_id}-{calendar.monthrange(year, month)[1]:02d}"
+
+
+def _latest_holdings_date(con: sqlite3.Connection, fund: str, month_id: str) -> str | None:
+    """Most recent holdings reported on or before the month end.
+
+    Attributing a month using a schedule published after it would import hindsight the portfolio
+    did not have, which is how a historical view quietly becomes a forecast.
+    """
     row = con.execute(
-        "select max(as_of_date) from fund_holdings where fund=? and level='instrument'", (fund,)
-    ).fetchone()
+        "select max(as_of_date) from fund_holdings"
+        " where fund=? and level='instrument' and as_of_date<=?",
+        (fund, _month_end(month_id))).fetchone()
     return row[0] if row and row[0] else None
 
 
@@ -115,9 +127,19 @@ def build_exposures(db_path: str | Path, month_id: str) -> tuple[list[Exposure],
             warnings.append(f"{fund}: no matching live position '{position}' in {month_id}.")
             continue
         our_value = positions[position]
-        as_of = _latest_holdings_date(con, fund)
+        as_of = _latest_holdings_date(con, fund, month_id)
         if not as_of:
-            warnings.append(f"{fund}: no instrument-level holdings on file, so it cannot be looked through.")
+            newest = con.execute(
+                "select max(as_of_date) from fund_holdings where fund=? and level='instrument'",
+                (fund,)).fetchone()
+            if newest and newest[0]:
+                warnings.append(
+                    f"{fund}: the earliest holdings on file are dated {newest[0]}, after "
+                    f"{month_id} ended, so this month cannot be looked through without using "
+                    f"information the portfolio did not have at the time.")
+            else:
+                warnings.append(
+                    f"{fund}: no instrument-level holdings on file, so it cannot be looked through.")
             continue
 
         rows = con.execute(
