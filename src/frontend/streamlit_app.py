@@ -456,7 +456,7 @@ def _render_app(history: pd.DataFrame, monthly_diff: pd.DataFrame,
     s_positions = _scoped_positions(positions_df, scope)
 
     if section == "Portfolio":
-        _render_portfolio(s_months, s_positions)
+        _render_current_month()
         return
     if section == "Company Profiles":
         _render_company_profiles(s_months, s_positions)
@@ -2392,97 +2392,18 @@ def _render_parking() -> None:
     _render_accounts_team()
 
 
-def _month_source(month_id: str) -> dict | None:
-    """The tracker file a month was ingested from, so the register can name its own origin."""
-    con = sqlite3.connect(f"file:{PORTFOLIO_DB_PATH}?mode=ro", uri=True)
-    con.row_factory = sqlite3.Row
-    try:
-        row = con.execute(
-            "select filename, version, sha256, source_mtime, ingested_at from sources"
-            " where month_id=? order by ingested_at desc limit 1", (month_id,)).fetchone()
-        return dict(row) if row else None
-    except sqlite3.OperationalError:
-        return None
-    finally:
-        con.close()
-
-
-_REGISTER_COLUMNS = {
-    "deal_name": "Deal", "vintage": "Vintage", "instrument": "Instrument",
-    "committed": "Committed", "invested": "Invested", "remaining_commitment": "Remaining",
-    "distributions": "Distributions", "carrying_value": "Carrying value", "gain": "Gain",
-    "tvpi": "TVPI",
-}
-
-
-def _render_register(frame: pd.DataFrame, empty_message: str) -> None:
-    if frame.empty:
-        st.info(empty_message)
+def _render_current_month() -> None:
+    """Embed the generated tracker-style dashboard (company profiles) for the
+    latest reporting month."""
+    html_path = ROOT / "data" / "outputs" / "G42_Investments_Portfolio_Dashboard_2026-08-25.html"
+    if not html_path.exists():
+        st.info("Tracker dashboard not generated yet. Run "
+                "`im_platform generate-tracker-dashboard` to build it.")
         return
-    show = frame.copy()
-    for column in ("committed", "invested", "remaining_commitment", "distributions",
-                   "carrying_value", "gain"):
-        if column not in show.columns:
-            show[column] = 0.0
-    show = show.sort_values("carrying_value", ascending=False)
-    money = {c: (lambda v: f"{v:,.1f}") for c in (
-        "committed", "invested", "remaining_commitment", "distributions", "carrying_value", "gain")}
-    money["tvpi"] = lambda v: metrics.format_multiple(v) if pd.notna(v) else "\u2014"
-    _html_table(show[[c for c in _REGISTER_COLUMNS if c in show.columns]],
-                _REGISTER_COLUMNS, fmts=money)
-
-
-def _render_portfolio(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
-    """The investment register for the selected month, read from the database.
-
-    This view previously embedded a dashboard exported on 25 August and labelled 'As of Jul26'.
-    It could not follow the month selector or the entity scope, and its totals reconciled to
-    nothing in the database, so two panels of the same app reported different months without
-    saying so.
-    """
-    month_id = _view_month(months_df)
-    if not month_id or positions_df.empty:
-        st.info("No portfolio data loaded.")
-        return
-    label = dict(zip(months_df["month_id"], months_df["label"])).get(month_id, month_id)
-    period = positions_df[positions_df["month_id"] == month_id]
-    live = period[period["tab"] == "Live"]
-    exited = period[period["tab"] == "Exited"]
-
-    st.markdown(f"<h1 class='g42-serif' style='margin:0'>Investment register</h1>",
-                unsafe_allow_html=True)
-    view = st.segmented_control(
-        "Register view", ["Live investments", "Exited investments"],
-        default="Live investments", key="reg_view", label_visibility="collapsed"
-    ) or "Live investments"
-
-    frame = live if view == "Live investments" else exited
-    head = metrics.headline(frame)
-    with st.container(border=True):
-        st.markdown(
-            f"<div style='text-align:right;font-size:12px;opacity:.6;margin:-2px 0 6px'>"
-            f"{view} \u00b7 {label}</div>", unsafe_allow_html=True)
-        k = st.columns(5)
-        k[0].metric("Committed", _fmt_money(float(frame["committed"].sum() or 0.0)), border=True)
-        k[1].metric("Capital deployed", _fmt_money(head["capital_deployed"]), border=True)
-        k[2].metric("Distributions", _fmt_money(head["distributions"]), border=True)
-        k[3].metric("Fair value", _fmt_money(head["fair_value"]), border=True)
-        k[4].metric("Gross multiple", metrics.format_multiple(head["gross_multiple"]), border=True)
-        st.caption(f"{frame['deal_name'].nunique():,} positions. Capital deployed is invested "
-                   f"capital; it is lower than committed by the amount still undrawn.")
-
-    with st.container(border=True):
-        _render_register(frame, f"No {view.lower()} in this scope for {label}.")
-
-    source = _month_source(month_id)
-    if source:
-        st.caption(
-            f"Source: {source['filename']}"
-            + (f" ({source['version']})" if source.get("version") else "")
-            + f" \u00b7 sha256 {str(source['sha256'])[:12]} \u00b7 ingested {source['ingested_at']}")
-    else:
-        st.caption("No ingest source recorded for this month.")
-
+    html = html_path.read_text(encoding="utf-8")
+    # Contained height so the table scrolls INSIDE the iframe and the sticky nav
+    # band stays pinned (a taller iframe would scroll the whole panel out of view).
+    components.html(html, height=800, scrolling=True)
 
 
 def _render_nav_evolution(months_df: pd.DataFrame, positions_df: pd.DataFrame) -> None:
