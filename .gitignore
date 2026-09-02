@@ -17,3 +17,4 @@ data/legal_kb/
 
 data/evidence/*.log
 tmp_*.py
+data/evidence/bm25.sqlite*
