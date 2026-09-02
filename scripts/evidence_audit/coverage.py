@@ -70,11 +70,12 @@ def load_legal_kb() -> dict:
             pass
 
         by_name: dict[str, list[dict]] = defaultdict(list)
+        by_doc_id: dict[str, dict] = {}
         for r in conn.execute(
                 "SELECT document_id, transaction_id, filename, relative_path, extraction_status,"
                 " char_count, content_hash FROM documents"):
             doc_id = r["document_id"]
-            by_name[(r["filename"] or "").lower()].append({
+            entry = {
                 "document_id": doc_id,
                 "transaction_id": r["transaction_id"],
                 "relative_path": r["relative_path"],
@@ -85,8 +86,22 @@ def load_legal_kb() -> dict:
                 "vectors": vectors.get(doc_id, 0),
                 "facts": facts.get(doc_id, 0),
                 "graph_edges": edges.get(doc_id, 0),
-            })
-        return by_name
+            }
+            by_name[(r["filename"] or "").lower()].append(entry)
+            by_doc_id[doc_id] = entry
+        return by_name, by_doc_id
+    finally:
+        conn.close()
+
+
+def load_provenance(audit_db: Path) -> dict[str, str]:
+    """sha256 -> knowledge base document_id, from the stage 3 backfill."""
+    conn = read_only(audit_db)
+    try:
+        return {r["sha256"]: r["document_id"] for r in conn.execute(
+            "SELECT sha256, document_id FROM kb_document_provenance WHERE sha256 <> ''")}
+    except sqlite3.OperationalError:
+        return {}
     finally:
         conn.close()
 
@@ -131,7 +146,7 @@ def fts_chunk_count() -> int:
         conn.close()
 
 
-def build_rows(manifest, kb_by_name, portfolio_by_hash) -> list[dict]:
+def build_rows(manifest, kb_by_name, kb_by_doc_id, sha_to_doc, portfolio_by_hash) -> list[dict]:
     name_counts: dict[str, int] = defaultdict(int)
     for row in manifest:
         name_counts[(row["filename"] or "").lower()] += 1
@@ -139,17 +154,22 @@ def build_rows(manifest, kb_by_name, portfolio_by_hash) -> list[dict]:
     rows = []
     for src in manifest:
         name = (src["filename"] or "").lower()
-        kb_matches = kb_by_name.get(name, [])
-        corpus_copies = name_counts[name]
+        sha = src["sha256"] or ""
+        kb = kb_by_doc_id.get(sha_to_doc.get(sha, "")) if sha else None
 
-        if not kb_matches:
-            match_method, ambiguity, kb = "none", "", None
-        elif len(kb_matches) == 1 and corpus_copies == 1:
-            match_method, ambiguity, kb = "filename_unique", "", kb_matches[0]
+        if kb is not None:
+            match_method, ambiguity = "sha256_resolved", ""
         else:
-            match_method = "filename_ambiguous"
-            ambiguity = f"{corpus_copies} corpus copies, {len(kb_matches)} kb rows of this name"
-            kb = kb_matches[0]
+            kb_matches = kb_by_name.get(name, [])
+            corpus_copies = name_counts[name]
+            if not kb_matches:
+                match_method, ambiguity = "none", ""
+            elif len(kb_matches) == 1 and corpus_copies == 1:
+                match_method, ambiguity, kb = "filename_unique", "", kb_matches[0]
+            else:
+                match_method = "filename_ambiguous"
+                ambiguity = f"{corpus_copies} corpus copies, {len(kb_matches)} kb rows of this name"
+                kb = kb_matches[0]
 
         pf = portfolio_by_hash.get(src["sha256"] or "")
 
@@ -216,6 +236,7 @@ def summarise(rows: list[dict], fts_total: int) -> None:
     hashed = sum(1 for r in rows if r["sha256"])
     unique = len({r["sha256"] for r in rows if r["sha256"]})
     in_kb = sum(1 for r in rows if r["kb_match_method"] != "none")
+    resolved = sum(1 for r in rows if r["kb_match_method"] == "sha256_resolved")
     ambiguous = sum(1 for r in rows if r["kb_match_method"] == "filename_ambiguous")
     extracted = sum(r["extracted"] for r in rows)
     noded = sum(1 for r in rows if r["node_count"] > 0)
@@ -228,7 +249,8 @@ def summarise(rows: list[dict], fts_total: int) -> None:
     print(f"    hashed                              {hashed:>8,}")
     print(f"    unique after SHA-256 deduplication  {unique:>8,}")
     print(f"    present in knowledge base           {in_kb:>8,}   ({in_kb/n*100:5.1f}% of corpus)")
-    print(f"      of which matched only by filename {ambiguous:>8,}   <- provenance not proven")
+    print(f"      resolved by source hash           {resolved:>8,}   <- provenance proven")
+    print(f"      matched only by filename          {ambiguous:>8,}   <- provenance not proven")
     print(f"    text extracted                      {extracted:>8,}   ({extracted/n*100:5.1f}%)")
     print(f"    structural nodes built              {noded:>8,}")
     print(f"    embedded for vector search          {vectored:>8,}")
@@ -265,7 +287,8 @@ def main() -> int:
         print("  manifest is empty", file=sys.stderr)
         return 2
 
-    rows = build_rows(manifest, load_legal_kb(), load_portfolio_by_hash())
+    rows = build_rows(manifest, *load_legal_kb(), load_provenance(args.audit_db),
+                      load_portfolio_by_hash())
     fts_total = fts_chunk_count()
     summarise(rows, fts_total)
 
